@@ -1,7 +1,4 @@
-#Standard Pipeline
-#Date: May 14, 2020
-
-mySDM = '/mnt/research/ChomiukLab/LocalGroupX/NGC6822/13A-213_05_15_2013_continuum.ms'
+mySDM = '/mnt/research/ChomiukLab/LocalGroupX/NGC6822_v2.0/13A-213_05_15_2013_continuum.ms'
 __rethrow_casa_exceptions = True
 context = h_init()
 context.set_state('ProjectSummary', 'observatory', 'Karl G. Jansky Very Large Array')
@@ -14,13 +11,14 @@ try:
     hifv_priorcals(tecmaps=False)
     hifv_testBPdcals(weakbp=False)
     hifv_flagbaddef(doflagundernspwlimit=False)
-    hifv_checkflag(pipelinemode="automatic")
+    hifv_checkflag(checkflagmode='bpd') #changed as Josh suggested
     hifv_semiFinalBPdcals(weakbp=False)
-    hifv_checkflag(checkflagmode='semi')
+    hifv_checkflag(checkflagmode='allcals')#changed as Josh suggested    hifv_checkflag(checkflagmode='semi')
     hifv_semiFinalBPdcals(weakbp=False)
     hifv_solint(pipelinemode="automatic")
     hifv_fluxboot2(fitorder=-1)
     hifv_finalcals(weakbp=False)
+    hifv_flagcal(pipelinemode="automatic") #changed as Josh suggested
     hifv_applycals(flagdetailedsum=True, gainmap=False, flagbackup=True, flagsum=True)
     hifv_targetflag(intents='*CALIBRATE*,*TARGET*')
     hifv_statwt(datacolumn='corrected')
