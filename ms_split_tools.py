@@ -43,7 +43,7 @@ def continuum_spws(spw_dict, baseband='both', return_string=True):
 
     # Check all given basebands are valid
     check_bbs = [bb in all_valids_bbs for bb in valids_bbs]
-    if not check_bbs.all():
+    if not all(check_bbs):
         raise ValueError("Found invalid baseband selection: {0}. Must be one of: {1}"
                          .format(valids_bbs, all_valids_bbs))
 
@@ -57,6 +57,8 @@ def continuum_spws(spw_dict, baseband='both', return_string=True):
         for name in spw_dict[bb]:
             if "cont" in name:
                 spw_list.append(spw_dict[bb][name]['num'])
+
+    spw_list.sort()
 
     if return_string:
         return ",".join([str(num) for num in spw_list])
@@ -104,8 +106,10 @@ def line_spws(spw_dict, include_rrls=False, return_string=True):
         for name in spw_dict[bb]:
 
             # Check if the name begins with one of the line identifiers
-            if ([name.beginswith(lsearch) for lsearch in line_search_strs]).any():
+            if any([name.startswith(lsearch) for lsearch in line_search_strs]):
                 spw_list.append(spw_dict[bb][name]['num'])
+
+    spw_list.sort()
 
     if return_string:
         return ",".join([str(num) for num in spw_list])
