@@ -114,24 +114,3 @@ spw_dict_20A346["B0D0"] = \
                  "corrs": "RR  RL  LR  LL"},
      }
 
-
-def continuum_spws(baseband='both', return_string=True):
-    '''
-    Return the continuum SPWs, in one or both of the basebands.
-
-    Parameters
-    ----------
-    baseband: str, optional
-        Baseband to select continuum SPWs. Default is "both". Otherwise,
-        basebands "B" (all continuum) and "A" (mostly lines) can also be
-        chosen.
-
-    return_string : bool, optional
-        Return the SPW list as a string to pass directly to CASA tasks.
-        Default is True. Else the SPWs are returned as a list of integers.
-
-    Return
-    ------
-    spw_list : list or str
-    '''
-
