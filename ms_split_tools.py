@@ -6,8 +6,10 @@ An example format of spw_dict is shown in 20A-246_spw_setup.py.
 
 '''
 
+import os
 
-def continuum_spws(spw_dict, baseband='both', return_string=True):
+
+def get_continuum_spws(spw_dict, baseband='both', return_string=True):
     '''
     Return the continuum SPWs, in one or both of the basebands.
 
@@ -66,8 +68,8 @@ def continuum_spws(spw_dict, baseband='both', return_string=True):
     return spw_list
 
 
-def line_spws(spw_dict, include_rrls=False, return_string=True,
-              keep_backup_continuum=True):
+def get_line_spws(spw_dict, include_rrls=False, return_string=True,
+                  keep_backup_continuum=True):
     '''
     Returns different selections of line SPWs. Currently the option is to keep
     or remove the RRLs.
@@ -125,3 +127,83 @@ def line_spws(spw_dict, include_rrls=False, return_string=True,
         return ",".join([str(num) for num in spw_list])
 
     return spw_list
+
+
+def split_ms(ms_name,
+             spw_dict,
+             outfolder_prefix=None,
+             split_type='all',
+             continuum_kwargs={"baseband": 'both'},
+             line_kwargs={"include_rrls": False,
+                          "keep_backup_continuum": True},
+             overwrite=False):
+    '''
+    Split an MS into continuum and line SPWs.
+
+
+    Parameters
+    ----------
+    '''
+
+    from tasks import split
+
+    folder_base, ms_name_base = os.path.split(ms_name)
+
+    ms_name_base = ms_name_base.rstrip(".ms")
+
+    if outfolder_prefix is None:
+        outfolder_prefix = ms_name_base
+
+    do_split_continuum = False
+    do_split_lines = False
+
+    if split_type == "all":
+        do_split_continuum = True
+        do_split_lines = True
+    elif split_type == 'continuum':
+        do_split_continuum = True
+    elif split_type == 'line':
+        do_split_lines = True
+    else:
+        raise ValueError("Unexpected input {} for split_type. ".format(split_type)
+                         + "Accepted inputs are 'all', 'continuum', 'lines'.")
+
+    if do_split_continuum:
+
+        continuum_folder = "{0}/{1}_continuum".format(folder_base, outfolder_prefix)
+
+        if not os.path.exists(continuum_folder):
+            os.mkdir(continuum_folder)
+        else:
+            # Delete existing version when overwrite is enabled
+            if overwrite:
+                os.system("rm -r {}/*".format(continuum_folder))
+
+        continuum_spw_str = get_continuum_spws(spw_dict, return_string=True,
+                                               **continuum_kwargs)
+
+        split(vis=ms_name,
+              outputvis="{0}/{1}.continuum.ms".format(continuum_folder,
+                                                      ms_name_base),
+              spw=continuum_spw_str, datacolumn='DATA',
+              field="")
+
+    if do_split_lines:
+
+        lines_folder = "{0}/{1}_speclines".format(folder_base, outfolder_prefix)
+
+        if not os.path.exists(continuum_folder):
+            os.mkdir(continuum_folder)
+        else:
+            # Delete existing version when overwrite is enabled
+            if overwrite:
+                os.system("rm -r {}/*".format(continuum_folder))
+
+        line_spw_str = get_line_spws(spw_dict, return_string=True,
+                                     **line_kwargs)
+
+        split(vis=ms_name,
+              outputvis="{0}/{1}.speclines.ms".format(lines_folder,
+                                                      ms_name_base),
+              spw=line_spw_str, datacolumn='DATA',
+              field="")
