@@ -64,7 +64,7 @@ def continuum_spws(spw_dict, baseband='both', return_string=True):
     return spw_list
 
 
-def lines_spws(spw_dict, include_rrls=False, return_string=True):
+def line_spws(spw_dict, include_rrls=False, return_string=True):
     '''
     Returns different selections of line SPWs. Currently the option is to keep
     or remove the RRLs.
