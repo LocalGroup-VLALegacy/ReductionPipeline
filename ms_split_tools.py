@@ -66,7 +66,8 @@ def continuum_spws(spw_dict, baseband='both', return_string=True):
     return spw_list
 
 
-def line_spws(spw_dict, include_rrls=False, return_string=True):
+def line_spws(spw_dict, include_rrls=False, return_string=True,
+              keep_backup_continuum=True):
     '''
     Returns different selections of line SPWs. Currently the option is to keep
     or remove the RRLs.
@@ -84,6 +85,10 @@ def line_spws(spw_dict, include_rrls=False, return_string=True):
     return_string : bool, optional
         Return the SPW list as a string to pass directly to CASA tasks.
         Default is True. Else the SPWs are returned as a list of integers.
+
+    keep_backup_continuum: bool, optional
+        Keep the backup continuum SPWs in baseband A0 for calibration.
+        Default is True.
 
     Returns
     -------
@@ -108,6 +113,11 @@ def line_spws(spw_dict, include_rrls=False, return_string=True):
             # Check if the name begins with one of the line identifiers
             if any([name.startswith(lsearch) for lsearch in line_search_strs]):
                 spw_list.append(spw_dict[bb][name]['num'])
+
+            # Optionally keep the backup continuum SPWs
+            if keep_backup_continuum:
+                if bb == "A0C0" and "cont" in name:
+                    spw_list.append(spw_dict[bb][name]['num'])
 
     spw_list.sort()
 
