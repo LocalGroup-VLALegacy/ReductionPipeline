@@ -143,6 +143,24 @@ def split_ms(ms_name,
 
     Parameters
     ----------
+    ms_name : str
+        Name of MS.
+
+    spw_dict : dict
+        Dictionary with SPW mapping. See 20A-346_spw_setup.py.
+
+    outfolder_prefix : str, optional
+        Basename of folder where the split MSs will be located.
+        If None, this defaults to the ms_name + "continuum" or "speclines".
+        When given, the folders will be outfolder_prefix + "continuum" or "speclines".
+
+    split_type : str, optional
+        Which SPW type to split out. Default is 'all' to split the continuum and lines.
+        Otherwise use "continuum" or "line" to only split out one type.
+
+    continuum_kwargs : dict, optional
+
+
     '''
 
     from tasks import split
