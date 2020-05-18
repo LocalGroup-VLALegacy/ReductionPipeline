@@ -188,7 +188,7 @@ def split_ms(ms_name,
 
     if do_split_continuum:
 
-        continuum_folder = os.path.join(folder_base, "{1}_continuum".format(outfolder_prefix))
+        continuum_folder = os.path.join(folder_base, "{}_continuum".format(outfolder_prefix))
 
         if not os.path.exists(continuum_folder):
             os.mkdir(continuum_folder)
@@ -208,7 +208,7 @@ def split_ms(ms_name,
 
     if do_split_lines:
 
-        lines_folder = os.path.join(folder_base, "{1}_speclines".format(outfolder_prefix))
+        lines_folder = os.path.join(folder_base, "{}_speclines".format(outfolder_prefix))
 
         if not os.path.exists(lines_folder):
             os.mkdir(lines_folder)
