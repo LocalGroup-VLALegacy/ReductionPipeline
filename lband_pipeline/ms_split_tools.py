@@ -188,7 +188,7 @@ def split_ms(ms_name,
 
     if do_split_continuum:
 
-        continuum_folder = "{0}/{1}_continuum".format(folder_base, outfolder_prefix)
+        continuum_folder = os.path.join(folder_base, "{1}_continuum".format(outfolder_prefix))
 
         if not os.path.exists(continuum_folder):
             os.mkdir(continuum_folder)
@@ -208,14 +208,14 @@ def split_ms(ms_name,
 
     if do_split_lines:
 
-        lines_folder = "{0}/{1}_speclines".format(folder_base, outfolder_prefix)
+        lines_folder = os.path.join(folder_base, "{1}_speclines".format(outfolder_prefix))
 
-        if not os.path.exists(continuum_folder):
-            os.mkdir(continuum_folder)
+        if not os.path.exists(lines_folder):
+            os.mkdir(lines_folder)
         else:
             # Delete existing version when overwrite is enabled
             if overwrite:
-                os.system("rm -r {}/*".format(continuum_folder))
+                os.system("rm -r {}/*".format(lines_folder))
 
         line_spw_str = get_line_spws(spw_dict, return_string=True,
                                      **line_kwargs)
