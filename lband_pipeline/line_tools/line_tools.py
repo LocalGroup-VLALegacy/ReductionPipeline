@@ -8,7 +8,9 @@ from tasks import bandpass
 import pipeline.hif.heuristics.findrefant as findrefant
 
 
-def bandpass_with_gap_interpolation(myvis, context, refantignore=""):
+def bandpass_with_gap_interpolation(myvis, context, refantignore="",
+                                    search_string="test",
+                                    task_string="hifv_testBPdcals"):
     '''
     Re-do the bandpass accounting for flagged gaps.
 
@@ -21,7 +23,7 @@ def bandpass_with_gap_interpolation(myvis, context, refantignore=""):
     '''
 
     # Look for BP table
-    bpname = glob("{}.hifv_testBPdcals.s*_4.testBPcal.tbl".format(myvis))
+    bpname = glob("{0}.{1}.s*_4.{1}BPcal.tbl".format(myvis, task_string, search_string))
     assert len(bpname) == 1
     bpname = bpname[0]
 
@@ -61,14 +63,16 @@ def bandpass_with_gap_interpolation(myvis, context, refantignore=""):
     if len(ant_tbl) == 1:
         priorcals.extend(ant_tbl)
 
-    tstdel_tbl = glob("{}.hifv_testBPdcals.s*_2.testdelay.tbl".format(myvis))
-    assert len(tstdel_tbl) == 1
+    del_tbl = glob("{0}.{1}.s*_2.{2}delay.tbl".format(myvis, task_string, search_string))
+    assert len(del_tbl) == 1
 
-    tstBPinit_tbl = glob("{}.hifv_testBPdcals.s*_3.testBPdinitialgain.tbl".format(myvis))
-    assert len(tstBPinit_tbl) == 1
+    BPinit_tbl = glob("{0}.{1}.s*_3.{2}BPdinitialgain.tbl".format(myvis,
+                                                                  task_string,
+                                                                  search_string))
+    assert len(BPinit_tbl) == 1
 
     gaintables = copy(priorcals)
-    gaintables.extend([tstdel_tbl[0], tstBPinit_tbl[0]])
+    gaintables.extend([del_tbl[0], BPinit_tbl[0]])
 
     bandpass(vis=myvis,
              caltable=bpname,
