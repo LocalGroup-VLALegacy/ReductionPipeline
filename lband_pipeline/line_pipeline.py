@@ -4,9 +4,9 @@ import os
 from glob import glob
 import shutil
 
-from qa_plotting.perspw_bandpass_plots import make_spw_bandpass_plots
+from lband_pipeline.qa_plotting.perspw_bandpass_plots import make_spw_bandpass_plots
 
-from line_tools import bandpass_with_gap_interpolation
+from lband_pipeline.line_tools import bandpass_with_gap_interpolation
 
 
 # Ignore any as refants??
