@@ -4,7 +4,7 @@ import os
 from glob import glob
 import shutil
 
-from lband_pipeline.qa_plotting.perspw_bandpass_plots import make_spw_bandpass_plots
+from lband_pipeline.qa_plotting import make_spw_bandpass_plots, make_qa_scan_figures
 
 from lband_pipeline.line_tools import (bandpass_with_gap_interpolation,
                                        flag_hi_foreground)
@@ -180,3 +180,7 @@ make_spw_bandpass_plots(myvis,
                         outtype='png')
 
 # TODO: Add in the longer QA function to make plots here.
+
+make_qa_scan_figures(myvis,
+                     outfolder='scan_plots')
+

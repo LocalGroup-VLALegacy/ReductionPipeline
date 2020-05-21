@@ -15,6 +15,8 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
     Make a series of plots per scan for QA and
     flagging purposes.
 
+    TODO: Add more settings here for different types of plots, etc.
+
     Parameters
     ----------
     ms_name : str
