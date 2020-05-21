@@ -57,8 +57,7 @@ def make_spw_bandpass_plots(ms_active,
                 markersize=5.0,
                 fontsize=10.0,
                 showgui=False,
-                figfile=os.path.join(bp_folder, filename),
-                async=False)
+                figfile=os.path.join(bp_folder, filename))
 
         filename = 'finalBPcal_phase_spw_' + str(ii) + outtype
         if os.path.exists(os.path.join(bp_folder, filename)):
@@ -83,6 +82,4 @@ def make_spw_bandpass_plots(ms_active,
                 markersize=5.0,
                 fontsize=10.0,
                 showgui=False,
-                figfile=os.path.join(bp_folder, filename),
-                async=False)
-
+                figfile=os.path.join(bp_folder, filename))
