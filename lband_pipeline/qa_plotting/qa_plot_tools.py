@@ -194,7 +194,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
                        ylabel='Amp',
                        showmajorgrid=False,
                        showminorgrid=False,
-                       plotfile=os.path.join(spw_folder
+                       plotfile=os.path.join(spw_folder,
                                              'field_{0}_amp_uvdist_scan_{1}.png'.format(names[ii], jj)),
                        overwrite=True,
                        showgui=False,
@@ -222,7 +222,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
                            ylabel='Phase',
                            showmajorgrid=False,
                            showminorgrid=False,
-                           plotfile=os.path.join(spw_folder
+                           plotfile=os.path.join(spw_folder,
                                                  'field_{0}_phase_scan_{1}.png'.format(names[ii], jj)),
                            overwrite=True,
                            showgui=False,
