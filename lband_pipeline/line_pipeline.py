@@ -6,7 +6,8 @@ import shutil
 
 from lband_pipeline.qa_plotting.perspw_bandpass_plots import make_spw_bandpass_plots
 
-from lband_pipeline.line_tools import bandpass_with_gap_interpolation
+from lband_pipeline.line_tools import (bandpass_with_gap_interpolation,
+                                       flag_hi_foreground)
 
 
 # Ignore any as refants??
@@ -55,6 +56,12 @@ try:
                   shadow=True,
                   quack=True,
                   edgespw=True)
+
+    # TODO: finish this function to flag HI absorption on the bandpass
+    # and phase cals.
+    # flag_hi_foreground(myvis, context,
+    #                    hi_spw_num=None,
+    #                    cal_intents=["BANDPASS", "PHASE"])
 
     hifv_vlasetjy(fluxdensity=-1,
                   scalebychan=True,
