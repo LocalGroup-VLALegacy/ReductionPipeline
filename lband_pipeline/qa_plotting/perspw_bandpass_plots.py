@@ -33,7 +33,7 @@ def make_spw_bandpass_plots(ms_active,
     finalbpcal_name = finalbpcal_name[0]
 
     for ii in range(nspws):
-        filename = 'finalBPcal_amp_spw_' + str(ii) + outtype
+        filename = 'finalBPcal_amp_spw_' + str(ii) + "." + outtype
 
         if os.path.exists(os.path.join(bp_folder, filename)):
             syscommand = 'rm -f ' + filename
@@ -59,7 +59,7 @@ def make_spw_bandpass_plots(ms_active,
                 showgui=False,
                 figfile=os.path.join(bp_folder, filename))
 
-        filename = 'finalBPcal_phase_spw_' + str(ii) + outtype
+        filename = 'finalBPcal_phase_spw_' + str(ii) + "." + outtype
         if os.path.exists(os.path.join(bp_folder, filename)):
             syscommand = 'rm -f ' + filename
             os.system(syscommand)
