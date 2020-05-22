@@ -108,16 +108,16 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
             os.system("rm {}/*.png".format(spw_folder))
 
         for ii in range(len(field_scans)):
-            print("On field {}".format(names[ii]))
+            casalog.post("On field {}".format(names[ii]))
             for jj in field_scans[ii]:
 
                 # Check if all of the data is flagged.
                 if is_all_flagged[spw_num, jj - 1]:
-                    print("All data flagged in SPW {0} scan {1}"
-                          .format(spw_num, jj))
+                    casalog.post("All data flagged in SPW {0} scan {1}"
+                                 .format(spw_num, jj))
                     continue
 
-                print("On scan {}".format(jj))
+                casalog.post("On scan {}".format(jj))
 
                 # Amp vs. time
                 plotms(vis=ms_name,
