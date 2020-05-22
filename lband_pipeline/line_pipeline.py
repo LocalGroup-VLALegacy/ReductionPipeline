@@ -184,3 +184,7 @@ make_spw_bandpass_plots(myvis,
 make_qa_scan_figures(myvis,
                      output_folder='scan_plots',
                      outtype='png')
+
+# Copy and zip into the pipeline products output.
+
+# Zip, tag, and rename the products folder to copy out on completion.
