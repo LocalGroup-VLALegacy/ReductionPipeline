@@ -143,8 +143,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
                        plotfile=os.path.join(spw_folder,
                                              'field_{0}_amp_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                        overwrite=True,
-                       showgui=False,
-                       async=False)
+                       showgui=False)
 
                 # Amp vs. channel
                 plotms(vis=ms_name,
@@ -171,8 +170,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
                        plotfile=os.path.join(spw_folder,
                                              'field_{0}_amp_chan_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                        overwrite=True,
-                       showgui=False,
-                       async=False)
+                       showgui=False)
 
                 # Plot amp vs uvdist
                 plotms(vis=ms_name,
@@ -199,8 +197,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
                        plotfile=os.path.join(spw_folder,
                                              'field_{0}_amp_uvdist_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                        overwrite=True,
-                       showgui=False,
-                       async=False)
+                       showgui=False)
 
                 # Skip the phase plots for the HI SPW (0)
                 if is_calibrator[jj - 1]:
@@ -227,8 +224,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
                            plotfile=os.path.join(spw_folder,
                                                  'field_{0}_phase_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                            overwrite=True,
-                           showgui=False,
-                           async=False)
+                           showgui=False)
 
                     # Plot phase vs channel
                     plotms(vis=ms_name,
@@ -253,8 +249,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
                            plotfile=os.path.join(spw_folder,
                                                  'field_{0}_phase_chan_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                            overwrite=True,
-                           showgui=False,
-                           async=False)
+                           showgui=False)
 
                     # Plot phase vs uvdist
                     plotms(vis=ms_name,
@@ -281,8 +276,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
                            plotfile=os.path.join(spw_folder,
                                                  'field_{0}_phase_uvdist_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                            overwrite=True,
-                           showgui=False,
-                           async=False)
+                           showgui=False)
 
                     # Plot amp vs phase
                     plotms(vis=ms_name,
@@ -309,5 +303,4 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
                            plotfile=os.path.join(spw_folder,
                                                  'field_{0}_amp_phase_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                            overwrite=True,
-                           showgui=False,
-                           async=False)
+                           showgui=False)
