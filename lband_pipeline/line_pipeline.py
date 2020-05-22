@@ -24,7 +24,7 @@ context = h_init()
 context.set_state('ProjectSummary', 'observatory',
                   'Karl G. Jansky Very Large Array')
 context.set_state('ProjectSummary', 'telescope', 'EVLA')
-context.set_state('ProjectSummary', 'proposal_code', '15A-175')
+context.set_state('ProjectSummary', 'proposal_code', mySDM.split(".")[0])
 context.set_state('ProjectSummary', 'piname', 'Adam Leroy')
 
 try:
