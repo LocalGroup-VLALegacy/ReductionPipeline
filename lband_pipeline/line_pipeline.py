@@ -182,5 +182,5 @@ make_spw_bandpass_plots(myvis,
 # TODO: Add in the longer QA function to make plots here.
 
 make_qa_scan_figures(myvis,
-                     outfolder='scan_plots')
-
+                     output_folder='scan_plots',
+                     outtype='png')
