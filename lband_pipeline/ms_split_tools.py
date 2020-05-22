@@ -118,6 +118,10 @@ def get_line_spws(spw_dict, include_rrls=False, return_string=True,
 
             # Optionally keep the backup continuum SPWs
             if keep_backup_continuum:
+                # None of the lines need the first continuum SPW in A0CO at ~1 GHz.
+                if name == "contA0":
+                    continue
+
                 if bb == "A0C0" and "cont" in name:
                     spw_list.append(spw_dict[bb][name]['num'])
 

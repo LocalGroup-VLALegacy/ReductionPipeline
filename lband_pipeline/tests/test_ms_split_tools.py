@@ -81,7 +81,7 @@ def test_lines_norrls():
                         return_string=False)
 
     check_list = [5, 7, 10, 13]
-    backups_list = [0, 4, 8, 11]
+    backups_list = [4, 8, 11]
 
     check_list += backups_list
     check_list.sort()
@@ -106,8 +106,8 @@ def test_lines_rrls_wbackups():
                         return_string=False)
 
     # There's only 4 continuum SPWs in A0
-    check_list = list(set(range(0, 16)) - set([0, 4, 8, 11]))
-    backups_list = [0, 4, 8, 11]
+    check_list = list(set(range(0, 16)) - set([4, 8, 11]))
+    backups_list = [4, 8, 11]
 
     check_list += backups_list
     check_list.sort()
@@ -132,7 +132,7 @@ def test_lines_norrls_wbackups():
                         return_string=False)
 
     check_list = [5, 7, 10, 13]
-    backups_list = [0, 4, 8, 11]
+    backups_list = [4, 8, 11]
 
     check_list += backups_list
     check_list.sort()
