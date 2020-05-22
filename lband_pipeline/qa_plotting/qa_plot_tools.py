@@ -29,6 +29,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
 
     # Will need to updated for CASA 6
     from taskinit import tb
+    from taskinit import casalog
 
     from tasks import plotms
 
