@@ -10,7 +10,8 @@ import os
 import numpy as np
 
 
-def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
+def make_qa_scan_figures(ms_name, output_folder='scan_plots',
+                         outtype='png'):
     '''
     Make a series of plots per scan for QA and
     flagging purposes.
@@ -28,6 +29,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
 
     # Will need to updated for CASA 6
     from taskinit import tb
+    from taskinit import casalog
 
     from tasks import plotms
 
@@ -106,16 +108,16 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
             os.system("rm {}/*.png".format(spw_folder))
 
         for ii in range(len(field_scans)):
-            print("On field {}".format(names[ii]))
+            casalog.post("On field {}".format(names[ii]))
             for jj in field_scans[ii]:
 
                 # Check if all of the data is flagged.
                 if is_all_flagged[spw_num, jj - 1]:
-                    print("All data flagged in SPW {0} scan {1}"
-                          .format(spw_num, jj))
+                    casalog.post("All data flagged in SPW {0} scan {1}"
+                                 .format(spw_num, jj))
                     continue
 
-                print("On scan {}".format(jj))
+                casalog.post("On scan {}".format(jj))
 
                 # Amp vs. time
                 plotms(vis=ms_name,
@@ -139,10 +141,9 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
                        showmajorgrid=False,
                        showminorgrid=False,
                        plotfile=os.path.join(spw_folder,
-                                             'field_{0}_amp_scan_{1}.png'.format(names[ii], jj)),
+                                             'field_{0}_amp_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                        overwrite=True,
-                       showgui=False,
-                       async=False)
+                       showgui=False)
 
                 # Amp vs. channel
                 plotms(vis=ms_name,
@@ -167,10 +168,9 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
                        showmajorgrid=False,
                        showminorgrid=False,
                        plotfile=os.path.join(spw_folder,
-                                             'field_{0}_amp_chan_scan_{1}.png'.format(names[ii], jj)),
+                                             'field_{0}_amp_chan_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                        overwrite=True,
-                       showgui=False,
-                       async=False)
+                       showgui=False)
 
                 # Plot amp vs uvdist
                 plotms(vis=ms_name,
@@ -194,11 +194,10 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
                        ylabel='Amp',
                        showmajorgrid=False,
                        showminorgrid=False,
-                       plotfile=os.path.join(spw_folder
-                                             'field_{0}_amp_uvdist_scan_{1}.png'.format(names[ii], jj)),
+                       plotfile=os.path.join(spw_folder,
+                                             'field_{0}_amp_uvdist_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                        overwrite=True,
-                       showgui=False,
-                       async=False)
+                       showgui=False)
 
                 # Skip the phase plots for the HI SPW (0)
                 if is_calibrator[jj - 1]:
@@ -222,11 +221,10 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
                            ylabel='Phase',
                            showmajorgrid=False,
                            showminorgrid=False,
-                           plotfile=os.path.join(spw_folder
-                                                 'field_{0}_phase_scan_{1}.png'.format(names[ii], jj)),
+                           plotfile=os.path.join(spw_folder,
+                                                 'field_{0}_phase_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                            overwrite=True,
-                           showgui=False,
-                           async=False)
+                           showgui=False)
 
                     # Plot phase vs channel
                     plotms(vis=ms_name,
@@ -249,10 +247,9 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
                            showmajorgrid=False,
                            showminorgrid=False,
                            plotfile=os.path.join(spw_folder,
-                                                 'field_{0}_phase_chan_scan_{1}.png'.format(names[ii], jj)),
+                                                 'field_{0}_phase_chan_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                            overwrite=True,
-                           showgui=False,
-                           async=False)
+                           showgui=False)
 
                     # Plot phase vs uvdist
                     plotms(vis=ms_name,
@@ -277,10 +274,9 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
                            showmajorgrid=False,
                            showminorgrid=False,
                            plotfile=os.path.join(spw_folder,
-                                                 'field_{0}_phase_uvdist_scan_{1}.png'.format(names[ii], jj)),
+                                                 'field_{0}_phase_uvdist_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                            overwrite=True,
-                           showgui=False,
-                           async=False)
+                           showgui=False)
 
                     # Plot amp vs phase
                     plotms(vis=ms_name,
@@ -305,7 +301,6 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots'):
                            showmajorgrid=False,
                            showminorgrid=False,
                            plotfile=os.path.join(spw_folder,
-                                                 'field_{0}_amp_phase_scan_{1}.png'.format(names[ii], jj)),
+                                                 'field_{0}_amp_phase_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                            overwrite=True,
-                           showgui=False,
-                           async=False)
+                           showgui=False)

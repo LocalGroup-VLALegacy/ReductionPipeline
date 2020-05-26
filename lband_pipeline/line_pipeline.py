@@ -24,7 +24,7 @@ context = h_init()
 context.set_state('ProjectSummary', 'observatory',
                   'Karl G. Jansky Very Large Array')
 context.set_state('ProjectSummary', 'telescope', 'EVLA')
-context.set_state('ProjectSummary', 'proposal_code', '15A-175')
+context.set_state('ProjectSummary', 'proposal_code', mySDM.split(".")[0])
 context.set_state('ProjectSummary', 'piname', 'Adam Leroy')
 
 try:
@@ -182,5 +182,9 @@ make_spw_bandpass_plots(myvis,
 # TODO: Add in the longer QA function to make plots here.
 
 make_qa_scan_figures(myvis,
-                     outfolder='scan_plots')
+                     output_folder='scan_plots',
+                     outtype='png')
 
+# Copy and zip into the pipeline products output.
+
+# Zip, tag, and rename the products folder to copy out on completion.
