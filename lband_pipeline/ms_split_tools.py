@@ -7,6 +7,7 @@ An example format of spw_dict is shown in 20A-246_spw_setup.py.
 '''
 
 import os
+from copy import copy
 
 
 def get_continuum_spws(spw_dict, baseband='both', return_string=True):
@@ -131,6 +132,54 @@ def get_line_spws(spw_dict, include_rrls=False, return_string=True,
         return ",".join([str(num) for num in spw_list])
 
     return spw_list
+
+
+def return_spwsetup_dict(spw_dict, spw_list):
+    '''
+    Return a new dictionary of the SPW setup after splitting or a
+    chosen subset (e.g. continuum or line only) given a
+    list of SPW numbers.
+
+    Parameters
+    ----------
+    spw_dict : dict
+        SPW dictionary. Expects the 20A-346 setup but will
+        eventually allow passing: (1) changes in the XL setup and
+        (2) changes for the archival projects.
+    spw_list : list
+        List of integer SPW numbers. For example, from `get_line_spws`.
+
+    Returns
+    -------
+    new_spw_dict : dict
+        Dictionary with the SPW after splitting the MS.
+    '''
+
+    new_spw_dict = dict()
+
+    # New SPW mapping.
+    ii = 0
+
+    # Redundant loop. But negligible time difference
+    for spwnum in spw_list:
+
+        for bb in spw_dict:
+
+            for name in spw_dict[bb]:
+
+                orignum = spw_dict[bb][name]['num']
+
+                if orignum == spwnum:
+
+                    new_spw_dict[name] = copy(spw_dict[bb][name])
+
+                    # Update SPW numbers
+                    new_spw_dict[name]["orig_num"] = orignum
+                    new_spw_dict[name]['num'] = ii
+
+                    ii += 1
+
+    return new_spw_dict
 
 
 def split_ms(ms_name,
