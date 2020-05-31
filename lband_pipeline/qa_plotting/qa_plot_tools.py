@@ -306,3 +306,247 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
                                                  'field_{0}_amp_phase_scan_{1}.{2}'.format(names[ii], jj, outtype)),
                            overwrite=True,
                            showgui=False)
+
+
+def make_qa_tables(ms_name, output_folder='scan_plots_txt',
+                   outtype='txt'):
+
+    '''
+    Specifically for saving txt tables. Replace the scan loop in
+    `make_qa_scan_figures` to make fewer but larger tables.
+
+    '''
+
+    # Will need to updated for CASA 6
+    from taskinit import tb
+    from taskinit import casalog
+
+    from tasks import plotms
+
+    # Read the field names
+    tb.open(os.path.join(ms_name, "FIELD"))
+    names = tb.getcol('NAME')
+    numFields = tb.nrows()
+    tb.close()
+
+    # Intent names
+    tb.open(os.path.join(ms_name, 'STATE'))
+    intentcol = tb.getcol('OBS_MODE')
+    tb.close()
+
+    # Determine the fields that are calibrators.
+    tb.open(ms_name)
+    is_calibrator = np.empty_like(numFields, dtype='bool')
+    for ii in range(numFields):
+        subtable = tb.query('FIELD_ID==%s' % ii)
+
+        # Is the intent for calibration?
+        scan_intents = intentcol[np.unique(subtable.getcol("STATE_ID"))]
+        is_calib = False
+        for intent in scan_intents:
+            if "CALIBRATE" in intent:
+                is_calib = True
+                break
+
+        is_calibrator[ii] = is_calib
+
+    tb.close()
+
+    casalog.post("Fields are: {}".format(names))
+    casalog.post("Calibrator fields are: {}".format(names[is_calibrator]))
+
+    # Loop through fields. Make separate tables only for different targets.
+
+    for ii in range(names):
+        casalog.post("On field {}".format(names[ii]))
+
+        # Amp vs. time
+        plotms(vis=ms_name,
+               xaxis='time',
+               yaxis='amp',
+               ydatacolumn='corrected',
+               selectdata=True,
+               field=names[ii],
+               scan="",
+               spw="",
+               avgchannel="1",
+               correlation="RR,LL",
+               averagedata=True,
+               avgbaseline=True,
+               transform=False,
+               extendflag=False,
+               plotrange=[],
+               # title='Amp vs Time: Field {0} Scan {1}'.format(names[ii], jj),
+               xlabel='Time',
+               ylabel='Amp',
+               showmajorgrid=False,
+               showminorgrid=False,
+               plotfile=os.path.join(output_folder,
+                                     'field_{0}_amp_time.{1}'.format(names[ii], outtype)),
+               overwrite=True,
+               showgui=False)
+
+        # Amp vs. channel
+        plotms(vis=ms_name,
+               xaxis='chan',
+               yaxis='amp',
+               ydatacolumn='corrected',
+               selectdata=True,
+               field=names[ii],
+               scan="",
+               spw="",
+               avgchannel="1",
+               avgtime="1e8",
+               correlation="RR,LL",
+               averagedata=True,
+               avgbaseline=True,
+               transform=False,
+               extendflag=False,
+               plotrange=[],
+               # title='Amp vs Chan: Field {0} Scan {1}'.format(names[ii], jj),
+               xlabel='Channel',
+               ylabel='Amp',
+               showmajorgrid=False,
+               showminorgrid=False,
+               plotfile=os.path.join(output_folder,
+                                     'field_{0}_amp_chan.{1}'.format(names[ii], outtype)),
+               overwrite=True,
+               showgui=False)
+
+        # Plot amp vs uvdist
+        plotms(vis=ms_name,
+               xaxis='uvdist',
+               yaxis='amp',
+               ydatacolumn='corrected',
+               selectdata=True,
+               field=names[ii],
+               scan="",
+               spw="",
+               avgchannel=str(4096),
+               avgtime='1e8',
+               correlation="RR,LL",
+               averagedata=True,
+               avgbaseline=False,
+               transform=False,
+               extendflag=False,
+               plotrange=[],
+               # title='Amp vs UVDist: Field {0} Scan {1}'.format(names[ii], jj),
+               xlabel='uv-dist',
+               ylabel='Amp',
+               showmajorgrid=False,
+               showminorgrid=False,
+               plotfile=os.path.join(output_folder,
+                                     'field_{0}_amp_uvdist.{1}'.format(names[ii], outtype)),
+               overwrite=True,
+               showgui=False)
+
+        # Make phase plots if a calibrator source.
+
+        if is_calibrator[ii]:
+
+            # Plot phase vs time
+            plotms(vis=ms_name,
+                   xaxis='time',
+                   yaxis='phase',
+                   ydatacolumn='corrected',
+                   selectdata=True,
+                   field=names[ii],
+                   scan="",
+                   spw="",
+                   correlation="RR,LL",
+                   averagedata=True,
+                   avgbaseline=True,
+                   transform=False,
+                   extendflag=False,
+                   plotrange=[],
+                   # title='Phase vs Time: Field {0} Scan {1}'.format(names[ii], jj),
+                   xlabel='Time',
+                   ylabel='Phase',
+                   showmajorgrid=False,
+                   showminorgrid=False,
+                   plotfile=os.path.join(output_folder,
+                                         'field_{0}_phase_time.{1}'.format(names[ii], outtype)),
+                   overwrite=True,
+                   showgui=False)
+
+            # Plot phase vs channel
+            plotms(vis=ms_name,
+                   xaxis='chan',
+                   yaxis='phase',
+                   ydatacolumn='corrected',
+                   selectdata=True,
+                   field=names[ii],
+                   scan="",
+                   spw="",
+                   avgchannel="1",
+                   avgtime="1e8",
+                   correlation="RR,LL",
+                   averagedata=True,
+                   avgbaseline=True,
+                   transform=False,
+                   extendflag=False,
+                   plotrange=[],
+                   # title='Phase vs Chan: Field {0} Scan {1}'.format(names[ii], jj),
+                   xlabel='Chan',
+                   ylabel='Phase',
+                   showmajorgrid=False,
+                   showminorgrid=False,
+                   plotfile=os.path.join(output_folder,
+                                         'field_{0}_phase_chan.{1}'.format(names[ii], outtype)),
+                   overwrite=True,
+                   showgui=False)
+
+            # Plot phase vs uvdist
+            plotms(vis=ms_name,
+                   xaxis='uvdist',
+                   yaxis='phase',
+                   ydatacolumn='corrected',
+                   selectdata=True,
+                   field=names[ii],
+                   scan="",
+                   spw="",
+                   correlation="RR,LL",
+                   avgchannel="4096",
+                   avgtime='1e8',
+                   averagedata=True,
+                   avgbaseline=False,
+                   transform=False,
+                   extendflag=False,
+                   plotrange=[],
+                   # title='Phase vs UVDist: Field {0} Scan {1}'.format(names[ii], jj),
+                   xlabel='uv-dist',
+                   ylabel='Phase',
+                   showmajorgrid=False,
+                   showminorgrid=False,
+                   plotfile=os.path.join(output_folder,
+                                         'field_{0}_phase_uvdist.{1}'.format(names[ii], outtype)),
+                   overwrite=True,
+                   showgui=False)
+
+            # Plot amp vs phase
+            plotms(vis=ms_name,
+                   xaxis='amp',
+                   yaxis='phase',
+                   ydatacolumn='corrected',
+                   selectdata=True,
+                   field=names[ii],
+                   scan="",
+                   spw="",
+                   correlation="RR,LL",
+                   avgchannel="4096",
+                   # avgtime='1e8',
+                   averagedata=True,
+                   avgbaseline=False,
+                   transform=False,
+                   extendflag=False,
+                   plotrange=[],
+                   # title='Amp vs Phase: Field {0} Scan {1}'.format(names[ii], jj),
+                   xlabel='Phase',
+                   ylabel='Amp',
+                   showmajorgrid=False,
+                   showminorgrid=False,
+                   plotfile=os.path.join(output_folder,
+                                         'field_{0}_amp_phase.{1}'.format(names[ii], outtype)),
+                   overwrite=True,
+                   showgui=False)
+
