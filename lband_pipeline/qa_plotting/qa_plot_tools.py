@@ -309,7 +309,8 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
 
 
 def make_qa_tables(ms_name, output_folder='scan_plots_txt',
-                   outtype='txt'):
+                   outtype='txt', overwrite=True,
+                   chanavg=4096,):
 
     '''
     Specifically for saving txt tables. Replace the scan loop in
@@ -322,6 +323,16 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
     from taskinit import casalog
 
     from tasks import plotms
+
+    # Make folder for scan plots
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
+    else:
+        if overwrite:
+            casalog.post("Removing plot tables in {}".format(output_folder))
+            os.system("rm -r {}/*".format(output_folder))
+        else:
+            raise ValueError("{} already exists. Enable overwrite=True to rerun.".format(output_folder))
 
     # Read the field names
     tb.open(os.path.join(ms_name, "FIELD"))
@@ -336,7 +347,8 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
 
     # Determine the fields that are calibrators.
     tb.open(ms_name)
-    is_calibrator = np.empty_like(numFields, dtype='bool')
+    is_calibrator = np.empty((numFields,), dtype='bool')
+
     for ii in range(numFields):
         subtable = tb.query('FIELD_ID==%s' % ii)
 
@@ -357,7 +369,7 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
 
     # Loop through fields. Make separate tables only for different targets.
 
-    for ii in range(names):
+    for ii in range(numFields):
         casalog.post("On field {}".format(names[ii]))
 
         # Amp vs. time
@@ -369,7 +381,7 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                field=names[ii],
                scan="",
                spw="",
-               avgchannel="1",
+               avgchannel=str(chanavg),
                correlation="RR,LL",
                averagedata=True,
                avgbaseline=True,
@@ -422,7 +434,7 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                field=names[ii],
                scan="",
                spw="",
-               avgchannel=str(4096),
+               avgchannel=str(chanavg),
                avgtime='1e8',
                correlation="RR,LL",
                averagedata=True,
@@ -454,6 +466,7 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                    scan="",
                    spw="",
                    correlation="RR,LL",
+                   avgchannel=str(chanavg),
                    averagedata=True,
                    avgbaseline=True,
                    transform=False,
@@ -506,7 +519,7 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                    scan="",
                    spw="",
                    correlation="RR,LL",
-                   avgchannel="4096",
+                   avgchannel=str(chanavg),
                    avgtime='1e8',
                    averagedata=True,
                    avgbaseline=False,
@@ -533,8 +546,8 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                    scan="",
                    spw="",
                    correlation="RR,LL",
-                   avgchannel="4096",
-                   # avgtime='1e8',
+                   avgchannel=str(chanavg),
+                   avgtime='1e8',
                    averagedata=True,
                    avgbaseline=False,
                    transform=False,
