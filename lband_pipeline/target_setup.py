@@ -66,7 +66,7 @@ target_line_range_kms['IC1613']['OH'] = [[-200, -260]]
 target_line_range_kms['WLM'] = {}
 
 # Include all foreground MW HI?
-target_line_range_kms['WLM']['HI'] = [[50, -40][-50, -210]]
+target_line_range_kms['WLM']['HI'] = [[50, -40], [-50, -210]]
 
 target_line_range_kms['WLM']['OH'] = [[-70, -180]]
 
