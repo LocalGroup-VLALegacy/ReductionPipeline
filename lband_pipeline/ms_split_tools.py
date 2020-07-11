@@ -278,3 +278,57 @@ def split_ms(ms_name,
                                                       ms_name_base),
               spw=line_spw_str, datacolumn='DATA',
               field="")
+
+
+def return_spw_mapping(myvis, spw_dict, strict_check=False):
+    '''
+    Connect the original SPW setup with the names currently in the MS
+    to identify the SPWs.
+
+    Parameters
+    ----------
+    myvis : string
+        Name of MS.
+    spw_dict : dict
+        Dictionary of SPW setup. See `spw_setup.py`.
+    strict_check : bool, optional
+        If True, every SPW in `myvis` must be matched. Otherwise, `ValueError` is raised.
+
+    Returns
+    -------
+    matched_dict : dict
+        Match between line/continuum SPW name (i.e., actual line; `HI`) and the
+        SPW number in `myvis`.
+
+    '''
+
+    from taskinit import msmdtool
+
+    # Get the SPW names.
+    msmd = msmdtool()
+
+    msmd.open(myvis)
+
+    spw_names = msmd.spwsfornames()
+
+    msmd.close()
+
+    # spw_dict_keys = list(spw_dict_keys)
+
+    matched_dict = {}
+
+    for name in spw_names:
+
+        # Search in the dict. for this
+        has_matched = False
+        for key in spw_dict:
+            if spw_dict[key]['origname'] == name:
+                # Key is line. Value is SPW num in this MS.
+                matched_dict[key] = spw_names[name][0]
+                has_matched = True
+                break
+
+        if not has_matched and strict_check:
+            raise ValueError("Unable to find match")
+
+    return matched_dict
