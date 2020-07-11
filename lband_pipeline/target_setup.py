@@ -21,11 +21,11 @@ target_line_range_kms = {}
 target_line_range_kms['M31'] = {}
 # Based on EBHIS M31 map: CAR_C01.fits. And our archival D-config HI map from 14A-235.
 # Also excludes MW foreground.
-target_line_range_kms['M31']['HI'] = [[-625, 50]]
+target_line_range_kms['M31']['HI'] = [[50, -625]]
 
 # Limited to "bright" HI extent of M31
 # For the 4 MHz SPWs, there's still 25% outside this region.
-target_line_range_kms['M31']['OH'] = [[-600, -20]]
+target_line_range_kms['M31']['OH'] = [[-20, -600]]
 
 
 # --------------------------------------------------------------
@@ -33,18 +33,18 @@ target_line_range_kms['M31']['OH'] = [[-600, -20]]
 
 target_line_range_kms['M33'] = {}
 
-target_line_range_kms['M33']['HI'] = [[-340, 40]]
+target_line_range_kms['M33']['HI'] = [[40, -340]]
 
-target_line_range_kms['M33']['OH'] = [[-280, -50]]
+target_line_range_kms['M33']['OH'] = [[-50, -280]]
 
 # --------------------------------------------------------------
 # IC10
 
 target_line_range_kms['IC10'] = {}
 
-target_line_range_kms['IC10']['HI'] = [[-450, -240], [-140, 50]]
+target_line_range_kms['IC10']['HI'] = [[50, -140], [-240, -450]]
 
-target_line_range_kms['IC10']['OH'] = [[-410, -270]]
+target_line_range_kms['IC10']['OH'] = [[-270, -410]]
 
 
 # --------------------------------------------------------------
@@ -54,10 +54,10 @@ target_line_range_kms['IC1613'] = {}
 
 # target_line_range_kms['IC1613']['HI'] = [-290, -170]
 # Include all foreground MW HI?
-target_line_range_kms['IC1613']['HI'] = [[-290, -170], [-60, 50]]
+target_line_range_kms['IC1613']['HI'] = [[50, -60], [-170, -290]]
 
 
-target_line_range_kms['IC1613']['OH'] = [[-260, -200]]
+target_line_range_kms['IC1613']['OH'] = [[-200, -260]]
 
 
 # --------------------------------------------------------------
@@ -66,9 +66,9 @@ target_line_range_kms['IC1613']['OH'] = [[-260, -200]]
 target_line_range_kms['WLM'] = {}
 
 # Include all foreground MW HI?
-target_line_range_kms['WLM']['HI'] = [[-210, -50], [-40, 50]]
+target_line_range_kms['WLM']['HI'] = [[50, -40][-50, -210]]
 
-target_line_range_kms['WLM']['OH'] = [[-180, -70]]
+target_line_range_kms['WLM']['OH'] = [[-70, -180]]
 
 
 # --------------------------------------------------------------
@@ -77,6 +77,6 @@ target_line_range_kms['WLM']['OH'] = [[-180, -70]]
 target_line_range_kms['NGC6822'] = {}
 
 # Include all foreground MW HI?
-target_line_range_kms['NGC6822']['HI'] = [[-150, 80]]
+target_line_range_kms['NGC6822']['HI'] = [[80, -150]]
 
-target_line_range_kms['NGC6822']['OH'] = [[-120, -10]]
+target_line_range_kms['NGC6822']['OH'] = [[-10, -120]]
