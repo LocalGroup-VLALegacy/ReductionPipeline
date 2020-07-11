@@ -4,27 +4,65 @@ import os
 from glob import glob
 import shutil
 
-from lband_pipeline.qa_plotting import make_spw_bandpass_plots, make_qa_scan_figures
+# Additional QA plotting routines
+from lband_pipeline.qa_plotting import (make_spw_bandpass_plots,
+                                        make_qa_scan_figures,
+                                        make_qa_tables,
+                                        make_bandpass_txt)
 
+# Function for altering the standard pipeline for spectral lines
+# 1. Flag HI frequencies due to MW absorption
+# 2. interpolation over BP with MW HI aborption
+# 3. Build `cont.dat` to protect line range with signal
 from lband_pipeline.line_tools import (bandpass_with_gap_interpolation,
-                                       flag_hi_foreground)
+                                       flag_hi_foreground,
+                                       build_cont_dat)
+
+# Info for SPW setup
+from lband_pipeline.spw_setup import spw_dict_20A346, linerest_dict_GHz
+from lband_pipeline.ms_split_tools import get_line_spws, return_spwsetup_dict
+
+# Protected velocity range for different targets
+# Used to build `cont.dat` for line SPWs
+from lband_pipeline.target_setup import target_line_range_kms
 
 
-# Ignore any as refants??
+# TODO: read in to skip a refant if needed.
 refantignore = ""
 
 mySDM = sys.argv[-1]
 myvis = mySDM if mySDM.endswith("ms") else mySDM + ".ms"
 
+# Tracks should follow the VLA format, starting with the project code
+proj_code = mySDM.split(".")[0]
+
 # if not os.path.exists("cont.dat"):
 #     raise ValueError("The cont.dat file is not in the pipeline directory.")
+
+# Get the SPW mapping for the line MS.
+
+line_spws = get_line_spws(spw_dict_20A346,
+                          include_rrls=False,
+                          return_string=False,
+                          keep_backup_continuum=True)
+
+linespw_dict = return_spwsetup_dict(spw_dict_20A346, line_spws)
+
+# Get target and calibrator fields.
+
+
+# grab all target fields to create dict of velocity ranges per field
+
+# Create custom flagging script for the calibrators
+# Skip if one is already found.
+
 
 __rethrow_casa_exceptions = True
 context = h_init()
 context.set_state('ProjectSummary', 'observatory',
                   'Karl G. Jansky Very Large Array')
 context.set_state('ProjectSummary', 'telescope', 'EVLA')
-context.set_state('ProjectSummary', 'proposal_code', mySDM.split(".")[0])
+context.set_state('ProjectSummary', 'proposal_code', proj_code)
 context.set_state('ProjectSummary', 'piname', 'Adam Leroy')
 
 try:
@@ -34,6 +72,15 @@ try:
                     createmms='automatic',
                     asis='Receiver CalAtmosphere',
                     overwrite=False)
+
+    # Create cont.dat file based on the target name.
+    build_cont_dat(myvis,
+                   target_line_range_kms,
+                   line_freqs=linerest_dict_GHz,
+                   fields=[],
+                   outfile="cont.dat",
+                   overwrite=False,
+                   append=False)
 
     # Hanning smoothing is turned off for spectral lines.
     # hifv_hanning(pipelinemode="automatic")
@@ -150,12 +197,13 @@ try:
                    hm_sidelobethreshold=-999.0)
 
     # Make a folder of products for restoring the pipeline solution
-    if not os.path.exists("products"):
-        os.mkdir('products/')
+    products_folder = "products"
+    if not os.path.exists(products_folder):
+        os.mkdir(products_folder + '/')
 
     # TODO: review whether we should be including additional products
     # here
-    hifv_exportdata(products_dir='products/')
+    hifv_exportdata(products_dir=products_folder + '/')
 
 finally:
 
@@ -175,15 +223,33 @@ for fil in image_files:
 # Now make additional QA plots:
 # -----------------------------
 
-make_spw_bandpass_plots(myvis,
-                        bp_folder="finalBPcal_plots",
-                        outtype='png')
+text_output = True
 
-# TODO: Add in the longer QA function to make plots here.
+if text_output:
+    make_bandpass_txt(myvis, output_folder='finalBPcal_txt')
 
-make_qa_scan_figures(myvis,
-                     output_folder='scan_plots',
-                     outtype='png')
+    make_qa_tables(myvis,
+                   output_folder='scan_plots_txt',
+                   outtype='txt', overwrite=True,
+                   chanavg=4096,)
+
+    # Move these folders to the products folder.
+    os.system("cp -r {0} {1}".format('finalBPcal_txt', products_folder))
+    os.system("cp -r {0} {1}".format('scan_plots_txt', products_folder))
+
+else:
+
+    make_spw_bandpass_plots(myvis,
+                            bp_folder="finalBPcal_plots",
+                            outtype='png')
+
+    make_qa_scan_figures(myvis,
+                         output_folder='scan_plots',
+                         outtype='png')
+
+    # Move these folders to the products folder.
+    os.system("cp -r {0} {1}".format('finalBPcal_plots', products_folder))
+    os.system("cp -r {0} {1}".format('scan_plots', products_folder))
 
 # Copy and zip into the pipeline products output.
 
