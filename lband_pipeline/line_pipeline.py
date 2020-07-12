@@ -20,11 +20,15 @@ from lband_pipeline.line_tools import (bandpass_with_gap_interpolation,
 
 # Info for SPW setup
 from lband_pipeline.spw_setup import spw_dict_20A346, linerest_dict_GHz
-from lband_pipeline.ms_split_tools import get_line_spws, return_spwsetup_dict
+from lband_pipeline.ms_split_tools import (get_line_spws, return_spwsetup_dict,
+                                           return_spw_mapping)
 
 # Protected velocity range for different targets
 # Used to build `cont.dat` for line SPWs
 from lband_pipeline.target_setup import target_line_range_kms
+
+# For MW HI absorption flagging on calibrators:
+from lband_pipeline.calibrator_setup import calibrator_line_range_kms
 
 
 # TODO: read in to skip a refant if needed.
@@ -35,9 +39,6 @@ myvis = mySDM if mySDM.endswith("ms") else mySDM + ".ms"
 
 # Tracks should follow the VLA format, starting with the project code
 proj_code = mySDM.split(".")[0]
-
-# if not os.path.exists("cont.dat"):
-#     raise ValueError("The cont.dat file is not in the pipeline directory.")
 
 # Get the SPW mapping for the line MS.
 
@@ -73,11 +74,23 @@ try:
                     asis='Receiver CalAtmosphere',
                     overwrite=False)
 
+    # Match the SPW with the names/lines from the original setup
+    # Enable strict_check to ensure we have a complete mapping.
+    linespw_dict_matches = return_spw_mapping(myvis, linespw_dict,
+                                              strict_check=True)
+
+    flag_hi_foreground(myvis,
+                       calibrator_line_range_kms,
+                       linespw_dict_matches['HI'],
+                       cal_intents=["CALIBRATE*"],
+                       test_run=False,
+                       test_print=True)
+
     # Create cont.dat file based on the target name.
     build_cont_dat(myvis,
                    target_line_range_kms,
                    line_freqs=linerest_dict_GHz,
-                   fields=[],
+                   fields=[],  # Empty list == all target fields
                    outfile="cont.dat",
                    overwrite=False,
                    append=False)
