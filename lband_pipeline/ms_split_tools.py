@@ -7,6 +7,7 @@ An example format of spw_dict is shown in 20A-246_spw_setup.py.
 '''
 
 import os
+from copy import copy
 
 
 def get_continuum_spws(spw_dict, baseband='both', return_string=True):
@@ -133,6 +134,54 @@ def get_line_spws(spw_dict, include_rrls=False, return_string=True,
     return spw_list
 
 
+def return_spwsetup_dict(spw_dict, spw_list):
+    '''
+    Return a new dictionary of the SPW setup after splitting or a
+    chosen subset (e.g. continuum or line only) given a
+    list of SPW numbers.
+
+    Parameters
+    ----------
+    spw_dict : dict
+        SPW dictionary. Expects the 20A-346 setup but will
+        eventually allow passing: (1) changes in the XL setup and
+        (2) changes for the archival projects.
+    spw_list : list
+        List of integer SPW numbers. For example, from `get_line_spws`.
+
+    Returns
+    -------
+    new_spw_dict : dict
+        Dictionary with the SPW after splitting the MS.
+    '''
+
+    new_spw_dict = dict()
+
+    # New SPW mapping.
+    ii = 0
+
+    # Redundant loop. But negligible time difference
+    for spwnum in spw_list:
+
+        for bb in spw_dict:
+
+            for name in spw_dict[bb]:
+
+                orignum = spw_dict[bb][name]['num']
+
+                if orignum == spwnum:
+
+                    new_spw_dict[name] = copy(spw_dict[bb][name])
+
+                    # Update SPW numbers
+                    new_spw_dict[name]["orig_num"] = orignum
+                    new_spw_dict[name]['num'] = ii
+
+                    ii += 1
+
+    return new_spw_dict
+
+
 def split_ms(ms_name,
              spw_dict,
              outfolder_prefix=None,
@@ -184,7 +233,7 @@ def split_ms(ms_name,
         do_split_lines = True
     elif split_type == 'continuum':
         do_split_continuum = True
-    elif split_type == 'line':
+    elif split_type == 'lines':
         do_split_lines = True
     else:
         raise ValueError("Unexpected input {} for split_type. ".format(split_type)
@@ -229,3 +278,57 @@ def split_ms(ms_name,
                                                       ms_name_base),
               spw=line_spw_str, datacolumn='DATA',
               field="")
+
+
+def return_spw_mapping(myvis, spw_dict, strict_check=False):
+    '''
+    Connect the original SPW setup with the names currently in the MS
+    to identify the SPWs.
+
+    Parameters
+    ----------
+    myvis : string
+        Name of MS.
+    spw_dict : dict
+        Dictionary of SPW setup. See `spw_setup.py`.
+    strict_check : bool, optional
+        If True, every SPW in `myvis` must be matched. Otherwise, `ValueError` is raised.
+
+    Returns
+    -------
+    matched_dict : dict
+        Match between line/continuum SPW name (i.e., actual line; `HI`) and the
+        SPW number in `myvis`.
+
+    '''
+
+    from taskinit import msmdtool
+
+    # Get the SPW names.
+    msmd = msmdtool()
+
+    msmd.open(myvis)
+
+    spw_names = msmd.spwsfornames()
+
+    msmd.close()
+
+    # spw_dict_keys = list(spw_dict_keys)
+
+    matched_dict = {}
+
+    for name in spw_names:
+
+        # Search in the dict. for this
+        has_matched = False
+        for key in spw_dict:
+            if spw_dict[key]['origname'] == name:
+                # Key is line. Value is SPW num in this MS.
+                matched_dict[key] = spw_names[name][0]
+                has_matched = True
+                break
+
+        if not has_matched and strict_check:
+            raise ValueError("Unable to find match")
+
+    return matched_dict

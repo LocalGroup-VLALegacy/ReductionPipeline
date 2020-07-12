@@ -20,6 +20,9 @@ def bandpass_with_gap_interpolation(myvis, context, refantignore="",
     TODO: Investigate using spline instead of nearest neighbour
     interpolation.
 
+    Also see I-Da Chiang's implementation:
+    https://github.com/z0mgs/EveryTHINGS/blob/master/everythings_bandpass.py
+
     '''
 
     # Look for BP table
