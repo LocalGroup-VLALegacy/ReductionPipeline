@@ -7,47 +7,30 @@ import numpy as np
 import os
 
 
-def target_foreground_hi_ranges(target):
-    '''
-    Return the velocity range to flag the bandpass and/or phase cal.
-
-    EWK: We have a large (~800 km/s) bandwidth. So the flagged ranges can be
-    chosen liberally and overly wide.
-
-    Parameters
-    ----------
-    target : str
-        Name of target. Should be a calibration source.
-
-    Returns
-    -------
-    vel_range : list
-        Lower and upper velocity limits to be flagged.
-    '''
-
-    raise NotImplementedError("")
-
-
-def flag_hi_foreground(msname, context, hi_spw_num=None,
-                       cal_intents=["BANDPASS", "PHASE"]):
+def flag_hi_foreground(myvis,
+                       calibrator_line_range_kms,
+                       hi_spw_num,
+                       cal_intents=["CALIBRATE*"],
+                       test_print=False,
+                       test_run=False):
     '''
     Define velocity regions to flag for all (or chosen) calibration
     fields based on intent.
 
     Parameters
     ----------
-    msname : str
+    myvis : str
         MS name.
-    context : VLA pipeline context class
-        The pipeline context class to identify the calibration sources in
-        a track.
-    hi_spw_num : int, optional
+    calibrator_line_range_kms : dict
+        Dictionary with velocity range (in LSRK; radio) to flag.
+    hi_spw_num : int
         The SPW of HI in the MS. If None is given, the context is used to
         identify the SPW overlapping the HI line (where we can ignore wideband
         continuum SPWs).
     cal_intents : list, optional
         List of the calibrator field intents to apply flagging to.
-        TODO: ensure the right intent names are being used here.
+    test_print : bool, optional
+        Print out additional information for testing purposes.
 
     '''
 
@@ -59,7 +42,72 @@ def flag_hi_foreground(msname, context, hi_spw_num=None,
 
     # Make a new flagging version marking these calls at the end.
 
-    pass
+    from taskinit import msmdtool, mstool
+
+    from tasks import flagdata, flagmanager
+
+    msmd = msmdtool()
+    ms = mstool()
+
+    # if no fields are provided use observe_target intent
+    # I saw once a calibrator also has this intent so check carefully
+    msmd.open(myvis)
+
+    # Loop through field intents. Default is all calibrators.
+    field_nums = []
+    for cal_intent in cal_intents:
+        field_num = msmd.fieldsforintent(cal_intent)
+
+        field_nums.extend(list(field_num))
+
+    # Unique mapping
+    field_nums = np.array(list(set(field_nums)))
+
+    field_names = np.asarray(msmd.fieldnames())[field_nums]
+
+    msmd.close()
+
+    # Loop through the field names, identify in calibrator_line_range_kms,
+    # and convert mapping from velocity -> freq (LSRK) -> channel.
+    ms.open(myvis)
+
+    freqs_lsrk = ms.cvelfreqs(spwids=[hi_spw_num], outframe='LSRK')
+
+    ms.close()
+
+    # in Hz
+    hi_restfreq = 1.420405752e9
+    vels_lsrk = lines_freq2vels(freqs_lsrk, hi_restfreq)
+
+    for field in field_names:
+
+        vel_start = calibrator_line_range_kms[field]['HI'][0]
+        vel_stop = calibrator_line_range_kms[field]['HI'][1]
+
+        # Keep red to blue shifted order.
+        if vel_start < vel_stop:
+            vel_stop, vel_start = vel_start, vel_stop
+
+        chan_start = np.abs(vels_lsrk - vel_start).argmin()
+        chan_stop = np.abs(vels_lsrk - vel_stop).argmin()
+
+        # Do the flagging and save a new version
+
+        if test_print:
+            print('Field {0} flagging region {1}:{2}~{3}'.format(field, hi_spw_num,
+                                                                 chan_start, chan_stop))
+            print('Velocity: {0}, {1}'.format(vel_start, vel_stop))
+
+        if test_run:
+            continue
+
+        flagdata(myvis, mode='manual', field=field,
+                 spw='{0}:{1}~{2}'.format(hi_spw_num, chan_start, chan_stop),
+                 flagbackup=False)
+
+    if not test_run:
+        flagmanager(myvis, mode='save', versionname='MW_HI_abs_flagging',
+                    comment='Flag Milky Way HI absorption for calibrators.')
 
 
 def partition_cont_range(line_freqs=[], spw_start=1, spw_end=2,
@@ -304,6 +352,18 @@ def lines_rest2obs(line_freqs_rest, vrad0):
     line_freqs = np.array(line_freqs_rest) * (1 - vrad0 / ckms)
 
     return line_freqs
+
+
+def lines_freq2vels(freqs, restfreq):
+    """
+    Convert frequency to velocity (radio).
+    """
+    # ckms = scipy.constants.c / 1000.
+    ckms = 299792458.0 / 1000.
+
+    vrad = ckms * (restfreq - freqs) / restfreq
+
+    return vrad
 
 
 def freq_match_lsrk_to_topo(freq_to_match, freqs_lsrk, freqs_topo):
