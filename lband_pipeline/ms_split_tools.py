@@ -233,7 +233,7 @@ def split_ms(ms_name,
         do_split_lines = True
     elif split_type == 'continuum':
         do_split_continuum = True
-    elif split_type == 'line':
+    elif split_type == 'lines':
         do_split_lines = True
     else:
         raise ValueError("Unexpected input {} for split_type. ".format(split_type)
