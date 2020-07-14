@@ -142,6 +142,9 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
         # Baseband
         bband = spw_name.split("#")[1]
 
+        # Ncorr
+        ncorr = metadata.ncorrforpol(spwid)
+
         # Check if continuum or not. If so, assign a unique tag with
         # baseband and number.
         if chan_width >= min_continuum_chanwidth_kHz * 1e3:
@@ -175,7 +178,7 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
                            'origname': spw_name,
                            'chanwidth': chan_width,
                            'bandwidth': band_width,
-                           'nchan': nchan,
+                           'ncorr': ncorr,
                            'centerfreq': ctr_freq,
                            'baseband': bband}
 
