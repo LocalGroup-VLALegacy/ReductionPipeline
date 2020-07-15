@@ -19,9 +19,7 @@ from lband_pipeline.line_tools import (bandpass_with_gap_interpolation,
                                        build_cont_dat)
 
 # Info for SPW setup
-from lband_pipeline.spw_setup import spw_dict_20A346, linerest_dict_GHz
-from lband_pipeline.ms_split_tools import (get_line_spws, return_spwsetup_dict,
-                                           return_spw_mapping)
+from lband_pipeline.spw_setup import create_spw_dict, linerest_dict_GHz
 
 # Protected velocity range for different targets
 # Used to build `cont.dat` for line SPWs
@@ -42,21 +40,17 @@ proj_code = mySDM.split(".")[0]
 
 # Get the SPW mapping for the line MS.
 
-line_spws = get_line_spws(spw_dict_20A346,
-                          include_rrls=False,
-                          return_string=False,
-                          keep_backup_continuum=True)
+linespw_dict = create_spw_dict(myvis)
 
-linespw_dict = return_spwsetup_dict(spw_dict_20A346, line_spws)
+# Identify which SPW is the HI line
+hi_spw = None
+for spwid in linespw_dict:
+    if linespw_dict[spwid]['label'] == "HI":
+        hi_spw = spwid
+        break
 
-# Get target and calibrator fields.
-
-
-# grab all target fields to create dict of velocity ranges per field
-
-# Create custom flagging script for the calibrators
-# Skip if one is already found.
-
+if hi_spw is None:
+    raise ValueError("Unable to identify the HI SPW.")
 
 __rethrow_casa_exceptions = True
 context = h_init()
@@ -74,14 +68,9 @@ try:
                     asis='Receiver CalAtmosphere',
                     overwrite=False)
 
-    # Match the SPW with the names/lines from the original setup
-    # Enable strict_check to ensure we have a complete mapping.
-    linespw_dict_matches = return_spw_mapping(myvis, linespw_dict,
-                                              strict_check=True)
-
     flag_hi_foreground(myvis,
                        calibrator_line_range_kms,
-                       linespw_dict_matches['HI'],
+                       hi_spw,
                        cal_intents=["CALIBRATE*"],
                        test_run=False,
                        test_print=True)
@@ -116,12 +105,6 @@ try:
                   shadow=True,
                   quack=True,
                   edgespw=True)
-
-    # TODO: finish this function to flag HI absorption on the bandpass
-    # and phase cals.
-    # flag_hi_foreground(myvis, context,
-    #                    hi_spw_num=None,
-    #                    cal_intents=["BANDPASS", "PHASE"])
 
     hifv_vlasetjy(fluxdensity=-1,
                   scalebychan=True,

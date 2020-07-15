@@ -1,5 +1,7 @@
 
 '''
+Vsys for our targets.
+
 Per target spectral ranges to avoid.
 
 For targets, this is used in the creation of the cont.dat file.
@@ -8,6 +10,15 @@ TODO: Define a restricted velocity range for each FIELD. This allows a much
 smaller range to be flagged instead of the whole galaxy range (e.g., M31).
 
 '''
+
+# km/s in LSRK
+target_vsys_kms = {"M31": -296.,
+                   "M33": -180.,
+                   "NGC6822": -44.,
+                   "WLM": -122.,
+                   "IC10": -340.,
+                   "IC1613": -238.}
+
 
 # These shouldn't change, so just hard-code in for our targets.
 target_line_range_kms = {}
