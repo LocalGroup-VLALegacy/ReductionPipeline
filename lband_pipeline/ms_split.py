@@ -5,9 +5,6 @@ from tasks import importasdm
 
 from lband_pipeline.ms_split_tools import split_ms
 
-# Import project spw setup
-from lband_pipeline.spw_setup import spw_dict_20A346
-
 '''
 Identify the continuum and line SPWs and split into separate MSs and
 directories.
@@ -37,7 +34,6 @@ else:
 parentdir = os.getcwd().split("/")[-1]
 
 split_ms(ms_active,
-         spw_dict_20A346,
          outfolder_prefix=parentdir,
          split_type=split_type,
          continuum_kwargs={"baseband": 'both'},

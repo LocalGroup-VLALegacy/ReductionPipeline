@@ -8,6 +8,8 @@ An example format of spw_dict is shown in 20A-246_spw_setup.py.
 
 import os
 
+from lband_pipeline.spw_setup import create_spw_dict
+
 
 def get_continuum_spws(spw_dict, baseband='both', return_string=True):
     '''
@@ -125,7 +127,6 @@ def get_line_spws(spw_dict, include_rrls=False, return_string=True,
 
 
 def split_ms(ms_name,
-             spw_dict,
              outfolder_prefix=None,
              split_type='all',
              continuum_kwargs={"baseband": 'both'},
@@ -180,6 +181,9 @@ def split_ms(ms_name,
     else:
         raise ValueError("Unexpected input {} for split_type. ".format(split_type)
                          + "Accepted inputs are 'all', 'continuum', 'lines'.")
+
+    # Define the spw mapping dictionary
+    spw_dict = create_spw_dict(ms_name)
 
     if do_split_continuum:
 
