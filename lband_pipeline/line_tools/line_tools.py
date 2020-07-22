@@ -227,7 +227,7 @@ def interpolate_bandpass(tablename,
                          backup_table=True, test_output_nowrite=False,
                          test_print=False):
 
-    from taskinit import tbtool
+    from taskinit import tbtool, casalog
 
     if backup_table:
         original_table_backup = tablename + '.bak_from_interpbandpass'
@@ -253,7 +253,8 @@ def interpolate_bandpass(tablename,
         bp_pass_dict = dict()
 
     for spw in spw_ids:
-        print('processing SPW {0}'.format(spw))
+        casalog.post(message='processing SPW {0}'.format(spw),
+                     origin='interpolate_bandpass')
 
         tb.open(tablename)
         stb = tb.query('SPECTRAL_WINDOW_ID == {0}'.format(spw))
@@ -270,7 +271,8 @@ def interpolate_bandpass(tablename,
         # If there's only 2 slices, it's the SPW edge flagging.
         # We can skip those.
         if len(blank_slices) == 2:
-            print("no interpolation needed for {0}".format(spw))
+            casalog.post(message="no interpolation needed for {0}".format(spw),
+                         origin='interpolate_bandpass')
             continue
 
         dat_shape = dat.shape
@@ -278,7 +280,8 @@ def interpolate_bandpass(tablename,
         # Define the window size based on the given fraction of the num of SPW channels
         window_size = int(np.floor(window_size_frac * dat_shape[1]))
 
-        print("Using window size of {0} for SPW {1}".format(window_size, spw))
+        casalog.post(message="Using window size of {0} for SPW {1}".format(window_size, spw),
+                     origin='interpolate_bandpass')
 
         # Force odd window size
         if window_size % 2 == 0:
@@ -287,7 +290,8 @@ def interpolate_bandpass(tablename,
         x_polyfit = np.arange(window_size) - np.floor(window_size / 2.)
 
         for ant in range(dat_shape[2]):
-            print('processing antenna {0}'.format(ant))
+            casalog.post(message='processing antenna {0}'.format(ant),
+                         origin='interpolate_bandpass')
             for pol in range(dat_shape[0]):
 
                 # Skip if all flagged.
@@ -322,7 +326,8 @@ def interpolate_bandpass(tablename,
                     # except:
                     #     pass
 
-                print("replacing values with smoothed")
+                casalog.post(message="replacing values with smoothed",
+                             origin='interpolate_bandpass')
 
                 if add_residuals:
                     resids = dat[pol, :, ant] - smooth_dat[pol, :, ant]
@@ -355,11 +360,12 @@ def interpolate_bandpass(tablename,
                     print(dat[(slice(pol, pol + 1), slicer[0], slice(ant, ant + 1))][:10])
                     print(smooth_dat[(slice(pol, pol + 1), slicer[0], slice(ant, ant + 1))][:10])
 
-        print("writing out smoothed gaps to table for spw {}".format(spw))
-
         if test_output_nowrite:
             bp_pass_dict[spw] = dat
             continue
+
+        casalog.post(message="writing out smoothed gaps to table for spw {}".format(spw),
+                     origin='interpolate_bandpass')
 
         tb.open(tablename, nomodify=False)
         stb = tb.query('SPECTRAL_WINDOW_ID == {0}'.format(spw))
