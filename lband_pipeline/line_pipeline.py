@@ -119,10 +119,9 @@ try:
     # We need to interpolate over MW absorption in the bandpass
     # These channels should be flagged in the calibrators.
 
-    bandpass_with_gap_interpolation(myvis, context,
-                                    refantignore=refantignore,
-                                    search_string='test',
-                                    task_string='hifv_testBPdcals')
+    bandpass_with_gap_interpolation(myvis, hi_spw,
+                                    search_string="test",
+                                    task_string="hifv_testBPdcals")
 
     hifv_flagbaddef(pipelinemode="automatic")
 
@@ -136,8 +135,7 @@ try:
     hifv_semiFinalBPdcals(weakbp=False,
                           refantignore=refantignore)
 
-    bandpass_with_gap_interpolation(myvis, context,
-                                    refantignore=refantignore,
+    bandpass_with_gap_interpolation(myvis, hi_spw,
                                     search_string='',
                                     task_string='hifv_semiFinalBPdcals')
 
@@ -150,8 +148,7 @@ try:
     hifv_finalcals(weakbp=False,
                    refantignore=refantignore)
 
-    bandpass_with_gap_interpolation(myvis, context,
-                                    refantignore=refantignore,
+    bandpass_with_gap_interpolation(myvis, hi_spw,
                                     search_string='final',
                                     task_string='hifv_finalcals')
 
