@@ -343,8 +343,6 @@ def interpolate_bandpass(tablename,
                         # Pad some axes on.
                         resid_samps = resid_samps[np.newaxis, :, np.newaxis]
 
-                        print(resid_samps.shape)
-
                         dat[(slice(pol, pol + 1), slicer[0], slice(ant, ant + 1))] += resid_samps
 
                     # Reset the mask across the interp region
