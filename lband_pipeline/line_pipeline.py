@@ -8,7 +8,8 @@ import shutil
 from lband_pipeline.qa_plotting import (make_spw_bandpass_plots,
                                         make_qa_scan_figures,
                                         make_qa_tables,
-                                        make_bandpass_txt)
+                                        make_bandpass_txt,
+                                        run_all_uvstats)
 
 # Function for altering the standard pipeline for spectral lines
 # 1. Flag HI frequencies due to MW absorption
@@ -119,10 +120,9 @@ try:
     # We need to interpolate over MW absorption in the bandpass
     # These channels should be flagged in the calibrators.
 
-    bandpass_with_gap_interpolation(myvis, context,
-                                    refantignore=refantignore,
-                                    search_string='test',
-                                    task_string='hifv_testBPdcals')
+    bandpass_with_gap_interpolation(myvis, hi_spw,
+                                    search_string="test",
+                                    task_string="hifv_testBPdcals")
 
     hifv_flagbaddef(pipelinemode="automatic")
 
@@ -136,8 +136,7 @@ try:
     hifv_semiFinalBPdcals(weakbp=False,
                           refantignore=refantignore)
 
-    bandpass_with_gap_interpolation(myvis, context,
-                                    refantignore=refantignore,
+    bandpass_with_gap_interpolation(myvis, hi_spw,
                                     search_string='',
                                     task_string='hifv_semiFinalBPdcals')
 
@@ -150,8 +149,7 @@ try:
     hifv_finalcals(weakbp=False,
                    refantignore=refantignore)
 
-    bandpass_with_gap_interpolation(myvis, context,
-                                    refantignore=refantignore,
+    bandpass_with_gap_interpolation(myvis, hi_spw,
                                     search_string='final',
                                     task_string='hifv_finalcals')
 
@@ -246,6 +244,23 @@ else:
     # Move these folders to the products folder.
     os.system("cp -r {0} {1}".format('finalBPcal_plots', products_folder))
     os.system("cp -r {0} {1}".format('scan_plots', products_folder))
+
+# Make detailed uvresid plots.
+# These are to check if any calibrators have source structure not accounted for.
+# In that case, a flux.csv file needs to be provided for a subsequent pipeline run
+
+uvresid_path = "uvresid_plots"
+
+run_all_uvstats(myvis, uvresid_path,
+                uv_threshold=3, uv_nsigma=3,
+                try_phase_selfcal=True,
+                cleanup_calsplit=True,
+                cleanup_phaseselfcal=True)
+
+# We're cleaning up the other data products to make these plots.
+# So just copy the whole folder over.
+os.system("cp -r {0} {1}".format(uvresid_path, products_folder))
+
 
 # Copy and zip into the pipeline products output.
 
