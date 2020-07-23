@@ -179,4 +179,3 @@ def lines_rest2obs(line_freqs_rest, line_widths_kms, vrad0):
     line_widths = np.array(line_freqs) * line_widths_kms / ckms
 
     return line_freqs, line_widths
-
