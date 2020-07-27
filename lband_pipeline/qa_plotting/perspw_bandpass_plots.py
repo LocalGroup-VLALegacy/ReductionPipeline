@@ -97,9 +97,12 @@ def make_bandpass_txt(ms_active, output_folder='finalBPcal_txt'):
 
     '''
 
-    from taskinit import tb
+    from taskinit import tb, casalog
 
     from tasks import plotms
+
+    casalog.post("Running make_bandpass_txt to export txt files for QA.")
+    print("Running make_bandpass_txt to export txt files for QA.")
 
     mySDM = ms_active.rstrip(".ms")
 
@@ -119,6 +122,9 @@ def make_bandpass_txt(ms_active, output_folder='finalBPcal_txt'):
 
     # Make txt files per SPW.
     for ii in range(nspws):
+
+        print("On spectral window: {}".format(ii))
+        casalog.post("On spectral window: {}".format(ii))
 
         # Output text names
         amp_filename = '{0}_amp_spw{1}.txt'.format(os.path.splitext(finalbpcal_name)[0], ii)

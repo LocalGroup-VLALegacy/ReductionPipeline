@@ -324,12 +324,16 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
 
     from tasks import plotms
 
+    casalog.post("Running make_qa_tables to export txt files for QA.")
+    print("Running make_qa_tables to export txt files for QA.")
+
     # Make folder for scan plots
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
     else:
         if overwrite:
             casalog.post("Removing plot tables in {}".format(output_folder))
+            print("Removing plot tables in {}".format(output_folder))
             os.system("rm -r {}/*".format(output_folder))
         else:
             raise ValueError("{} already exists. Enable overwrite=True to rerun.".format(output_folder))
@@ -367,10 +371,14 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
     casalog.post("Fields are: {}".format(names))
     casalog.post("Calibrator fields are: {}".format(names[is_calibrator]))
 
+    print("Fields are: {}".format(names))
+    print("Calibrator fields are: {}".format(names[is_calibrator]))
+
     # Loop through fields. Make separate tables only for different targets.
 
     for ii in range(numFields):
         casalog.post("On field {}".format(names[ii]))
+        print("On field {}".format(names[ii]))
 
         # Amp vs. time
         plotms(vis=ms_name,
@@ -455,6 +463,9 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
         # Make phase plots if a calibrator source.
 
         if is_calibrator[ii]:
+
+            casalog.post("This is a calibrator. Exporting phase info, too.")
+            print("This is a calibrator. Exporting phase info, too.")
 
             # Plot phase vs time
             plotms(vis=ms_name,
