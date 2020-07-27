@@ -8,8 +8,6 @@ import scipy.ndimage as nd
 
 from tasks import bandpass
 
-import pipeline.hif.heuristics.findrefant as findrefant
-
 
 def bandpass_with_gap_interpolation_deprecated(myvis, context, refantignore="",
                                                search_string="test",
@@ -28,6 +26,8 @@ def bandpass_with_gap_interpolation_deprecated(myvis, context, refantignore="",
     more channels on each side for a better interpolation across the gap.
 
     '''
+
+    import pipeline.hif.heuristics.findrefant as findrefant
 
     # Look for BP table
     bpname = glob("{0}.{1}.s*_4.{2}BPcal.tbl".format(myvis, task_string, search_string))
