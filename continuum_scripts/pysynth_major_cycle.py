@@ -47,7 +47,7 @@ msfile = '13A-213_May052013_continuum_targets.ms'
 os.system('rm -rf {0}*'.format(imname))
 
 ## (2) Set up Input Parameters
-paramList = make_paramList()
+paramList = make_paramList(niter=0)
 
 ## (3) Construct the PySynthesisImager object, with all input parameters
 
