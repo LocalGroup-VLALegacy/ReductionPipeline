@@ -97,9 +97,7 @@ ia.close()
 
 #RESTART PYSYNTHESIS
 paramList = make_paramList(niter=1000, mask='niter0_short.mask')
-if os.path.exists('niter0_short.mask'):
-     shutil.rmtree('niter0_short.mask')
-     shutil.copytree('test.mask','niter0_short.mask')
+
 ## (3) Construct the PySynthesisImager object, with all input parameters
 
 imager = PySynthesisImager(params=paramList)
