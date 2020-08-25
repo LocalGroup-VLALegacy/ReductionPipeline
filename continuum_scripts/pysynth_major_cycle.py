@@ -44,7 +44,6 @@ def make_paramList(niter=0, mask=''):
 #(1a)Remove previous files
 imname = 'niter0_short'
 msfile = '13A-213_May052013_continuum_targets.ms'
-"""
 os.system('rm -rf {0}*'.format(imname))
 
 ## (2) Set up Input Parameters
@@ -52,24 +51,14 @@ paramList = make_paramList()
 
 ## (3) Construct the PySynthesisImager object, with all input parameters
 
-#imager = PySynthesisImager(params=paramList)
 imager = PyParallelContSynthesisImager(params=paramList)
 
-#AWP convolution function setup
-#imager.dryGridding()
-#imager.fillCFCache()
-#imager.reloadCFCache()
 ## (4) Initialize various modules.
 ## Initialize modules major cycle modules
 
 imager.initializeImagers()
 imager.initializeNormalizers()
 imager.setWeighting()
-
-## Init minor cycle modules
-
-#imager.initializeDeconvolvers()
-#imager.initializeIterationControl()
 
 ## (5) Make the initial images
 make_psf=True
@@ -79,14 +68,9 @@ imager.makePB()
 imager.runMajorCycle() # Make initial dirty / residual image
 
 print("################################### Major Cycle Done#############################")
-## (6) Restore image and write out uncleaned image for PYBDSF steps
-#imager.hasConverged() # is a minor cycle convergence criterion
-#imager.restoreImages()
-print("################################### Finished Restoring Images #############################")
 imager.deleteTools()
 
 exportfits(imagename='niter0_short.residual.tt0', fitsimage='niter0_short.fits')
-#imager.updateMask()
 
 ##########~~~~~~~ PYBDSF MASKING ~~~~~~~~~~~~~~~~~#########
 #Run PyBDSF, Make island (1/0) image (FITS)                                
@@ -110,7 +94,7 @@ if np.all(shp == mask_shp):
      ia.setcoordsys(csys)
 ia.close()
 ##########~~~~~~~ END PYBDSF MASKING ~~~~~~~~~~~~~~~~~#########
-"""
+
 #RESTART PYSYNTHESIS
 paramList = make_paramList(niter=1000, mask='niter0_short.mask')
 if os.path.exists('niter0_short.mask'):
@@ -120,45 +104,16 @@ if os.path.exists('niter0_short.mask'):
 
 imager = PySynthesisImager(params=paramList)
 
-## (4) Initialize various modules.
-## Initialize modules major cycle modules
-
-imager.initializeImagers() #(sks) comment these out? we're not running major cycles
-imager.initializeNormalizers()
-imager.setWeighting()
-
 ## Init minor cycle modules
 
 imager.initializeDeconvolvers()
 imager.initializeIterationControl()
 
-## (5) Make the initial images
-#imager.makePSF()
-#imager.makePB()
-#imager.runMajorCycle() # Make initial dirty / residual image
-
-## (6) Restore image and write out uncleaned image for PYBDSF steps
-#imager.hasConverged()
 imager.updateMask()
 
 ## (7) Run the iteration loops
 while ( not imager.hasConverged() ):
     imager.runMinorCycle()
-    #imager.runMajorCycle()
-    #Run PYBDSF again here? update mask? Create new ImageParameter object?
-    #imager.updateMask()
 
 ## (8) Finish up
-
-## comment this out for now because $display variable error
-#retrec=imager.getSummary();
-#print (retrec)
 imager.restoreImages()
-#imager.pbcorImages()
-
-##(8a) Saving Summary
-#with open('summary.pkl', 'wb') as f:
-#    pickle.dump(retrec, f)
-
-## (9) Close tools.
-
