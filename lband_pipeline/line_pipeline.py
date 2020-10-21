@@ -29,6 +29,9 @@ from lband_pipeline.target_setup import target_line_range_kms
 # For MW HI absorption flagging on calibrators:
 from lband_pipeline.calibrator_setup import calibrator_line_range_kms
 
+# Handle runs where the internet query to the baseline correction site will
+# fail
+from lband_pipeline.offline_antposn_correction import make_offline_antpos_table
 
 # TODO: read in to skip a refant if needed.
 refantignore = ""
@@ -113,6 +116,13 @@ try:
                   spix=0)
 
     hifv_priorcals(tecmaps=False)
+
+    # Check offline tables (updated before each run) for antenna corrections
+    # If the online tables were accessed and the correction table already exists,
+    # skip remaking.
+    make_offline_antpos_table(myvis,
+                              data_folder="VLA_antcorr_tables",
+                              skip_existing=False)
 
     hifv_testBPdcals(weakbp=False,
                      refantignore=refantignore)

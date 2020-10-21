@@ -14,6 +14,11 @@ from lband_pipeline.qa_plotting import (make_spw_bandpass_plots,
 # Info for SPW setup
 from lband_pipeline.spw_setup import create_spw_dict
 
+# Handle runs where the internet query to the baseline correction site will
+# fail
+from lband_pipeline.offline_antposn_correction import make_offline_antpos_table
+
+
 # TODO: read in to skip a refant if needed.
 refantignore = ""
 
@@ -68,6 +73,13 @@ try:
                   reffreq='1GHz')
 
     hifv_priorcals(tecmaps=False)
+
+    # Check offline tables (updated before each run) for antenna corrections
+    # If the online tables were accessed and the correction table already exists,
+    # skip remaking.
+    make_offline_antpos_table(myvis,
+                              data_folder="VLA_antcorr_tables",
+                              skip_existing=False)
 
     hifv_testBPdcals(weakbp=False)
 
