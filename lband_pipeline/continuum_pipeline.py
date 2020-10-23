@@ -42,13 +42,11 @@ __rethrow_casa_exceptions = True
 # restart at last position:
 context_files = glob("pipeline*.context")
 if len(context_files) > 0:
-    context_files.sort()
 
-    context = context_files[-1]
+    # Will open the most recent context file
+    context = h_resume()
 
-    # Get pipeline calls:
-
-
+    # Get pipeline call order:
     callorder = ['hifv_importdata',
                  'hifv_hanning',
                  'hifv_flagdata',
