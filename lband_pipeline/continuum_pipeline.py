@@ -46,6 +46,9 @@ if len(context_files) > 0:
     # Will open the most recent context file
     context = h_resume()
 
+    casalog.post("Restarting from context {}".format(context))
+
+
     # Get pipeline call order:
     callorder = ['hifv_importdata',
                  'hifv_hanning',
@@ -86,14 +89,23 @@ if len(context_files) > 0:
 
         restart_stage = len(callorder) + 1
 
+        casalog.post("Calibration pipeline completed. Running QA plots only.")
+
+
     # Otherwise start from the next stage
     else:
         skip_pipeline = False
 
         restart_stage = len(callorder) + 1
 
+        casalog.post("Restarting at stage: {0} {1}".format(restart_stage, callorder[restart_stage]))
+
+
 # Otherwise this is a fresh run:
 else:
+
+    casalog.post("No context file found. Starting new pipeline run.")
+
     context = h_init()
 
     restart_stage = 0
