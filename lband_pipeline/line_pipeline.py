@@ -3,6 +3,7 @@ import sys
 import os
 from glob import glob
 import shutil
+import numpy as np
 
 # Additional QA plotting routines
 from lband_pipeline.qa_plotting import (make_spw_bandpass_plots,
@@ -31,7 +32,7 @@ from lband_pipeline.calibrator_setup import calibrator_line_range_kms
 
 # Handle runs where the internet query to the baseline correction site will
 # fail
-from lband_pipeline.offline_antposn_correction import make_offline_antpos_table
+from lband_pipeline.offline_antposn_corrections import make_offline_antpos_table
 
 # TODO: read in to skip a refant if needed.
 refantignore = ""
@@ -56,8 +57,51 @@ for spwid in linespw_dict:
 if hi_spw is None:
     raise ValueError("Unable to identify the HI SPW.")
 
+
 __rethrow_casa_exceptions = True
-context = h_init()
+
+
+# Check if there's an existing pipeline run. If so, check status to
+# restart at last position:
+context_files = glob("pipeline*.context")
+if len(context_files) > 0:
+    context_files.sort()
+
+    context = context_files[-1]
+
+    # Get pipeline calls:
+
+
+    callorder = ['hifv_importdata',
+                 'hifv_flagdata',
+                 'hifv_vlasetjy',
+                 'hifv_priorcals',
+                 'hifv_testBPdcals',
+                 'hifv_flagbaddef',
+                 'hifv_checkflag',
+                 'hifv_semiFinalBPdcals',
+                 'hifv_checkflag',
+                 'hifv_semiFinalBPdcals',
+                 'hifv_solint',
+                 'hifv_fluxboot2',
+                 'hifv_finalcals',
+                 'hifv_applycals',
+                 'hifv_targetflag',
+                 'hifv_statwt',
+                 'hifv_plotsummary',
+                 'hifv_makeimlist',
+                 'hifv_makeimages',
+                 'hifv_exportdata']
+
+    # Get existing order to match with the call order:
+    current_callorder = [result.read().pipeline_casa_task.split("(")[0] for result in context.results]
+
+# Otherwise this is a fresh run:
+else:
+    context = h_init()
+
+    restart_stage = 0
+
 context.set_state('ProjectSummary', 'observatory',
                   'Karl G. Jansky Very Large Array')
 context.set_state('ProjectSummary', 'telescope', 'EVLA')
@@ -153,8 +197,8 @@ try:
     hifv_solint(pipelinemode="automatic",
                 refantignore=refantignore)
 
-    hifv_fluxboot(pipelinemode="automatic",
-                  refantignore=refantignore)
+    hifv_fluxboot2(pipelinemode="automatic",
+                   refantignore=refantignore)
 
     hifv_finalcals(weakbp=False,
                    refantignore=refantignore)

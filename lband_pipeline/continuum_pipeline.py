@@ -17,7 +17,7 @@ from lband_pipeline.spw_setup import create_spw_dict
 
 # Handle runs where the internet query to the baseline correction site will
 # fail
-from lband_pipeline.offline_antposn_correction import make_offline_antpos_table
+from lband_pipeline.offline_antposn_corrections import make_offline_antpos_table
 
 
 # TODO: read in to skip a refant if needed.
