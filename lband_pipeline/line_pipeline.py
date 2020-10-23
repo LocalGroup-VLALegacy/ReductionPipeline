@@ -57,6 +57,7 @@ for spwid in linespw_dict:
 if hi_spw is None:
     raise ValueError("Unable to identify the HI SPW.")
 
+products_folder = "products"
 
 __rethrow_casa_exceptions = True
 
@@ -65,13 +66,11 @@ __rethrow_casa_exceptions = True
 # restart at last position:
 context_files = glob("pipeline*.context")
 if len(context_files) > 0:
-    context_files.sort()
 
-    context = context_files[-1]
+    # Will open the most recent context file
+    context = h_resume()
 
     # Get pipeline calls:
-
-
     callorder = ['hifv_importdata',
                  'hifv_flagdata',
                  'hifv_vlasetjy',
@@ -96,11 +95,40 @@ if len(context_files) > 0:
     # Get existing order to match with the call order:
     current_callorder = [result.read().pipeline_casa_task.split("(")[0] for result in context.results]
 
+    # Make sure the order is what we expect
+    matching_calls = np.array(current_callorder) == np.array(callorder[:len(current_callorder)])
+
+    if not matching_calls.all():
+        raise ValueError("Call order not expected for this script: Expected: {0}\nFound: {1}"
+                         .format(callorder[:len(current_callorder)], current_callorder))
+
+    # Do we just need to make additional QA plots?
+    # i.e. the calibration did finish
+    if len(current_callorder) == len(callorder):
+        skip_pipeline = True
+
+        restart_stage = len(callorder) + 1
+
+        casalog.post("Calibration pipeline completed. Running QA plots only.")
+
+
+    # Otherwise start from the next stage
+    else:
+        skip_pipeline = False
+
+        restart_stage = len(callorder) + 1
+
+        casalog.post("Restarting at stage: {0} {1}".format(restart_stage, callorder[restart_stage]))
+
 # Otherwise this is a fresh run:
 else:
+    casalog.post("No context file found. Starting new pipeline run.")
+
     context = h_init()
 
     restart_stage = 0
+
+    skip_pipeline = False
 
 context.set_state('ProjectSummary', 'observatory',
                   'Karl G. Jansky Very Large Array')
@@ -108,154 +136,177 @@ context.set_state('ProjectSummary', 'telescope', 'EVLA')
 context.set_state('ProjectSummary', 'proposal_code', proj_code)
 context.set_state('ProjectSummary', 'piname', 'Adam Leroy')
 
-try:
-    hifv_importdata(ocorr_mode='co',
-                    nocopy=False,
-                    vis=[myvis],
-                    createmms='automatic',
-                    asis='Receiver CalAtmosphere',
-                    overwrite=False)
+if skip_pipeline:
+    try:
 
-    flag_hi_foreground(myvis,
-                       calibrator_line_range_kms,
-                       hi_spw,
-                       cal_intents=["CALIBRATE*"],
-                       test_run=False,
-                       test_print=True)
+        if restart_stage == 0:
 
-    # Create cont.dat file based on the target name.
-    build_cont_dat(myvis,
-                   target_line_range_kms,
-                   line_freqs=linerest_dict_GHz,
-                   fields=[],  # Empty list == all target fields
-                   outfile="cont.dat",
-                   overwrite=False,
-                   append=False)
+            hifv_importdata(ocorr_mode='co',
+                            nocopy=False,
+                            vis=[myvis],
+                            createmms='automatic',
+                            asis='Receiver CalAtmosphere',
+                            overwrite=False)
 
-    # Hanning smoothing is turned off for spectral lines.
-    # hifv_hanning(pipelinemode="automatic")
+        if not os.path.exists("cont.dat"):
+            # Create cont.dat file based on the target name.
+            build_cont_dat(myvis,
+                        target_line_range_kms,
+                        line_freqs=linerest_dict_GHz,
+                        fields=[],  # Empty list == all target fields
+                        outfile="cont.dat",
+                        overwrite=False,
+                        append=False)
 
-    hifv_flagdata(intents='*POINTING*,*FOCUS*,*ATMOSPHERE*,*SIDEBAND_RATIO*, \
-                  *UNKNOWN*, *SYSTEM_CONFIGURATION*, \
-                  *UNSPECIFIED#UNSPECIFIED*',
-                  flagbackup=False,
-                  scan=True,
-                  baseband=True,
-                  clip=True,
-                  autocorr=True,
-                  hm_tbuff='1.5int',
-                  template=True,
-                  # TODO: ensure we consistently use the same filename
-                  filetemplate="additional_flagging.txt",
-                  online=False,
-                  tbuff=0.0,
-                  fracspw=0.05,
-                  shadow=True,
-                  quack=True,
-                  edgespw=True)
+        if restart_stage < 1:
+            flag_hi_foreground(myvis,
+                            calibrator_line_range_kms,
+                            hi_spw,
+                            cal_intents=["CALIBRATE*"],
+                            test_run=False,
+                            test_print=True)
 
-    hifv_vlasetjy(fluxdensity=-1,
-                  scalebychan=True,
-                  reffreq='1GHz',
-                  spix=0)
+            # Hanning smoothing is turned off for spectral lines.
+            # hifv_hanning(pipelinemode="automatic")
 
-    hifv_priorcals(tecmaps=False)
+            hifv_flagdata(intents='*POINTING*,*FOCUS*,*ATMOSPHERE*,*SIDEBAND_RATIO*, \
+                        *UNKNOWN*, *SYSTEM_CONFIGURATION*, \
+                        *UNSPECIFIED#UNSPECIFIED*',
+                        flagbackup=False,
+                        scan=True,
+                        baseband=True,
+                        clip=True,
+                        autocorr=True,
+                        hm_tbuff='1.5int',
+                        template=True,
+                        # TODO: ensure we consistently use the same filename
+                        filetemplate="additional_flagging.txt",
+                        online=False,
+                        tbuff=0.0,
+                        fracspw=0.05,
+                        shadow=True,
+                        quack=True,
+                        edgespw=True)
 
-    # Check offline tables (updated before each run) for antenna corrections
-    # If the online tables were accessed and the correction table already exists,
-    # skip remaking.
-    make_offline_antpos_table(myvis,
-                              data_folder="VLA_antcorr_tables",
-                              skip_existing=False)
+        if restart_stage < 2:
+            hifv_vlasetjy(fluxdensity=-1,
+                        scalebychan=True,
+                        reffreq='1GHz',
+                        spix=0)
 
-    hifv_testBPdcals(weakbp=False,
-                     refantignore=refantignore)
+        if restart_stage < 3:
+            hifv_priorcals(tecmaps=False)
 
-    # We need to interpolate over MW absorption in the bandpass
-    # These channels should be flagged in the calibrators.
+            # Check offline tables (updated before each run) for antenna corrections
+            # If the online tables were accessed and the correction table already exists,
+            # skip remaking.
+            make_offline_antpos_table(myvis,
+                                    data_folder="VLA_antcorr_tables",
+                                    skip_existing=True)
 
-    bandpass_with_gap_interpolation(myvis, hi_spw,
-                                    search_string="test",
-                                    task_string="hifv_testBPdcals")
+        if restart_stage < 4:
+            hifv_testBPdcals(weakbp=False,
+                            refantignore=refantignore)
 
-    hifv_flagbaddef(pipelinemode="automatic")
+            # We need to interpolate over MW absorption in the bandpass
+            # These channels should be flagged in the calibrators.
 
-    hifv_checkflag(pipelinemode="automatic")
+            bandpass_with_gap_interpolation(myvis, hi_spw,
+                                            search_string="test",
+                                            task_string="hifv_testBPdcals")
 
-    hifv_semiFinalBPdcals(weakbp=False,
-                          refantignore=refantignore)
+        if restart_stage < 5:
+            hifv_flagbaddef(pipelinemode="automatic")
 
-    hifv_checkflag(checkflagmode='semi')
+        if restart_stage < 6:
+            hifv_checkflag(pipelinemode="automatic")
 
-    hifv_semiFinalBPdcals(weakbp=False,
-                          refantignore=refantignore)
+        if restart_stage < 7:
+            hifv_semiFinalBPdcals(weakbp=False,
+                                refantignore=refantignore)
 
-    bandpass_with_gap_interpolation(myvis, hi_spw,
-                                    search_string='',
-                                    task_string='hifv_semiFinalBPdcals')
+        if restart_stage < 8:
+            hifv_checkflag(checkflagmode='semi')
 
-    hifv_solint(pipelinemode="automatic",
-                refantignore=refantignore)
+        if restart_stage < 9:
+            hifv_semiFinalBPdcals(weakbp=False,
+                                refantignore=refantignore)
 
-    hifv_fluxboot2(pipelinemode="automatic",
-                   refantignore=refantignore)
+            bandpass_with_gap_interpolation(myvis, hi_spw,
+                                            search_string='',
+                                            task_string='hifv_semiFinalBPdcals')
 
-    hifv_finalcals(weakbp=False,
-                   refantignore=refantignore)
+        if restart_stage < 10:
+            hifv_solint(pipelinemode="automatic",
+                        refantignore=refantignore)
 
-    bandpass_with_gap_interpolation(myvis, hi_spw,
-                                    search_string='final',
-                                    task_string='hifv_finalcals')
+        if restart_stage < 11:
+            hifv_fluxboot2(pipelinemode="automatic",
+                        refantignore=refantignore)
 
-    hifv_applycals(flagdetailedsum=True,
-                   gainmap=False,
-                   flagbackup=True,
-                   flagsum=True)
+        if restart_stage < 12:
+            hifv_finalcals(weakbp=False,
+                        refantignore=refantignore)
 
-    # Keep the following step in the script if cont.dat exists.
-    # Remove RFI flagging the lines in target fields.
-    if os.path.exists('cont.dat'):
-        hifv_targetflag(intents='*CALIBRATE*, *TARGET*')
-    else:
-        hifv_targetflag(intents='*CALIBRATE*')
+            bandpass_with_gap_interpolation(myvis, hi_spw,
+                                            search_string='final',
+                                            task_string='hifv_finalcals')
 
-    hifv_statwt(pipelinemode="automatic")
+        if restart_stage < 13:
+            hifv_applycals(flagdetailedsum=True,
+                        gainmap=False,
+                        flagbackup=True,
+                        flagsum=True)
 
-    hifv_plotsummary(pipelinemode="automatic")
+        # Keep the following step in the script if cont.dat exists.
+        # Remove RFI flagging the lines in target fields.
+        if restart_stage < 14:
+            if os.path.exists('cont.dat'):
+                hifv_targetflag(intents='*CALIBRATE*, *TARGET*')
+            else:
+                hifv_targetflag(intents='*CALIBRATE*')
 
-    # TODO: Choose a representative target field to image?
-    hif_makeimlist(nchan=-1,
-                   calmaxpix=300,
-                   intent='PHASE,BANDPASS')
+        if restart_stage < 15:
+            hifv_statwt(pipelinemode="automatic")
 
-    hif_makeimages(tlimit=2.0,
-                   hm_minbeamfrac=-999.0,
-                   hm_dogrowprune=True,
-                   hm_negativethreshold=-999.0,
-                   calcsb=False,
-                   target_list={},
-                   hm_noisethreshold=-999.0,
-                   hm_masking='none',
-                   hm_minpercentchange=-999.0,
-                   parallel='automatic',
-                   masklimit=4,
-                   hm_lownoisethreshold=-999.0,
-                   hm_growiterations=-999,
-                   cleancontranges=False,
-                   hm_sidelobethreshold=-999.0)
+        if restart_stage < 16:
+            hifv_plotsummary(pipelinemode="automatic")
 
-    # Make a folder of products for restoring the pipeline solution
-    products_folder = "products"
-    if not os.path.exists(products_folder):
-        os.mkdir(products_folder + '/')
+        if restart_stage < 17:
+            # TODO: Choose a representative target field to image?
+            hif_makeimlist(nchan=-1,
+                        calmaxpix=300,
+                        intent='PHASE,BANDPASS')
 
-    # TODO: review whether we should be including additional products
-    # here
-    hifv_exportdata(products_dir=products_folder + '/')
+        if restart_stage < 18:
+            hif_makeimages(tlimit=2.0,
+                        hm_minbeamfrac=-999.0,
+                        hm_dogrowprune=True,
+                        hm_negativethreshold=-999.0,
+                        calcsb=False,
+                        target_list={},
+                        hm_noisethreshold=-999.0,
+                        hm_masking='none',
+                        hm_minpercentchange=-999.0,
+                        parallel='automatic',
+                        masklimit=4,
+                        hm_lownoisethreshold=-999.0,
+                        hm_growiterations=-999,
+                        cleancontranges=False,
+                        hm_sidelobethreshold=-999.0)
 
-finally:
+        if restart_stage < 19:
+            # Make a folder of products for restoring the pipeline solution
+            if not os.path.exists(products_folder):
+                os.mkdir(products_folder + '/')
 
-    h_save()
+            # TODO: review whether we should be including additional products
+            # here
+            hifv_exportdata(products_dir=products_folder + '/')
+
+    finally:
+
+        h_save()
 
 # Make a new directory for the imaging outputs
 # Not required. I just like cleaning up the folder a bit.
