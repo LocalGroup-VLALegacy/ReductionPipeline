@@ -110,6 +110,8 @@ else:
 
     restart_stage = 0
 
+    skip_pipeline = False
+
 context.set_state('ProjectSummary', 'observatory',
                   'Karl G. Jansky Very Large Array')
 context.set_state('ProjectSummary', 'telescope', 'EVLA')
