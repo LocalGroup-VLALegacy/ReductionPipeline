@@ -33,10 +33,17 @@ else:
 # needing to pass into this script
 parentdir = os.getcwd().split("/")[-1]
 
+# Only keep continuum SPWs as backup for 20A-346
+# Otherwise drop for running on the archival projects
+if '20A-346' in ms_active:
+    keep_backup_continuum = True
+else:
+    keep_backup_continuum = False
+
 split_ms(ms_active,
          outfolder_prefix=parentdir,
          split_type=split_type,
          continuum_kwargs={"baseband": 'both'},
          line_kwargs={"include_rrls": False,
-                      "keep_backup_continuum": True},
+                      "keep_backup_continuum": keep_backup_continuum},
          overwrite=False)
