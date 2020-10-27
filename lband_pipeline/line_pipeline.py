@@ -88,8 +88,8 @@ if len(context_files) > 0:
                  'hifv_targetflag',
                  'hifv_statwt',
                  'hifv_plotsummary',
-                 'hifv_makeimlist',
-                 'hifv_makeimages',
+                 'hif_makeimlist',
+                 'hif_makeimages',
                  'hifv_exportdata']
 
     # Get existing order to match with the call order:
@@ -107,6 +107,7 @@ if len(context_files) > 0:
     if len(current_callorder) == len(callorder):
         skip_pipeline = True
 
+        # Set to +1 of the total stages. i.e. it's finished.
         restart_stage = len(callorder) + 1
 
         casalog.post("Calibration pipeline completed. Running QA plots only.")
@@ -116,7 +117,8 @@ if len(context_files) > 0:
     else:
         skip_pipeline = False
 
-        restart_stage = len(callorder) + 1
+        # Start from the next stage of what was last completed
+        restart_stage = len(current_callorder)
 
         casalog.post("Restarting at stage: {0} {1}".format(restart_stage, callorder[restart_stage]))
 
@@ -136,7 +138,8 @@ context.set_state('ProjectSummary', 'telescope', 'EVLA')
 context.set_state('ProjectSummary', 'proposal_code', proj_code)
 context.set_state('ProjectSummary', 'piname', 'Adam Leroy')
 
-if skip_pipeline:
+if not skip_pipeline:
+
     try:
 
         if restart_stage == 0:
@@ -158,7 +161,7 @@ if skip_pipeline:
                         overwrite=False,
                         append=False)
 
-        if restart_stage < 1:
+        if restart_stage <= 1:
             flag_hi_foreground(myvis,
                             calibrator_line_range_kms,
                             hi_spw,
@@ -188,23 +191,23 @@ if skip_pipeline:
                         quack=True,
                         edgespw=True)
 
-        if restart_stage < 2:
+        if restart_stage <= 2:
             hifv_vlasetjy(fluxdensity=-1,
                         scalebychan=True,
                         reffreq='1GHz',
                         spix=0)
 
-        if restart_stage < 3:
+        if restart_stage <= 3:
             hifv_priorcals(tecmaps=False)
 
             # Check offline tables (updated before each run) for antenna corrections
             # If the online tables were accessed and the correction table already exists,
             # skip remaking.
             make_offline_antpos_table(myvis,
-                                    data_folder="VLA_antcorr_tables",
-                                    skip_existing=True)
+                                      data_folder="VLA_antcorr_tables",
+                                      skip_existing=True)
 
-        if restart_stage < 4:
+        if restart_stage <= 4:
             hifv_testBPdcals(weakbp=False,
                             refantignore=refantignore)
 
@@ -215,20 +218,20 @@ if skip_pipeline:
                                             search_string="test",
                                             task_string="hifv_testBPdcals")
 
-        if restart_stage < 5:
+        if restart_stage <= 5:
             hifv_flagbaddef(pipelinemode="automatic")
 
-        if restart_stage < 6:
+        if restart_stage <= 6:
             hifv_checkflag(pipelinemode="automatic")
 
-        if restart_stage < 7:
+        if restart_stage <= 7:
             hifv_semiFinalBPdcals(weakbp=False,
                                 refantignore=refantignore)
 
-        if restart_stage < 8:
+        if restart_stage <= 8:
             hifv_checkflag(checkflagmode='semi')
 
-        if restart_stage < 9:
+        if restart_stage <= 9:
             hifv_semiFinalBPdcals(weakbp=False,
                                 refantignore=refantignore)
 
@@ -236,15 +239,15 @@ if skip_pipeline:
                                             search_string='',
                                             task_string='hifv_semiFinalBPdcals')
 
-        if restart_stage < 10:
+        if restart_stage <= 10:
             hifv_solint(pipelinemode="automatic",
                         refantignore=refantignore)
 
-        if restart_stage < 11:
+        if restart_stage <= 11:
             hifv_fluxboot2(pipelinemode="automatic",
                         refantignore=refantignore)
 
-        if restart_stage < 12:
+        if restart_stage <= 12:
             hifv_finalcals(weakbp=False,
                         refantignore=refantignore)
 
@@ -252,7 +255,7 @@ if skip_pipeline:
                                             search_string='final',
                                             task_string='hifv_finalcals')
 
-        if restart_stage < 13:
+        if restart_stage <= 13:
             hifv_applycals(flagdetailedsum=True,
                         gainmap=False,
                         flagbackup=True,
@@ -260,25 +263,25 @@ if skip_pipeline:
 
         # Keep the following step in the script if cont.dat exists.
         # Remove RFI flagging the lines in target fields.
-        if restart_stage < 14:
+        if restart_stage <= 14:
             if os.path.exists('cont.dat'):
                 hifv_targetflag(intents='*CALIBRATE*, *TARGET*')
             else:
                 hifv_targetflag(intents='*CALIBRATE*')
 
-        if restart_stage < 15:
+        if restart_stage <= 15:
             hifv_statwt(pipelinemode="automatic")
 
-        if restart_stage < 16:
+        if restart_stage <= 16:
             hifv_plotsummary(pipelinemode="automatic")
 
-        if restart_stage < 17:
+        if restart_stage <= 17:
             # TODO: Choose a representative target field to image?
             hif_makeimlist(nchan=-1,
                         calmaxpix=300,
                         intent='PHASE,BANDPASS')
 
-        if restart_stage < 18:
+        if restart_stage <= 18:
             hif_makeimages(tlimit=2.0,
                         hm_minbeamfrac=-999.0,
                         hm_dogrowprune=True,
@@ -295,7 +298,7 @@ if skip_pipeline:
                         cleancontranges=False,
                         hm_sidelobethreshold=-999.0)
 
-        if restart_stage < 19:
+        if restart_stage <= 19:
             # Make a folder of products for restoring the pipeline solution
             if not os.path.exists(products_folder):
                 os.mkdir(products_folder + '/')

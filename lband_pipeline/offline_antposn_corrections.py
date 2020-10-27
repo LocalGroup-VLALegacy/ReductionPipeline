@@ -191,8 +191,6 @@ def make_offline_antpos_table(vis_name, data_folder="VLA_antcorr_tables",
 
     from tasks import gencal
 
-    antenna_offsets = correct_ant_posns(vis_name, data_folder=data_folder)
-
     # Search for an existing antpos file:
     priorcal_tbls = glob("{0}.hifv_priorcals.*".format(vis_name))
 
@@ -205,6 +203,12 @@ def make_offline_antpos_table(vis_name, data_folder="VLA_antcorr_tables",
 
             antpos_tblname = tbl
             os.system("rm -r {0}".format(tbl))
+
+    try:
+        antenna_offsets = correct_ant_posns(vis_name, data_folder=data_folder)
+    except FileNotFoundError:
+        LOG.warning("Unable to find downloaded antenna correction tables. Skipping.")
+        return
 
     # Come up with the right name for the pipeline when it doesn't already exist
     if antpos_tblname is None:
