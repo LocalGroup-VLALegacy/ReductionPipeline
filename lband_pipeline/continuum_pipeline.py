@@ -96,7 +96,8 @@ if len(context_files) > 0:
     else:
         skip_pipeline = False
 
-        restart_stage = len(callorder) + 1
+        # Start from the next stage of what was last completed
+        restart_stage = len(current_callorder)
 
         casalog.post("Restarting at stage: {0} {1}".format(restart_stage, callorder[restart_stage]))
 

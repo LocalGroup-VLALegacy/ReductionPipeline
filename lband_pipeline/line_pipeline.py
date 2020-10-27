@@ -107,6 +107,7 @@ if len(context_files) > 0:
     if len(current_callorder) == len(callorder):
         skip_pipeline = True
 
+        # Set to +1 of the total stages. i.e. it's finished.
         restart_stage = len(callorder) + 1
 
         casalog.post("Calibration pipeline completed. Running QA plots only.")
@@ -116,7 +117,8 @@ if len(context_files) > 0:
     else:
         skip_pipeline = False
 
-        restart_stage = len(callorder) + 1
+        # Start from the next stage of what was last completed
+        restart_stage = len(current_callorder)
 
         casalog.post("Restarting at stage: {0} {1}".format(restart_stage, callorder[restart_stage]))
 
@@ -202,8 +204,8 @@ if not skip_pipeline:
             # If the online tables were accessed and the correction table already exists,
             # skip remaking.
             make_offline_antpos_table(myvis,
-                                    data_folder="VLA_antcorr_tables",
-                                    skip_existing=True)
+                                      data_folder="VLA_antcorr_tables",
+                                      skip_existing=True)
 
         if restart_stage < 4:
             hifv_testBPdcals(weakbp=False,
