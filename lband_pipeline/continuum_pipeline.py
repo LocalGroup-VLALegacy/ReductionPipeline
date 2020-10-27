@@ -132,10 +132,10 @@ if not skip_pipeline:
 
         # TODO: introduce flag for re-runs to avoid smoothing again
         # ONLY run if we're starting the first reduction to avoid
-        if restart_stage < 1:
+        if restart_stage <= 1:
             hifv_hanning(pipelinemode="automatic")
 
-        if restart_stage < 2:
+        if restart_stage <= 2:
             hifv_flagdata(tbuff=0.0,
                           flagbackup=False,
                           scan=True,
@@ -151,13 +151,13 @@ if not skip_pipeline:
                           template=True,
                           online=True)
 
-        if restart_stage < 3:
+        if restart_stage <= 3:
             hifv_vlasetjy(fluxdensity=-1,
                           scalebychan=True,
                           spix=0,
                           reffreq='1GHz')
 
-        if restart_stage < 4:
+        if restart_stage <= 4:
             hifv_priorcals(tecmaps=False)
 
             # Check offline tables (updated before each run) for antenna corrections
@@ -167,49 +167,49 @@ if not skip_pipeline:
                                      data_folder="VLA_antcorr_tables",
                                      skip_existing=True)
 
-        if restart_stage < 5:
+        if restart_stage <= 5:
             hifv_testBPdcals(weakbp=False)
 
-        if restart_stage < 6:
+        if restart_stage <= 6:
             hifv_flagbaddef(doflagundernspwlimit=False)
 
-        if restart_stage < 7:
+        if restart_stage <= 7:
             hifv_checkflag(pipelinemode="automatic")
 
-        if restart_stage < 8:
+        if restart_stage <= 8:
             hifv_semiFinalBPdcals(weakbp=False)
 
-        if restart_stage < 9:
+        if restart_stage <= 9:
             hifv_checkflag(checkflagmode='semi')
 
-        if restart_stage < 10:
+        if restart_stage <= 10:
             hifv_semiFinalBPdcals(weakbp=False)
 
-        if restart_stage < 11:
+        if restart_stage <= 11:
             hifv_solint(pipelinemode="automatic")
 
-        if restart_stage < 12:
+        if restart_stage <= 12:
             hifv_fluxboot2(fitorder=-1)
 
-        if restart_stage < 13:
+        if restart_stage <= 13:
             hifv_finalcals(weakbp=False)
 
-        if restart_stage < 14:
+        if restart_stage <= 14:
             hifv_applycals(flagdetailedsum=True,
                         gainmap=False,
                         flagbackup=True,
                         flagsum=True)
 
-        if restart_stage < 15:
+        if restart_stage <= 15:
             hifv_targetflag(intents='*CALIBRATE*,*TARGET*')
 
-        if restart_stage < 16:
+        if restart_stage <= 16:
             hifv_statwt(datacolumn='corrected')
 
-        if restart_stage < 17:
+        if restart_stage <= 17:
             hifv_plotsummary(pipelinemode="automatic")
 
-        if restart_stage < 18:
+        if restart_stage <= 18:
             hif_makeimlist(nchan=-1,
                         calcsb=False,
                         intent='PHASE,BANDPASS',
@@ -220,7 +220,7 @@ if not skip_pipeline:
                         specmode='cont',
                         clearlist=True)
 
-        if restart_stage < 19:
+        if restart_stage <= 19:
 
             hif_makeimages(tlimit=2.0,
                         hm_perchanweightdensity=False,
@@ -243,7 +243,7 @@ if not skip_pipeline:
                         cleancontranges=False,
                         hm_sidelobethreshold=-999.0)
 
-        if restart_stage < 20:
+        if restart_stage <= 20:
             # Make a folder of products for restoring the pipeline solution
             if not os.path.exists(products_folder):
                 os.mkdir(products_folder + '/')
