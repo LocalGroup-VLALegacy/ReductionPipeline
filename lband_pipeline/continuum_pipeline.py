@@ -117,7 +117,7 @@ context.set_state('ProjectSummary', 'observatory',
 context.set_state('ProjectSummary', 'telescope', 'EVLA')
 context.set_state('ProjectSummary', 'proposal_code', proj_code)
 
-if skip_pipeline:
+if not skip_pipeline:
 
     try:
 

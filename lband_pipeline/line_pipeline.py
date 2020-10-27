@@ -88,8 +88,8 @@ if len(context_files) > 0:
                  'hifv_targetflag',
                  'hifv_statwt',
                  'hifv_plotsummary',
-                 'hifv_makeimlist',
-                 'hifv_makeimages',
+                 'hif_makeimlist',
+                 'hif_makeimages',
                  'hifv_exportdata']
 
     # Get existing order to match with the call order:
@@ -136,7 +136,8 @@ context.set_state('ProjectSummary', 'telescope', 'EVLA')
 context.set_state('ProjectSummary', 'proposal_code', proj_code)
 context.set_state('ProjectSummary', 'piname', 'Adam Leroy')
 
-if skip_pipeline:
+if not skip_pipeline:
+
     try:
 
         if restart_stage == 0:
