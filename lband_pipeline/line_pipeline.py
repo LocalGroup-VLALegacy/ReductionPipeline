@@ -34,6 +34,11 @@ from lband_pipeline.calibrator_setup import calibrator_line_range_kms
 # fail
 from lband_pipeline.offline_antposn_corrections import make_offline_antpos_table
 
+# Check that DISPLAY is set. Otherwise, force an error
+# We need DISPLAY set for plotms to export png or txt files.
+if os.getenv('DISPLAY') is None:
+    raise ValueError("DISPLAY is not set. Try using xvfb for remote systems.")
+
 # TODO: read in to skip a refant if needed.
 refantignore = ""
 
