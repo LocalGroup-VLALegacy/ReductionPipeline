@@ -312,6 +312,13 @@ if not skip_pipeline:
             # here
             hifv_exportdata(products_dir=products_folder + '/')
 
+    except Exception as ex:
+        casalog.post("Encountered exception: {}".format(ex))
+
+        print("Encountered exception: {}. Exiting with error code 1".format(ex))
+
+        sys.exit(1)
+
     finally:
 
         h_save()

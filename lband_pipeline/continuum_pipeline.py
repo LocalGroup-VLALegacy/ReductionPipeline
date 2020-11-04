@@ -260,6 +260,13 @@ if not skip_pipeline:
                             exportmses=False,
                             exportcalprods=True)
 
+    except Exception as ex:
+        casalog.post("Encountered exception: {}".format(ex))
+
+        print("Encountered exception: {}. Exiting with error code 1".format(ex))
+
+        sys.exit(1)
+
     finally:
 
         h_save()
