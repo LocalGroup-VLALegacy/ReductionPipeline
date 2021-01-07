@@ -263,6 +263,8 @@ if not skip_pipeline:
     except Exception as ex:
         casalog.post("Encountered exception: {}".format(ex))
 
+        h_save()
+
         print("Encountered exception: {}. Exiting with error code 1".format(ex))
 
         sys.exit(1)
