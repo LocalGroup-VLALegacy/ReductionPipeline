@@ -173,7 +173,8 @@ if not skip_pipeline:
                                      skip_existing=True)
 
         if restart_stage <= 5:
-            hifv_testBPdcals(weakbp=False)
+            hifv_testBPdcals(weakbp=False,
+                             refantignore=refantignore)
 
         if restart_stage <= 6:
             hifv_flagbaddef(doflagundernspwlimit=False)
@@ -182,22 +183,27 @@ if not skip_pipeline:
             hifv_checkflag(pipelinemode="automatic")
 
         if restart_stage <= 8:
-            hifv_semiFinalBPdcals(weakbp=False)
+            hifv_semiFinalBPdcals(weakbp=False,
+                                  refantignore=refantignore)
 
         if restart_stage <= 9:
             hifv_checkflag(checkflagmode='semi')
 
         if restart_stage <= 10:
-            hifv_semiFinalBPdcals(weakbp=False)
+            hifv_semiFinalBPdcals(weakbp=False,
+                                  refantignore=refantignore)
 
         if restart_stage <= 11:
-            hifv_solint(pipelinemode="automatic")
+            hifv_solint(pipelinemode="automatic",
+                        refantignore=refantignore)
 
         if restart_stage <= 12:
-            hifv_fluxboot2(fitorder=-1)
+            hifv_fluxboot2(pipelinemode="automatic", fitorder=-1,
+                           refantignore=refantignore)
 
         if restart_stage <= 13:
-            hifv_finalcals(weakbp=False)
+            hifv_finalcals(weakbp=False,
+                           refantignore=refantignore)
 
         if restart_stage <= 14:
             hifv_applycals(flagdetailedsum=True,
@@ -262,6 +268,8 @@ if not skip_pipeline:
 
     except Exception as ex:
         casalog.post("Encountered exception: {}".format(ex))
+
+        h_save()
 
         print("Encountered exception: {}. Exiting with error code 1".format(ex))
 
