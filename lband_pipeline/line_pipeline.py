@@ -188,7 +188,7 @@ if not skip_pipeline:
                         hm_tbuff='1.5int',
                         template=True,
                         # TODO: ensure we consistently use the same filename
-                        filetemplate="additional_flagging.txt",
+                        filetemplate="manual_flagging.txt",
                         online=False,
                         tbuff=0.0,
                         fracspw=0.05,

@@ -154,6 +154,7 @@ if not skip_pipeline:
                           autocorr=True,
                           hm_tbuff='1.5int',
                           template=True,
+                          filetemplate="manual_flagging.txt",
                           online=True)
 
         if restart_stage <= 3:
