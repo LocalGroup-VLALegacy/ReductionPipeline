@@ -196,7 +196,7 @@ def bandpass_with_gap_interpolation(myvis, hi_spwid,
     interpolate_bandpass(bpname,
                          spw_ids=[hi_spwid],
                          window_size_frac=0.125, poly_order=2,  # Works well from Josh and Eric's testing
-                         add_residuals=True,  # We re-add residuals to match the noise in the gap
+                         add_residuals=False,  # We re-add residuals to match the noise in the gap
                          backup_table=True,  # A backup table is always made.
                          test_output_nowrite=False,
                          test_print=False)
