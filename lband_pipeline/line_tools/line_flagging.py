@@ -81,6 +81,12 @@ def flag_hi_foreground(myvis,
 
     for field in field_names:
 
+        if field not in calibrator_line_range_kms:
+            casalog.post('Unable to locate calibrator {} in calibrator list.'.format(field))
+            casalog.post('Check `calibrator_setup.py` to see if this source is missing')
+
+            continue
+
         vel_start = calibrator_line_range_kms[field]['HI'][0]
         vel_stop = calibrator_line_range_kms[field]['HI'][1]
 
