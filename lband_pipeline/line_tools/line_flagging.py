@@ -82,8 +82,7 @@ def flag_hi_foreground(myvis,
 
     for field in field_names:
 
-        if f
-        ield not in calibrator_line_range_kms:
+        if field not in calibrator_line_range_kms:
             casalog.post('Unable to locate calibrator {} in calibrator list.'.format(field))
             casalog.post('Check `calibrator_setup.py` to see if this source is missing')
 
