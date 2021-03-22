@@ -77,12 +77,20 @@ calibrator_line_range_kms['J0038+4137']['HI'] = [30, -30]
 
 # J0059+0006 (IC1613)
 # Gain cal
+# calibrator_line_range_kms['J0059+0006'] = {}
+# calibrator_line_range_kms['J0059+0006']['HI'] = [0, 0]
 
 # J1923-2104 (NGC6822)
 # Gain cal
+# calibrator_line_range_kms['J1923-2104'] = {}
+# calibrator_line_range_kms['J1923-2104']['HI'] = [0, 0]
 
 # J0102+5824 (IC10)
 # Gain cal
+# calibrator_line_range_kms['J0102+5824'] = {}
+# calibrator_line_range_kms['J0102+5824']['HI'] = [0, 0]
 
 # J2321-1623 (WLM)
 # Gain cal
+# calibrator_line_range_kms['J2321-1623'] = {}
+# calibrator_line_range_kms['J2321-1623']['HI'] = [0, 0]
