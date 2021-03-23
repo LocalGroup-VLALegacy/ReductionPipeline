@@ -3,6 +3,10 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+from casatools import logsink
+
+casalog = logsink()
+
 
 # read from plotms output file
 def get_uvdata(infile):
@@ -102,16 +106,21 @@ def run_all_uvstats(myvis, out_path, uv_threshold=3, uv_nsigma=3,
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
 
-    from tasks import split, plotms, gaincal, applycal
+    from casatasks import split, plotms, gaincal, applycal
 
-    from taskinit import msmdtool, casalog
+    # from taskinit import msmdtool, casalog
+    # from taskinit import msmdtool, casalog
 
-    msmd = msmdtool()
+    from casatools import msmd
+
+    mymsmd = msmd()
+
+    # msmd = msmdtool()
     # get metadata
-    msmd.open(myvis)
-    cal_fields = np.unique(msmd.fieldsforintent('CALIBRATE*'))
-    field_names = msmd.namesforfields(cal_fields)
-    msmd.close()
+    mymsmd.open(myvis)
+    cal_fields = np.unique(mymsmd.fieldsforintent('CALIBRATE*'))
+    field_names = mymsmd.namesforfields(cal_fields)
+    mymsmd.close()
 
     # split calibrator visibilities
     field_str = ','.join([str(f) for f in cal_fields])

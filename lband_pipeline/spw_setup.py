@@ -74,11 +74,18 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
     '''
 
     # TODO: need to CASA 6 proof.
-    from taskinit import ms
+    # from taskinit import ms
 
-    ms.open(myvis)
+    from casatools import ms
 
-    metadata = ms.metadata()
+    myms = ms()
+    myms.open(myvis)
+
+    metadata = myms.metadata()
+
+    # metadata = msmdtool()
+
+    # metadata.open(myvis)
 
     spw_dict = {}
 
@@ -134,7 +141,7 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
 
         # Centre freq.
         # ctr_freq = metadata.chanfreqs
-        freqs_lsrk = ms.cvelfreqs(spwids=[spwid], outframe='LSRK')
+        freqs_lsrk = myms.cvelfreqs(spwids=[spwid], outframe='LSRK')
 
         # Convert from Hz to kHz
         ctr_freq = freqs_lsrk[nchan // 2 - 1] / 1e3
@@ -182,6 +189,6 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
                            'centerfreq': ctr_freq,
                            'baseband': bband}
 
-    ms.close()
+    myms.close()
 
     return spw_dict

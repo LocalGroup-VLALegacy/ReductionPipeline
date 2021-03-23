@@ -159,7 +159,7 @@ def split_ms(ms_name,
 
     '''
 
-    from tasks import split
+    from casatasks import split
 
     folder_base, ms_name_base = os.path.split(ms_name)
 

@@ -6,8 +6,8 @@ import numpy as np
 import shutil
 import scipy.ndimage as nd
 
-from tasks import bandpass
-
+from casatasks import bandpass
+from casatools import *
 
 def bandpass_with_gap_interpolation_deprecated(myvis, context, refantignore="",
                                                search_string="test",
@@ -170,7 +170,7 @@ def bandpass_with_gap_interpolation(myvis, hi_spwid,
     '''
 
     # Look for BP table
-    bpname = glob("{0}.{1}.s*_4.{2}BPcal.tbl".format(myvis, task_string, search_string))
+    bpname = glob("{0}.{1}.s*_4.{2}BPcal_L.tbl".format(myvis, task_string, search_string))
 
     # test and final cal steps will have 1 match:
     if len(bpname) == 1:
@@ -227,14 +227,17 @@ def interpolate_bandpass(tablename,
                          backup_table=True, test_output_nowrite=False,
                          test_print=False):
 
-    from taskinit import tbtool, casalog
+    from casatools import table
+
+    # from taskinit import tbtool, casalog
 
     if backup_table:
         original_table_backup = tablename + '.bak_from_interpbandpass'
         if not os.path.isdir(original_table_backup):
             shutil.copytree(tablename, original_table_backup)
 
-    tb = tbtool()
+    # tb = tbtool()
+    tb = table()
 
     tb.open(tablename)
     all_spw_ids = np.unique(tb.getcol("SPECTRAL_WINDOW_ID"))

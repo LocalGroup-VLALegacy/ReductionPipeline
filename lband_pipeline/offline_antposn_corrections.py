@@ -189,7 +189,7 @@ def make_offline_antpos_table(vis_name, data_folder="VLA_antcorr_tables",
 
     '''
 
-    from tasks import gencal
+    from casatasks import gencal
 
     # Search for an existing antpos file:
     priorcal_tbls = glob("{0}.hifv_priorcals.*".format(vis_name))

@@ -9,6 +9,10 @@ Routines for creating additional QA plots.
 import os
 import numpy as np
 
+from casatools import logsink
+
+casalog = logsink()
+
 
 def make_qa_scan_figures(ms_name, output_folder='scan_plots',
                          outtype='png'):
@@ -28,10 +32,14 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
     '''
 
     # Will need to updated for CASA 6
-    from taskinit import tb
-    from taskinit import casalog
+    from casatools import table
 
-    from tasks import plotms
+    tb = table()
+
+    # from taskinit import tb
+    # from taskinit import casalog
+
+    from casatasks import plotms
 
     # SPWs to loop through
     tb.open(os.path.join(ms_name, "SPECTRAL_WINDOW"))

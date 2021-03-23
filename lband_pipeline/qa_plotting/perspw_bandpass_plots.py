@@ -2,6 +2,10 @@
 import os
 from glob import glob
 
+from casatools import logsink
+
+casalog = logsink()
+
 
 def make_spw_bandpass_plots(ms_active,
                             bp_folder="finalBPcal_plots",
@@ -12,7 +16,8 @@ def make_spw_bandpass_plots(ms_active,
     '''
 
     # Will need to updated for CASA 6
-    from taskinit import tb
+    # from taskinit import tb
+    from casatools import table
 
     from tasks import plotcal
 
@@ -20,6 +25,8 @@ def make_spw_bandpass_plots(ms_active,
 
     if not os.path.exists(bp_folder):
         os.mkdir(bp_folder)
+
+    tb = table()
 
     tb.open(ms_active + "/SPECTRAL_WINDOW")
     nspws = tb.getcol("NAME").shape[0]
@@ -97,9 +104,12 @@ def make_bandpass_txt(ms_active, output_folder='finalBPcal_txt'):
 
     '''
 
-    from taskinit import tb, casalog
+    # from taskinit import tb, casalog
+    from casatools import table
 
-    from tasks import plotms
+    tb = table()
+
+    from casatasks import plotms
 
     casalog.post("Running make_bandpass_txt to export txt files for QA.")
     print("Running make_bandpass_txt to export txt files for QA.")

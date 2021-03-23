@@ -1,7 +1,7 @@
 
 import sys
 import os
-from tasks import importasdm
+from casatasks import importasdm
 
 from lband_pipeline.ms_split_tools import split_ms
 

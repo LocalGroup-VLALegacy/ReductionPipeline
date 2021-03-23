@@ -6,7 +6,12 @@ Functions for flagging problematic velocities.
 import numpy as np
 import os
 
-from taskinit import casalog
+# from taskinit import casalog
+
+from casatools import logsink
+
+casalog = logsink()
+
 
 def flag_hi_foreground(myvis,
                        calibrator_line_range_kms,
@@ -43,38 +48,45 @@ def flag_hi_foreground(myvis,
 
     # Make a new flagging version marking these calls at the end.
 
-    from taskinit import msmdtool, mstool
+    # from taskinit import msmdtool, mstool
+    from casatools import ms
 
-    from tasks import flagdata, flagmanager
+    from casatasks import flagdata, flagmanager
 
-    msmd = msmdtool()
-    ms = mstool()
+    # msmd = msmdtool()
+    # ms = mstool()
+
+    # mymsmd = msmd()
+    myms = ms()
 
     # if no fields are provided use observe_target intent
     # I saw once a calibrator also has this intent so check carefully
-    msmd.open(myvis)
+    # mymsmd.open(myvis)
+    myms.open(myvis)
+
+    mymsmd = myms.metadata()
 
     # Loop through field intents. Default is all calibrators.
     field_nums = []
     for cal_intent in cal_intents:
-        field_num = msmd.fieldsforintent(cal_intent)
+        field_num = mymsmd.fieldsforintent(cal_intent)
 
         field_nums.extend(list(field_num))
 
     # Unique mapping
     field_nums = np.array(list(set(field_nums)))
 
-    field_names = np.asarray(msmd.fieldnames())[field_nums]
+    field_names = np.asarray(mymsmd.fieldnames())[field_nums]
 
-    msmd.close()
+    mymsmd.close()
 
     # Loop through the field names, identify in calibrator_line_range_kms,
     # and convert mapping from velocity -> freq (LSRK) -> channel.
-    ms.open(myvis)
+    # myms.open(myvis)
 
-    freqs_lsrk = ms.cvelfreqs(spwids=[hi_spw_num], outframe='LSRK')
+    freqs_lsrk = myms.cvelfreqs(spwids=[hi_spw_num], outframe='LSRK')
 
-    ms.close()
+    myms.close()
 
     # in Hz
     hi_restfreq = 1.420405752e9
@@ -212,22 +224,27 @@ def build_cont_dat(vis, target_line_range_kms,
     :return: None
     """
 
-    from taskinit import msmdtool, mstool
+    # from taskinit import msmdtool, mstool
+    from casatools import ms
 
     # need for metadata
-    msmd = msmdtool()
+    # msmd = msmdtool()
+    # mymsmd = msmd()
 
     # TOPO -> LSRK conversion
-    ms = mstool()
+    # ms = mstool()
+    myms = ms()
 
     # if no fields are provided use observe_target intent
     # I saw once a calibrator also has this intent so check carefully
-    msmd.open(vis)
-    ms.open(vis)
+    # mymsmd.open(vis)
+    myms.open(vis)
+
+    mymsmd = myms.metadata()
 
     if len(fields) < 1:
-        # fields = msmd.fieldsforintent("*OBSERVE_TARGET*", True)
-        fields = msmd.fieldsforintent("*TARGET*", True)
+        # fields = mymsmd.fieldsforintent("*OBSERVE_TARGET*", True)
+        fields = mymsmd.fieldsforintent("*TARGET*", True)
 
     if len(fields) < 1:
         print("ERROR: no fields!")
@@ -240,7 +257,7 @@ def build_cont_dat(vis, target_line_range_kms,
     # generate a dictonary containing continuum chunks for every spw of every field
     cont_dat = {}
     for field in fields:
-        spws = msmd.spwsforfield(field)
+        spws = mymsmd.spwsforfield(field)
         cont_dat_field = {}
 
         # Match target with the galaxy. Names should be unique enough to do this
@@ -255,13 +272,13 @@ def build_cont_dat(vis, target_line_range_kms,
 
         for spw in spws:
             # Get freq range of the SPW
-            # chan_freqs = msmd.chanfreqs(spw)
+            # chan_freqs = mymsmd.chanfreqs(spw)
             # SPW edges are reported in whichever frame was used for observing (usually TOPO)
             # TODO: implement some transformations to LSRK for the edges?
 
             # Grab freqs in LSRK and TOPO
-            freqs_lsrk = ms.cvelfreqs(spwids=[spw], outframe='LSRK')
-            freqs_topo = ms.cvelfreqs(spwids=[spw], outframe='TOPO')
+            freqs_lsrk = myms.cvelfreqs(spwids=[spw], outframe='LSRK')
+            freqs_topo = myms.cvelfreqs(spwids=[spw], outframe='TOPO')
 
             line_freqs_topo = []
 
@@ -328,8 +345,8 @@ def build_cont_dat(vis, target_line_range_kms,
 
         cont_dat.update({field: cont_dat_field})
 
-    msmd.close()
-    ms.close()
+    mymsmd.close()
+    myms.close()
 
     # write the dictionary into a file usable by the CASA VLA pipeline
     access_mode = "a" if append else "w"
