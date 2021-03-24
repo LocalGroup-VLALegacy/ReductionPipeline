@@ -87,8 +87,10 @@ calibrator_line_range_kms['J0038+4137']['HI'] = [30, -30]
 
 # J0102+5824 (IC10)
 # Gain cal
-# calibrator_line_range_kms['J0102+5824'] = {}
-# calibrator_line_range_kms['J0102+5824']['HI'] = [0, 0]
+# Strong narrow absorption: -100 to -90
+# Pipeline auto flagged: -40 to 70
+calibrator_line_range_kms['J0102+5824'] = {}
+calibrator_line_range_kms['J0102+5824']['HI'] = [-100, 80]
 
 # J2321-1623 (WLM)
 # Gain cal
