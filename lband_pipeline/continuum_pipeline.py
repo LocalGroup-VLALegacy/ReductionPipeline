@@ -77,7 +77,7 @@ if len(context_files) > 0:
                  'hifv_exportdata']
 
     # Get existing order to match with the call order:
-    current_callorder = [result.read().pipeline_casa_task.split("(")[0] for result in context.results]
+    current_callorder = [result.read().taskname for result in context.results]
 
     # Make sure the order is what we expect
     matching_calls = np.array(current_callorder) == np.array(callorder[:len(current_callorder)])
