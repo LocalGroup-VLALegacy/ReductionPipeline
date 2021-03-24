@@ -10,7 +10,7 @@ casalog = logsink()
 
 # read from plotms output file
 def get_uvdata(infile):
-    dat = np.genfromtxt(infile, names=True, dtype=None, skip_header=6)  # , encoding=None)
+    dat = np.genfromtxt(infile, names=True, dtype=None, skip_header=6, encoding=None)
     spws = sorted(np.unique(dat['spw']))
     median_flux = []
     for spw in spws:
