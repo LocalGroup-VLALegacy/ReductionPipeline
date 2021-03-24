@@ -61,7 +61,6 @@ if len(context_files) > 0:
                  'hifv_vlasetjy',
                  'hifv_priorcals',
                  'hifv_testBPdcals',
-                 'hifv_flagbaddef',
                  'hifv_checkflag',
                  'hifv_semiFinalBPdcals',
                  'hifv_checkflag',
@@ -178,50 +177,47 @@ if not skip_pipeline:
                              refantignore=refantignore)
 
         if restart_stage <= 6:
-            hifv_flagbaddef(doflagundernspwlimit=False)
-
-        if restart_stage <= 7:
             hifv_checkflag(pipelinemode="automatic")
 
-        if restart_stage <= 8:
+        if restart_stage <= 7:
             hifv_semiFinalBPdcals(weakbp=False,
                                   refantignore=refantignore)
 
-        if restart_stage <= 9:
+        if restart_stage <= 8:
             hifv_checkflag(checkflagmode='semi')
 
-        if restart_stage <= 10:
+        if restart_stage <= 9:
             hifv_semiFinalBPdcals(weakbp=False,
                                   refantignore=refantignore)
 
-        if restart_stage <= 11:
+        if restart_stage <= 10:
             hifv_solint(pipelinemode="automatic",
                         refantignore=refantignore)
 
-        if restart_stage <= 12:
+        if restart_stage <= 11:
             hifv_fluxboot2(pipelinemode="automatic", fitorder=-1,
                            refantignore=refantignore)
 
-        if restart_stage <= 13:
+        if restart_stage <= 12:
             hifv_finalcals(weakbp=False,
                            refantignore=refantignore)
 
-        if restart_stage <= 14:
+        if restart_stage <= 13:
             hifv_applycals(flagdetailedsum=True,
                         gainmap=False,
                         flagbackup=True,
                         flagsum=True)
 
-        if restart_stage <= 15:
+        if restart_stage <= 14:
             hifv_targetflag(intents='*CALIBRATE*,*TARGET*')
 
-        if restart_stage <= 16:
+        if restart_stage <= 15:
             hifv_statwt(datacolumn='corrected')
 
-        if restart_stage <= 17:
+        if restart_stage <= 16:
             hifv_plotsummary(pipelinemode="automatic")
 
-        if restart_stage <= 18:
+        if restart_stage <= 17:
             hif_makeimlist(nchan=-1,
                         calcsb=False,
                         intent='PHASE,BANDPASS',
@@ -232,7 +228,7 @@ if not skip_pipeline:
                         specmode='cont',
                         clearlist=True)
 
-        if restart_stage <= 19:
+        if restart_stage <= 18:
 
             hif_makeimages(tlimit=2.0,
                         hm_perchanweightdensity=False,
@@ -255,7 +251,7 @@ if not skip_pipeline:
                         cleancontranges=False,
                         hm_sidelobethreshold=-999.0)
 
-        if restart_stage <= 20:
+        if restart_stage <= 19:
             # Make a folder of products for restoring the pipeline solution
             if not os.path.exists(products_folder):
                 os.mkdir(products_folder + '/')

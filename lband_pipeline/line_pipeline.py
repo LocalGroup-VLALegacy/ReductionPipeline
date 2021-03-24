@@ -82,7 +82,7 @@ if len(context_files) > 0:
                  'hifv_vlasetjy',
                  'hifv_priorcals',
                  'hifv_testBPdcals',
-                 'hifv_flagbaddef',
+                #  'hifv_flagbaddef',  # Remove for CASA 6
                  'hifv_checkflag',
                  'hifv_semiFinalBPdcals',
                  'hifv_checkflag',
@@ -99,6 +99,11 @@ if len(context_files) > 0:
                  'hifv_exportdata']
 
     # Get existing order to match with the call order:
+    for i, result in enumerate(context.results):
+        print(f"Step {i}")
+        print(result.read())
+        print(result.read().pipeline_casa_task)
+
     current_callorder = [result.read().pipeline_casa_task.split("(")[0] for result in context.results]
 
     # Make sure the order is what we expect
@@ -225,19 +230,16 @@ if not skip_pipeline:
                                             task_string="hifv_testBPdcals")
 
         if restart_stage <= 5:
-            hifv_flagbaddef(pipelinemode="automatic")
-
-        if restart_stage <= 6:
             hifv_checkflag(pipelinemode="automatic")
 
-        if restart_stage <= 7:
+        if restart_stage <= 6:
             hifv_semiFinalBPdcals(weakbp=False,
                                 refantignore=refantignore)
 
-        if restart_stage <= 8:
+        if restart_stage <= 7:
             hifv_checkflag(checkflagmode='semi')
 
-        if restart_stage <= 9:
+        if restart_stage <= 8:
             hifv_semiFinalBPdcals(weakbp=False,
                                 refantignore=refantignore)
 
@@ -245,15 +247,15 @@ if not skip_pipeline:
                                             search_string='',
                                             task_string='hifv_semiFinalBPdcals')
 
-        if restart_stage <= 10:
+        if restart_stage <= 9:
             hifv_solint(pipelinemode="automatic",
                         refantignore=refantignore)
 
-        if restart_stage <= 11:
+        if restart_stage <= 10:
             hifv_fluxboot2(pipelinemode="automatic",
                         refantignore=refantignore)
 
-        if restart_stage <= 12:
+        if restart_stage <= 11:
             hifv_finalcals(weakbp=False,
                         refantignore=refantignore)
 
@@ -261,7 +263,7 @@ if not skip_pipeline:
                                             search_string='final',
                                             task_string='hifv_finalcals')
 
-        if restart_stage <= 13:
+        if restart_stage <= 12:
             hifv_applycals(flagdetailedsum=True,
                         gainmap=False,
                         flagbackup=True,
@@ -269,25 +271,25 @@ if not skip_pipeline:
 
         # Keep the following step in the script if cont.dat exists.
         # Remove RFI flagging the lines in target fields.
-        if restart_stage <= 14:
+        if restart_stage <= 13:
             if os.path.exists('cont.dat'):
                 hifv_targetflag(intents='*CALIBRATE*, *TARGET*')
             else:
                 hifv_targetflag(intents='*CALIBRATE*')
 
-        if restart_stage <= 15:
+        if restart_stage <= 14:
             hifv_statwt(pipelinemode="automatic")
 
-        if restart_stage <= 16:
+        if restart_stage <= 15:
             hifv_plotsummary(pipelinemode="automatic")
 
-        if restart_stage <= 17:
+        if restart_stage <= 16:
             # TODO: Choose a representative target field to image?
             hif_makeimlist(nchan=-1,
                         calmaxpix=300,
                         intent='PHASE,BANDPASS')
 
-        if restart_stage <= 18:
+        if restart_stage <= 17:
             hif_makeimages(tlimit=2.0,
                         hm_minbeamfrac=-999.0,
                         hm_dogrowprune=True,
@@ -304,7 +306,7 @@ if not skip_pipeline:
                         cleancontranges=False,
                         hm_sidelobethreshold=-999.0)
 
-        if restart_stage <= 19:
+        if restart_stage <= 18:
             # Make a folder of products for restoring the pipeline solution
             if not os.path.exists(products_folder):
                 os.mkdir(products_folder + '/')
