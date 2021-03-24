@@ -106,7 +106,8 @@ def run_all_uvstats(myvis, out_path, uv_threshold=3, uv_nsigma=3,
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
 
-    from casatasks import split, plotms, gaincal, applycal
+    from casatasks import split, gaincal, applycal
+    from casaplotms import plotms
 
     # from taskinit import msmdtool, casalog
     # from taskinit import msmdtool, casalog

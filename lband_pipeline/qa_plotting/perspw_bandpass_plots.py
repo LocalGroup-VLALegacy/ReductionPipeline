@@ -19,7 +19,7 @@ def make_spw_bandpass_plots(ms_active,
     # from taskinit import tb
     from casatools import table
 
-    from tasks import plotcal
+    from casatasks import plotcal
 
     mySDM = ms_active.rstrip(".ms")
 
@@ -109,7 +109,7 @@ def make_bandpass_txt(ms_active, output_folder='finalBPcal_txt'):
 
     tb = table()
 
-    from casatasks import plotms
+    from casaplotms import plotms
 
     casalog.post("Running make_bandpass_txt to export txt files for QA.")
     print("Running make_bandpass_txt to export txt files for QA.")

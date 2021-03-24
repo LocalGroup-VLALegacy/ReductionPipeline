@@ -39,7 +39,7 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
     # from taskinit import tb
     # from taskinit import casalog
 
-    from casatasks import plotms
+    from casaplotms import plotms
 
     # SPWs to loop through
     tb.open(os.path.join(ms_name, "SPECTRAL_WINDOW"))
@@ -327,10 +327,12 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
     '''
 
     # Will need to updated for CASA 6
-    from taskinit import tb
-    from taskinit import casalog
+    # from taskinit import tb
+    from casatools import table
 
-    from tasks import plotms
+    tb = table()
+
+    from casaplotms import plotms
 
     casalog.post("Running make_qa_tables to export txt files for QA.")
     print("Running make_qa_tables to export txt files for QA.")

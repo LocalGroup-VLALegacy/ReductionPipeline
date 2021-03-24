@@ -7,7 +7,10 @@ import shutil
 import scipy.ndimage as nd
 
 from casatasks import bandpass
-from casatools import *
+from casatools import logsink
+
+casalog = logsink()
+
 
 def bandpass_with_gap_interpolation_deprecated(myvis, context, refantignore="",
                                                search_string="test",
@@ -179,7 +182,7 @@ def bandpass_with_gap_interpolation(myvis, hi_spwid,
         # One table for each semifinal cal call.
         # Grab the second call table.
         bpname = sorted(bpname,
-                        key=lambda x: int(x.split("_4.BPcal.tbl")[0].split(".s")[-1]))[-1]
+                        key=lambda x: int(x.split("_4.BPcal_L.tbl")[0].split(".s")[-1]))[-1]
     elif len(bpname) == 0:
         raise ValueError("No matches to the BP table found.")
     else:

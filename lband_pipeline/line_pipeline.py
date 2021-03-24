@@ -3,6 +3,7 @@ import sys
 import os
 from glob import glob
 import shutil
+import traceback
 import numpy as np
 
 # Additional QA plotting routines
@@ -314,6 +315,8 @@ if not skip_pipeline:
 
     except Exception as ex:
         casalog.post("Encountered exception: {}".format(ex))
+
+        casalog.post("Traceback: {}".format(traceback.print_exc()))
 
         h_save()
 
