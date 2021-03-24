@@ -76,7 +76,8 @@ def correct_ant_posns(vis_name, print_offsets=False,
 
     except FileNotFoundError as err:
 
-        LOG.warn('Cannot find antenna position correction txt file {}'.format(err.reason))
+        # LOG.warn('Cannot find antenna position correction txt file {}'.format(err.reason))
+        LOG.warn('Cannot find antenna position correction txt file {}'.format(err))
 
         return [2, '', []]
 

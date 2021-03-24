@@ -112,16 +112,20 @@ def run_all_uvstats(myvis, out_path, uv_threshold=3, uv_nsigma=3,
     # from taskinit import msmdtool, casalog
     # from taskinit import msmdtool, casalog
 
-    from casatools import msmd
+    from casatools import ms
 
-    mymsmd = msmd()
+    myms = ms()
 
     # msmd = msmdtool()
     # get metadata
-    mymsmd.open(myvis)
+
+    myms.open(myvis)
+    mymsmd = myms.metadata()
+
+    # mymsmd.open(myvis)
     cal_fields = np.unique(mymsmd.fieldsforintent('CALIBRATE*'))
     field_names = mymsmd.namesforfields(cal_fields)
-    mymsmd.close()
+    myms.close()
 
     # split calibrator visibilities
     field_str = ','.join([str(f) for f in cal_fields])
