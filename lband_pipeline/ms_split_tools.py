@@ -224,3 +224,69 @@ def split_ms(ms_name,
                                                       ms_name_base),
               spw=line_spw_str, datacolumn='DATA',
               field="")
+
+
+def reorder_concat(continuum_vis, line_vis, remove_intermediate=True,
+                   outputvis=None):
+    '''
+    Reorder the SPWs according the to the original VLA names to reset
+    the order.
+
+    e.g., based on EVLA_L#A0C0#0 where the last is the original SPW num.
+    '''
+
+    from casatasks import split, concat, clearstat
+
+    from casatools import ms, logsink
+
+    casalog = logsink()
+
+    casalog.post("This re-ordered MS will NOT contain RQ and SWPOW information!")
+
+    if outputvis is None:
+        outputvis = "concat.ms"
+
+    # Get SPW names in the different vis and map to the current split vis
+
+    spw_dict = {}
+
+    for myvis in [line_vis, continuum_vis]:
+
+        myms = ms()
+        myms.open(myvis)
+
+        metadata = myms.metadata()
+
+        # Our SPW setup is the same for all fields.
+        spw_ids = metadata.spwsforfield(0)
+        spw_names = metadata.namesforspws()
+
+        myms.close()
+        metadata.close()
+
+        for id, name in zip(spw_ids, spw_names):
+            spw_dict[name] = [myvis, id]
+
+    # Split each SPW and then progressively concat back up
+
+    keys_list = list(spw_dict.keys())
+
+    split(vis=spw_dict[keys_list[0]][0], outputvis=outputvis,
+          spw=spw_dict[keys_list[0]][1], datacolumn='DATA')
+
+    for key in keys_list[1:]:
+        casalog.post(f"Splitting and concatenating {key}")
+
+        split(vis=spw_dict[key][0],
+              outputvis=f"{spw_dict[key][0]}.split_spw{spw_dict[key][1]}",
+              spw=spw_dict[key][1],
+              datacolumn='DATA')
+
+        concat(vis=[f"{spw_dict[key][0]}.split_spw{spw_dict[key][1]}"],
+               concatvis=outputvis)
+
+        clearstat()
+
+        if remove_intermediate:
+            os.system(f"rm -rf {spw_dict[key][0]}.split_spw{spw_dict[key][1]}")
+
