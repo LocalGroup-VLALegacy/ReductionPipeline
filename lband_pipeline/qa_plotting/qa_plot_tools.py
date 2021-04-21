@@ -342,7 +342,7 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
         os.mkdir(output_folder)
     else:
         if overwrite:
-            casalog.post("Removing plot tables in {}".format(output_folder))
+            casalog.post(message="Removing plot tables in {}".format(output_folder), origin='make_qa_tables')
             print("Removing plot tables in {}".format(output_folder))
             os.system("rm -r {}/*".format(output_folder))
         else:
@@ -378,8 +378,8 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
 
     tb.close()
 
-    casalog.post("Fields are: {}".format(names))
-    casalog.post("Calibrator fields are: {}".format(names[is_calibrator]))
+    casalog.post(message="Fields are: {}".format(names), origin='make_qa_tables')
+    casalog.post(message="Calibrator fields are: {}".format(names[is_calibrator]), origin='make_qa_tables')
 
     print("Fields are: {}".format(names))
     print("Calibrator fields are: {}".format(names[is_calibrator]))
@@ -387,88 +387,109 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
     # Loop through fields. Make separate tables only for different targets.
 
     for ii in range(numFields):
-        casalog.post("On field {}".format(names[ii]))
+        casalog.post(message="On field {}".format(names[ii]), origin='make_qa_plots')
         print("On field {}".format(names[ii]))
 
         # Amp vs. time
-        plotms(vis=ms_name,
-               xaxis='time',
-               yaxis='amp',
-               ydatacolumn='corrected',
-               selectdata=True,
-               field=names[ii],
-               scan="",
-               spw="",
-               avgchannel=str(chanavg),
-               correlation="RR,LL",
-               averagedata=True,
-               avgbaseline=True,
-               transform=False,
-               extendflag=False,
-               plotrange=[],
-               # title='Amp vs Time: Field {0} Scan {1}'.format(names[ii], jj),
-               xlabel='Time',
-               ylabel='Amp',
-               showmajorgrid=False,
-               showminorgrid=False,
-               plotfile=os.path.join(output_folder,
-                                     'field_{0}_amp_time.{1}'.format(names[ii], outtype)),
-               overwrite=True,
-               showgui=False)
+        amptime_filename = os.path.join(output_folder,
+                                        'field_{0}_amp_time.{1}'.format(names[ii], outtype))
+
+        if not os.path.exists(amptime_filename):
+
+            plotms(vis=ms_name,
+                xaxis='time',
+                yaxis='amp',
+                ydatacolumn='corrected',
+                selectdata=True,
+                field=names[ii],
+                scan="",
+                spw="",
+                avgchannel=str(chanavg),
+                correlation="RR,LL",
+                averagedata=True,
+                avgbaseline=True,
+                transform=False,
+                extendflag=False,
+                plotrange=[],
+                # title='Amp vs Time: Field {0} Scan {1}'.format(names[ii], jj),
+                xlabel='Time',
+                ylabel='Amp',
+                showmajorgrid=False,
+                showminorgrid=False,
+                plotfile=amptime_filename,
+                overwrite=True,
+                showgui=False)
+        else:
+            casalog.post(message="File {} already exists. Skipping".format(amptime_filename),
+                         origin='make_qa_tables')
 
         # Amp vs. channel
-        plotms(vis=ms_name,
-               xaxis='chan',
-               yaxis='amp',
-               ydatacolumn='corrected',
-               selectdata=True,
-               field=names[ii],
-               scan="",
-               spw="",
-               avgchannel="1",
-               avgtime="1e8",
-               correlation="RR,LL",
-               averagedata=True,
-               avgbaseline=True,
-               transform=False,
-               extendflag=False,
-               plotrange=[],
-               # title='Amp vs Chan: Field {0} Scan {1}'.format(names[ii], jj),
-               xlabel='Channel',
-               ylabel='Amp',
-               showmajorgrid=False,
-               showminorgrid=False,
-               plotfile=os.path.join(output_folder,
-                                     'field_{0}_amp_chan.{1}'.format(names[ii], outtype)),
-               overwrite=True,
-               showgui=False)
+        ampchan_filename = os.path.join(output_folder,
+                                     'field_{0}_amp_chan.{1}'.format(names[ii], outtype))
+
+        if not os.path.exists(ampchan_filename):
+
+            plotms(vis=ms_name,
+                xaxis='chan',
+                yaxis='amp',
+                ydatacolumn='corrected',
+                selectdata=True,
+                field=names[ii],
+                scan="",
+                spw="",
+                avgchannel="1",
+                avgtime="1e8",
+                correlation="RR,LL",
+                averagedata=True,
+                avgbaseline=True,
+                transform=False,
+                extendflag=False,
+                plotrange=[],
+                # title='Amp vs Chan: Field {0} Scan {1}'.format(names[ii], jj),
+                xlabel='Channel',
+                ylabel='Amp',
+                showmajorgrid=False,
+                showminorgrid=False,
+                plotfile=ampchan_filename,
+                overwrite=True,
+                showgui=False)
+            else:
+                casalog.post(message="File {0} already exists. Skipping".format(ampchan_filename),
+                            origin='make_qa_tables')
 
         # Plot amp vs uvdist
-        plotms(vis=ms_name,
-               xaxis='uvdist',
-               yaxis='amp',
-               ydatacolumn='corrected',
-               selectdata=True,
-               field=names[ii],
-               scan="",
-               spw="",
-               avgchannel=str(chanavg),
-               avgtime='1e8',
-               correlation="RR,LL",
-               averagedata=True,
-               avgbaseline=False,
-               transform=False,
-               extendflag=False,
-               plotrange=[],
-               # title='Amp vs UVDist: Field {0} Scan {1}'.format(names[ii], jj),
-               xlabel='uv-dist',
-               ylabel='Amp',
-               showmajorgrid=False,
-               showminorgrid=False,
-               plotfile=os.path.join(output_folder,
-                                     'field_{0}_amp_uvdist.{1}'.format(names[ii], outtype)),
-               overwrite=True,
-               showgui=False)
+        ampuvdist_filename = os.path.join(output_folder,
+                                     'field_{0}_amp_uvdist.{1}'.format(names[ii], outtype))
+
+        if not os.path.exists(ampuvdist_filename):
+
+            plotms(vis=ms_name,
+                xaxis='uvdist',
+                yaxis='amp',
+                ydatacolumn='corrected',
+                selectdata=True,
+                field=names[ii],
+                scan="",
+                spw="",
+                avgchannel=str(chanavg),
+                avgtime='1e8',
+                correlation="RR,LL",
+                averagedata=True,
+                avgbaseline=False,
+                transform=False,
+                extendflag=False,
+                plotrange=[],
+                # title='Amp vs UVDist: Field {0} Scan {1}'.format(names[ii], jj),
+                xlabel='uv-dist',
+                ylabel='Amp',
+                showmajorgrid=False,
+                showminorgrid=False,
+                plotfile=ampuvdist_filename,
+                overwrite=True,
+                showgui=False)
+        else:
+            casalog.post(message="File {} already exists. Skipping".format(ampuvdist_filename),
+                         origin='make_qa_tables')
 
         # Make phase plots if a calibrator source.
 
@@ -478,136 +499,175 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
             print("This is a calibrator. Exporting phase info, too.")
 
             # Plot phase vs time
-            plotms(vis=ms_name,
-                   xaxis='time',
-                   yaxis='phase',
-                   ydatacolumn='corrected',
-                   selectdata=True,
-                   field=names[ii],
-                   scan="",
-                   spw="",
-                   correlation="RR,LL",
-                   avgchannel=str(chanavg),
-                   averagedata=True,
-                   avgbaseline=True,
-                   transform=False,
-                   extendflag=False,
-                   plotrange=[],
-                   # title='Phase vs Time: Field {0} Scan {1}'.format(names[ii], jj),
-                   xlabel='Time',
-                   ylabel='Phase',
-                   showmajorgrid=False,
-                   showminorgrid=False,
-                   plotfile=os.path.join(output_folder,
-                                         'field_{0}_phase_time.{1}'.format(names[ii], outtype)),
-                   overwrite=True,
-                   showgui=False)
+
+            phasetime_filename = os.path.join(output_folder,
+                                         'field_{0}_phase_time.{1}'.format(names[ii], outtype))
+
+            if not os.path.exists(phasetime_filename):
+
+                plotms(vis=ms_name,
+                    xaxis='time',
+                    yaxis='phase',
+                    ydatacolumn='corrected',
+                    selectdata=True,
+                    field=names[ii],
+                    scan="",
+                    spw="",
+                    correlation="RR,LL",
+                    avgchannel=str(chanavg),
+                    averagedata=True,
+                    avgbaseline=True,
+                    transform=False,
+                    extendflag=False,
+                    plotrange=[],
+                    # title='Phase vs Time: Field {0} Scan {1}'.format(names[ii], jj),
+                    xlabel='Time',
+                    ylabel='Phase',
+                    showmajorgrid=False,
+                    showminorgrid=False,
+                    plotfile=phasetime_filename,
+                    overwrite=True,
+                    showgui=False)
+            else:
+                casalog.post(message="File {} already exists. Skipping".format(phasetime_filename),
+                            origin='make_qa_tables')
 
             # Plot phase vs channel
-            plotms(vis=ms_name,
-                   xaxis='chan',
-                   yaxis='phase',
-                   ydatacolumn='corrected',
-                   selectdata=True,
-                   field=names[ii],
-                   scan="",
-                   spw="",
-                   avgchannel="1",
-                   avgtime="1e8",
-                   correlation="RR,LL",
-                   averagedata=True,
-                   avgbaseline=True,
-                   transform=False,
-                   extendflag=False,
-                   plotrange=[],
-                   # title='Phase vs Chan: Field {0} Scan {1}'.format(names[ii], jj),
-                   xlabel='Chan',
-                   ylabel='Phase',
-                   showmajorgrid=False,
-                   showminorgrid=False,
-                   plotfile=os.path.join(output_folder,
-                                         'field_{0}_phase_chan.{1}'.format(names[ii], outtype)),
-                   overwrite=True,
-                   showgui=False)
+            phasechan_filename = os.path.join(output_folder,
+                                         'field_{0}_phase_chan.{1}'.format(names[ii], outtype))
+
+            if not os.path.exists(phasechan_filename):
+
+                plotms(vis=ms_name,
+                    xaxis='chan',
+                    yaxis='phase',
+                    ydatacolumn='corrected',
+                    selectdata=True,
+                    field=names[ii],
+                    scan="",
+                    spw="",
+                    avgchannel="1",
+                    avgtime="1e8",
+                    correlation="RR,LL",
+                    averagedata=True,
+                    avgbaseline=True,
+                    transform=False,
+                    extendflag=False,
+                    plotrange=[],
+                    # title='Phase vs Chan: Field {0} Scan {1}'.format(names[ii], jj),
+                    xlabel='Chan',
+                    ylabel='Phase',
+                    showmajorgrid=False,
+                    showminorgrid=False,
+                    plotfile=phasechan_filename,
+                    overwrite=True,
+                    showgui=False)
+            else:
+                casalog.post(message="File {} already exists. Skipping".format(phasechan_filename),
+                            origin='make_qa_tables')
 
             # Plot phase vs uvdist
-            plotms(vis=ms_name,
-                   xaxis='uvdist',
-                   yaxis='phase',
-                   ydatacolumn='corrected',
-                   selectdata=True,
-                   field=names[ii],
-                   scan="",
-                   spw="",
-                   correlation="RR,LL",
-                   avgchannel=str(chanavg),
-                   avgtime='1e8',
-                   averagedata=True,
-                   avgbaseline=False,
-                   transform=False,
-                   extendflag=False,
-                   plotrange=[],
-                   # title='Phase vs UVDist: Field {0} Scan {1}'.format(names[ii], jj),
-                   xlabel='uv-dist',
-                   ylabel='Phase',
-                   showmajorgrid=False,
-                   showminorgrid=False,
-                   plotfile=os.path.join(output_folder,
-                                         'field_{0}_phase_uvdist.{1}'.format(names[ii], outtype)),
-                   overwrite=True,
-                   showgui=False)
+            phaseuvdist_filename = os.path.join(output_folder,
+                                         'field_{0}_phase_uvdist.{1}'.format(names[ii], outtype))
+
+            if not os.path.exists(phaseuvdist_filename):
+
+                plotms(vis=ms_name,
+                    xaxis='uvdist',
+                    yaxis='phase',
+                    ydatacolumn='corrected',
+                    selectdata=True,
+                    field=names[ii],
+                    scan="",
+                    spw="",
+                    correlation="RR,LL",
+                    avgchannel=str(chanavg),
+                    avgtime='1e8',
+                    averagedata=True,
+                    avgbaseline=False,
+                    transform=False,
+                    extendflag=False,
+                    plotrange=[],
+                    # title='Phase vs UVDist: Field {0} Scan {1}'.format(names[ii], jj),
+                    xlabel='uv-dist',
+                    ylabel='Phase',
+                    showmajorgrid=False,
+                    showminorgrid=False,
+                    plotfile=phaseuvdist_filename,
+                    overwrite=True,
+                    showgui=False)
+
+            else:
+                casalog.post(message="File {} already exists. Skipping".format(phaseuvdist_filename),
+                            origin='make_qa_tables')
 
             # Plot amp vs phase
-            plotms(vis=ms_name,
-                   xaxis='amp',
-                   yaxis='phase',
-                   ydatacolumn='corrected',
-                   selectdata=True,
-                   field=names[ii],
-                   scan="",
-                   spw="",
-                   correlation="RR,LL",
-                   avgchannel=str(chanavg),
-                   avgtime='1e8',
-                   averagedata=True,
-                   avgbaseline=False,
-                   transform=False,
-                   extendflag=False,
-                   plotrange=[],
-                   # title='Amp vs Phase: Field {0} Scan {1}'.format(names[ii], jj),
-                   xlabel='Phase',
-                   ylabel='Amp',
-                   showmajorgrid=False,
-                   showminorgrid=False,
-                   plotfile=os.path.join(output_folder,
-                                         'field_{0}_amp_phase.{1}'.format(names[ii], outtype)),
-                   overwrite=True,
-                   showgui=False)
+            ampphase_filename = os.path.join(output_folder,
+                                         'field_{0}_amp_phase.{1}'.format(names[ii], outtype))
+
+            if not os.path.exists(ampphase_filename):
+
+                plotms(vis=ms_name,
+                    xaxis='amp',
+                    yaxis='phase',
+                    ydatacolumn='corrected',
+                    selectdata=True,
+                    field=names[ii],
+                    scan="",
+                    spw="",
+                    correlation="RR,LL",
+                    avgchannel=str(chanavg),
+                    avgtime='1e8',
+                    averagedata=True,
+                    avgbaseline=False,
+                    transform=False,
+                    extendflag=False,
+                    plotrange=[],
+                    # title='Amp vs Phase: Field {0} Scan {1}'.format(names[ii], jj),
+                    xlabel='Phase',
+                    ylabel='Amp',
+                    showmajorgrid=False,
+                    showminorgrid=False,
+                    plotfile=ampphase_filename,
+                    overwrite=True,
+                    showgui=False)
+            else:
+                casalog.post(message="File {} already exists. Skipping".format(ampphase_filename),
+                            origin='make_qa_tables')
 
             # Plot uv-wave vs, amp - model residual
             # Check how good the point-source calibrator model is.
-            plotms(vis=ms_name,
-                   xaxis='uvwave',
-                   yaxis='amp',
-                   ydatacolumn='corrected-model_scalar',
-                   selectdata=True,
-                   field=names[ii],
-                   scan="",
-                   spw="",
-                   correlation="RR,LL",
-                   avgchannel=str(chanavg),
-                   avgtime='1e8',
-                   averagedata=True,
-                   avgbaseline=False,
-                   transform=False,
-                   extendflag=False,
-                   plotrange=[],
-                   xlabel='uv-dist',
-                   ylabel='Phase',
-                   showmajorgrid=False,
-                   showminorgrid=False,
-                   plotfile=os.path.join(output_folder,
+
+            ampresid_filename = os.path.join(output_folder,
                                          'field_{0}_ampresid_uvwave.{1}'.format(names[ii],
-                                                                                outtype)),
-                   overwrite=True,
-                   showgui=False)
+                                                                                outtype))
+
+            if not os.path.exists(ampresid_filename):
+
+                plotms(vis=ms_name,
+                    xaxis='uvwave',
+                    yaxis='amp',
+                    ydatacolumn='corrected-model_scalar',
+                    selectdata=True,
+                    field=names[ii],
+                    scan="",
+                    spw="",
+                    correlation="RR,LL",
+                    avgchannel=str(chanavg),
+                    avgtime='1e8',
+                    averagedata=True,
+                    avgbaseline=False,
+                    transform=False,
+                    extendflag=False,
+                    plotrange=[],
+                    xlabel='uv-dist',
+                    ylabel='Phase',
+                    showmajorgrid=False,
+                    showminorgrid=False,
+                    plotfile=ampresid_filename,
+                    overwrite=True,
+                    showgui=False)
+
+            else:
+                casalog.post(message="File {} already exists. Skipping".format(ampresid_filename),
+                             origin='make_qa_tables')
