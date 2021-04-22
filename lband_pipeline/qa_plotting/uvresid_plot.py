@@ -101,7 +101,8 @@ def plot_uvdata_perscan(binned_dat_perscan, binned_dat, infile, bin_type='combin
 def run_all_uvstats(myvis, out_path, uv_threshold=3, uv_nsigma=3,
                     try_phase_selfcal=True,
                     cleanup_calsplit=True,
-                    cleanup_phaseselfcal=True):
+                    cleanup_phaseselfcal=True,
+                    remake_split=True):
 
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
@@ -132,6 +133,9 @@ def run_all_uvstats(myvis, out_path, uv_threshold=3, uv_nsigma=3,
 
     output_cal_ms = out_path + '/cal_fields.ms'
 
+    if os.path.exists(output_cal_ms) and remake_split:
+        os.system('rm -r {0}'.format(output_cal_ms))
+
     if not os.path.exists(output_cal_ms):
         split(vis=myvis, field=field_str,
               keepflags=True, timebin='0s', outputvis=output_cal_ms)
@@ -148,11 +152,15 @@ def run_all_uvstats(myvis, out_path, uv_threshold=3, uv_nsigma=3,
 
         plotms_outfile = out_path + '/plotms_amp_uvwave_field_{0}.txt'.format(field_name)
         casalog.post(message='Exporting from plotms: {0}'.format(plotms_outfile), origin='run_all_uvstats')
-        plotms(vis=out_path + '/cal_fields.ms',
-               field=field_name, xaxis='UVwave', yaxis='Amp', ydatacolumn='data',
-               averagedata=True, scalar=False,
-               avgchannel='4096', avgtime='1000', avgscan=False,
-               correlation='RR,LL', plotfile=plotms_outfile, showgui=False, overwrite=True)
+
+        if not os.path.exists(plotms_outfile):
+            plotms(vis=out_path + '/cal_fields.ms',
+                field=field_name, xaxis='UVwave', yaxis='Amp', ydatacolumn='data',
+                averagedata=True, scalar=False,
+                avgchannel='4096', avgtime='1000', avgscan=False,
+                correlation='RR,LL', plotfile=plotms_outfile, showgui=False, overwrite=True)
+        else:
+            casalog.post(message='File {0} already exists. Skipping'.format(plotms_outfile), origin='run_all_uvstats')
 
         infile = out_path + '/plotms_amp_uvwave_field_{0}.txt'.format(field_name)
         casalog.post(message='Analyzing UV stats for {0}'.format(infile), origin='run_all_uvstats')
@@ -185,10 +193,16 @@ def run_all_uvstats(myvis, out_path, uv_threshold=3, uv_nsigma=3,
 
                 plotms_outfile = out_path + '/plotms_amp_uvwave_cal_field_{0}.txt'.format(field_name)
                 casalog.post(message='Exporting from plotms: {0}'.format(plotms_outfile), origin='run_all_uvstats')
-                plotms(vis=output_cal_ms, field=field_name, xaxis='UVwave', yaxis='Amp',
-                       ydatacolumn='corrected', averagedata=True,
-                       scalar=False, avgchannel='4096', avgtime='1000', avgscan=False,
-                       correlation='RR,LL', plotfile=plotms_outfile, showgui=False, overwrite=True)
+
+                if not os.path.exists(plotms_outfile):
+
+                    plotms(vis=output_cal_ms, field=field_name, xaxis='UVwave', yaxis='Amp',
+                        ydatacolumn='corrected', averagedata=True,
+                        scalar=False, avgchannel='4096', avgtime='1000', avgscan=False,
+                        correlation='RR,LL', plotfile=plotms_outfile, showgui=False, overwrite=True)
+
+                else:
+                    casalog.post(message='File {0} already exists. Skipping'.format(plotms_outfile), origin='run_all_uvstats')
 
                 infile = out_path + '/plotms_amp_uvwave_cal_field_{0}.txt'.format(field_name)
                 casalog.post(message='Analyzing UV stats for {0}'.format(infile), origin='run_all_uvstats')
