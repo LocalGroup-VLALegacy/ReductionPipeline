@@ -140,26 +140,39 @@ def make_bandpass_txt(ms_active, output_folder='finalBPcal_txt'):
         amp_filename = '{0}_amp_spw{1}.txt'.format(os.path.splitext(finalbpcal_name)[0], ii)
         phase_filename = '{0}_phase_spw{1}.txt'.format(os.path.splitext(finalbpcal_name)[0], ii)
 
-        plotms(vis=finalbpcal_name,
-               xaxis='freq',
-               yaxis='amp',
-               field='',
-               antenna='',
-               spw=str(ii),
-               timerange='',
-               showgui=False,
-               # avgtime='1e8',
-               averagedata=True,
-               plotfile=os.path.join(output_folder, amp_filename))
+        thisplotfile = os.path.join(output_folder, amp_filename)
 
-        plotms(vis=finalbpcal_name,
-               xaxis='freq',
-               yaxis='phase',
-               field='',
-               antenna='',
-               spw=str(ii),
-               timerange='',
-               showgui=False,
-               # avgtime='1e8',
-               averagedata=True,
-               plotfile=os.path.join(output_folder, phase_filename))
+        if not os.path.exists(thisplotfile):
+
+            plotms(vis=finalbpcal_name,
+                   xaxis='freq',
+                   yaxis='amp',
+                   field='',
+                   antenna='',
+                   spw=str(ii),
+                   timerange='',
+                   showgui=False,
+                   # avgtime='1e8',
+                   averagedata=True,
+                   plotfile=thisplotfile)
+        else:
+            casalog.post("File {} already exists. Skipping".format(thisplotfile))
+
+        thisplotfile = os.path.join(output_folder, phase_filename)
+
+        if not os.path.exists(thisplotfile):
+
+            plotms(vis=finalbpcal_name,
+                xaxis='freq',
+                yaxis='phase',
+                field='',
+                antenna='',
+                spw=str(ii),
+                timerange='',
+                showgui=False,
+                # avgtime='1e8',
+                averagedata=True,
+                plotfile=thisplotfile)
+
+        else:
+            casalog.post("File {} already exists. Skipping".format(thisplotfile))
