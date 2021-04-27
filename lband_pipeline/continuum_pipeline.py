@@ -10,7 +10,8 @@ from lband_pipeline.qa_plotting import (make_spw_bandpass_plots,
                                         make_qa_scan_figures,
                                         make_qa_tables,
                                         make_bandpass_txt,
-                                        run_all_uvstats)
+                                        run_all_uvstats,
+                                        make_all_caltable_txt)
 
 # Info for SPW setup
 from lband_pipeline.spw_setup import create_spw_dict
@@ -294,7 +295,9 @@ for fil in image_files:
 text_output = True
 
 if text_output:
-    make_bandpass_txt(myvis, output_folder='finalBPcal_txt')
+    # make_bandpass_txt(myvis, output_folder='finalBPcal_txt')
+
+    make_all_caltable_txt(myvis)
 
     make_qa_tables(myvis,
                    output_folder='scan_plots_txt',
