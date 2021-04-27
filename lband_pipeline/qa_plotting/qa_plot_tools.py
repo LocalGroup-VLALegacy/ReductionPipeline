@@ -453,9 +453,9 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                 plotfile=ampchan_filename,
                 overwrite=True,
                 showgui=False)
-            else:
-                casalog.post(message="File {0} already exists. Skipping".format(ampchan_filename),
-                            origin='make_qa_tables')
+        else:
+            casalog.post(message="File {0} already exists. Skipping".format(ampchan_filename),
+                        origin='make_qa_tables')
 
         # Plot amp vs uvdist
         ampuvdist_filename = os.path.join(output_folder,
