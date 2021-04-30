@@ -7,10 +7,8 @@ import traceback
 import numpy as np
 
 # Additional QA plotting routines
-from lband_pipeline.qa_plotting import (make_spw_bandpass_plots,
-                                        make_qa_scan_figures,
+from lband_pipeline.qa_plotting import (make_qa_scan_figures,
                                         make_qa_tables,
-                                        make_bandpass_txt,
                                         run_all_uvstats,
                                         make_all_caltable_txt)
 
@@ -343,8 +341,6 @@ for fil in image_files:
 text_output = True
 
 if text_output:
-    # make_bandpass_txt(myvis, output_folder='finalBPcal_txt')
-
     make_all_caltable_txt(myvis)
 
     make_qa_tables(myvis,
@@ -353,21 +349,21 @@ if text_output:
                    chanavg=4096,)
 
     # Move these folders to the products folder.
-    os.system("cp -r {0} {1}".format('finalBPcal_txt', products_folder))
+    os.system("cp -r {0} {1}".format('final_caltable_txt', products_folder))
     os.system("cp -r {0} {1}".format('scan_plots_txt', products_folder))
 
 else:
 
-    make_spw_bandpass_plots(myvis,
-                            bp_folder="finalBPcal_plots",
-                            outtype='png')
+    # make_spw_bandpass_plots(myvis,
+    #                         bp_folder="finalBPcal_plots",
+    #                         outtype='png')
 
     make_qa_scan_figures(myvis,
                          output_folder='scan_plots',
                          outtype='png')
 
     # Move these folders to the products folder.
-    os.system("cp -r {0} {1}".format('finalBPcal_plots', products_folder))
+    # os.system("cp -r {0} {1}".format('finalBPcal_plots', products_folder))
     os.system("cp -r {0} {1}".format('scan_plots', products_folder))
 
 # Make detailed uvresid plots.
