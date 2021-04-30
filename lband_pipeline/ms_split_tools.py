@@ -176,11 +176,11 @@ def split_ms(ms_name,
         do_split_lines = True
     elif split_type == 'continuum':
         do_split_continuum = True
-    elif split_type == 'lines':
+    elif split_type == 'speclines':
         do_split_lines = True
     else:
         raise ValueError("Unexpected input {} for split_type. ".format(split_type)
-                         + "Accepted inputs are 'all', 'continuum', 'lines'.")
+                         + "Accepted inputs are 'all', 'continuum', 'speclines'.")
 
     # Define the spw mapping dictionary
     spw_dict = create_spw_dict(ms_name)
