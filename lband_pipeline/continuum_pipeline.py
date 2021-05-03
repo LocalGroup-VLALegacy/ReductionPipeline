@@ -304,7 +304,7 @@ if text_output:
                    chanavg=4096,)
 
     # Move these folders to the products folder.
-    os.system("cp -r {0} {1}".format('finalBPcal_txt', products_folder))
+    os.system("cp -r {0} {1}".format('final_caltable_txt', products_folder))
     os.system("cp -r {0} {1}".format('scan_plots_txt', products_folder))
 
 else:
