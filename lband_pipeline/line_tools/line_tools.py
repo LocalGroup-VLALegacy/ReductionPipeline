@@ -198,7 +198,7 @@ def bandpass_with_gap_interpolation(myvis, hi_spwid,
 
     interpolate_bandpass(bpname,
                          spw_ids=[hi_spwid],
-                         window_size_frac=0.125, poly_order=2,  # Works well from Josh and Eric's testing
+                         poly_order=2,  # Works well from Josh and Eric's testing
                          add_residuals=False,  # We re-add residuals to match the noise in the gap
                          backup_table=True,  # A backup table is always made.
                          test_output_nowrite=False,
@@ -225,10 +225,18 @@ def rolling_window(x, k):
 
 def interpolate_bandpass(tablename,
                          spw_ids=None,
-                         window_size_frac=0.125, poly_order=2,
+                         window_size_factor=2.5,
+                         poly_order=2,
                          add_residuals=True,
                          backup_table=True, test_output_nowrite=False,
                          test_print=False):
+    '''
+    Use Savitzky-Golay smoothing across flagged channels in the bandpass.
+
+    The smoothing window size is set by `window_size_factor`. This will create
+    a smoothing length (by default) 2.5 times larger than the gap that will be interpolated
+    across. Smaller window sizes will produce artifacts over the interpolated region.
+    '''
 
     from casatools import table
 
@@ -283,17 +291,7 @@ def interpolate_bandpass(tablename,
 
         dat_shape = dat.shape
 
-        # Define the window size based on the given fraction of the num of SPW channels
-        window_size = int(np.floor(window_size_frac * dat_shape[1]))
-
-        casalog.post(message="Using window size of {0} for SPW {1}".format(window_size, spw),
-                     origin='interpolate_bandpass')
-
-        # Force odd window size
-        if window_size % 2 == 0:
-            window_size += 1
-
-        x_polyfit = np.arange(window_size) - np.floor(window_size / 2.)
+        smooth_dat = deepcopy(dat)
 
         for ant in range(dat_shape[2]):
             casalog.post(message='processing antenna {0}'.format(ant),
@@ -317,9 +315,27 @@ def interpolate_bandpass(tablename,
                 blank_slices.pop(0)
                 blank_slices.pop(-1)
 
-                # Mask out the gap.
-                smooth_dat = deepcopy(dat)
+                nchans_in_gap = max([(thisslc[0].stop - thisslc[0].start)
+                                     for thisslc in blank_slices])
 
+                # Define the window size based on the given fraction of the num of SPW channels
+                window_size = int(np.floor(window_size_factor * nchans_in_gap))
+
+                # Force odd window size
+                if window_size % 2 == 0:
+                    window_size += 1
+
+                casalog.post(message="Using window size of {0} for SPW {1}".format(window_size, spw),
+                            origin='interpolate_bandpass')
+
+                # Print a warning if the gap is >50% of the whole SPW
+                if window_size / dat.shape[1] > 0.5:
+                    casalog.post(message="Warning: the window size is >50% of the SPW",
+                                 origin='interpolate_bandpass')
+
+                x_polyfit = np.arange(window_size) - np.floor(window_size / 2.)
+
+                # Mask out the gap.
                 for slicer in blank_slices:
                     smooth_dat.mask[(slice(pol, pol + 1), slicer[0], slice(ant, ant + 1))] = True
 
