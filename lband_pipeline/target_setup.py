@@ -48,6 +48,22 @@ target_line_range_kms['M33']['HI'] = [[40, -340]]
 
 target_line_range_kms['M33']['OH'] = [[-50, -280]]
 
+# The 16B A-configuration projects use field names "NGC604" and "M33_Sarm"
+# While only single fields in M33, we will just adopt a consistent
+# velocity range:
+target_line_range_kms['NGC604'] = {}
+
+target_line_range_kms['NGC604']['HI'] = [[40, -340]]
+
+target_line_range_kms['NGC604']['OH'] = [[-50, -280]]
+
+
+target_line_range_kms['M33_Sarm'] = {}
+
+target_line_range_kms['M33_Sarm']['HI'] = [[40, -340]]
+
+target_line_range_kms['M33_Sarm']['OH'] = [[-50, -280]]
+
 # --------------------------------------------------------------
 # IC10
 
