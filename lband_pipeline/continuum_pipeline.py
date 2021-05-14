@@ -23,6 +23,8 @@ from lband_pipeline.offline_antposn_corrections import make_offline_antpos_table
 if os.getenv('DISPLAY') is None:
     raise ValueError("DISPLAY is not set. Try using xvfb for remote systems.")
 
+# Unset LD_LIBRARY_PATH. CASA isn't supposed to be using it anymore
+os.environ['LD_LIBRARY_PATH'] = ""
 
 # TODO: read in to skip a refant if needed.
 refantignore = ""
