@@ -14,6 +14,8 @@ smaller range to be flagged instead of the whole galaxy range (e.g., M31).
 # km/s in LSRK
 target_vsys_kms = {"M31": -296.,
                    "M33": -180.,
+                   "NGC604": -180.,
+                   "M33_Sarm": -180.,
                    "NGC6822": -44.,
                    "WLM": -122.,
                    "IC10": -340.,
