@@ -93,16 +93,21 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
     spw_ids = metadata.spwsforfield(0)
 
     # Identify which target we're looking at.
-    # TODO: handling of multiple targets? Would require separate
-    # setups (though SPW ids probably the same, so that's likely fine)
-    first_targ_scan = metadata.scansforintent("*TARGET*")[0]
-    targ_fieldname = metadata.fieldnames()[metadata.fieldsforscan(first_targ_scan)[0]]
+    # Some of the archival data has a setup scan labeled as a target.
+    # Because of this, we will loop through targets until we find one defined
+    # in our target dictionary.
+    for targ_scan in metadata.scansforintent("*TARGET*"):
 
-    gal_vsys = None
-    for gal in target_vsys_kms:
+        targ_fieldname = metadata.fieldnames()[metadata.fieldsforscan(targ_scan)[0]]
 
-        if gal in targ_fieldname:
-            gal_vsys = target_vsys_kms[gal]
+        gal_vsys = None
+        for gal in target_vsys_kms:
+
+            if gal in targ_fieldname:
+                gal_vsys = target_vsys_kms[gal]
+                break
+
+        if gal_vsys is not None:
             break
 
     if gal_vsys is None:
