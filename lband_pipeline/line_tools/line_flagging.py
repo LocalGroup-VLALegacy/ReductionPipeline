@@ -207,7 +207,8 @@ def build_cont_dat(vis, target_line_range_kms,
                    line_freqs={},
                    fields=[],
                    outfile="cont.dat", overwrite=False, append=False,
-                   test_print=False):
+                   test_print=False,
+                   raise_missing_target=False):
     """
     Creates a cont.dat file for the VLA pipeline. Must be run in CASA (uses msmetadata).
     It currently reads SPW edges in the original observed frame (usually TOPO),
@@ -268,7 +269,11 @@ def build_cont_dat(vis, target_line_range_kms,
                 break
         # Check for match
         if thisgal is None:
-            raise ValueError("Unable to match field {} to expected galaxy targets".format(field))
+            if raise_missing_target:
+                raise ValueError("Unable to match field {} to expected galaxy targets".format(field))
+            else:
+                casalog.post("Unable to match field {} to expected galaxy targets. Skipping.".format(field))
+                continue
 
         for spw in spws:
             # Get freq range of the SPW
