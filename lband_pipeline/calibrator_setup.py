@@ -21,6 +21,8 @@ calibrator_line_range_kms = {}
 # Fairly weak absorption, mostly from 0 to -40 km /s
 calibrator_line_range_kms['3C48'] = {}
 calibrator_line_range_kms['3C48']['HI'] = [50, -50]
+calibrator_line_range_kms['0137+331=3C48'] = {}
+calibrator_line_range_kms['0137+331=3C48']['HI'] = [50, -50]
 
 # 1331+305=3C286 (NGC6822)
 # Also a polarization angle cal
