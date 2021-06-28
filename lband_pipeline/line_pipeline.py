@@ -42,8 +42,13 @@ if os.getenv('DISPLAY') is None:
 # Unset LD_LIBRARY_PATH. CASA isn't supposed to be using it anymore
 os.environ['LD_LIBRARY_PATH'] = ""
 
-# TODO: read in to skip a refant if needed.
-refantignore = ""
+# Read in to skip a refant if needed.
+refant_ignore_filename = 'refant_ignore.txt'
+if os.path.exists(refant_ignore_filename):
+    with open(refant_ignore_filename, 'r') as file:
+        refant_ignore = file.readlines().strip("")
+else:
+    refantignore = ""
 
 mySDM = sys.argv[-1]
 myvis = mySDM if mySDM.endswith("ms") else mySDM + ".ms"
