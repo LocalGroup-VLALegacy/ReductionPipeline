@@ -30,7 +30,7 @@ os.environ['LD_LIBRARY_PATH'] = ""
 refant_ignore_filename = 'refant_ignore.txt'
 if os.path.exists(refant_ignore_filename):
     with open(refant_ignore_filename, 'r') as file:
-        refant_ignore = file.readlines().strip("")
+        refantignore = file.read().replace('\n', '')
 else:
     refantignore = ""
 
