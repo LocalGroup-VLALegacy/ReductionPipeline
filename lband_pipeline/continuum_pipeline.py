@@ -146,7 +146,8 @@ if not skip_pipeline:
             hifv_hanning(pipelinemode="automatic")
 
         if restart_stage <= 2:
-            hifv_flagdata(tbuff=0.0,
+
+            hifv_flagdata(tbuff=1.5 * int_time,
                           flagbackup=False,
                           scan=True,
                           fracspw=0.05,
@@ -157,7 +158,7 @@ if not skip_pipeline:
                           quack=True,
                           edgespw=True,
                           autocorr=True,
-                          hm_tbuff='1.5int',
+                          hm_tbuff='2.5int',
                           template=True,
                           filetemplate="manual_flagging.txt",
                           online=True)
