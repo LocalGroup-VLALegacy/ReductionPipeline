@@ -193,6 +193,11 @@ if not skip_pipeline:
         if restart_stage <= 8:
             hifv_checkflag(checkflagmode='semi')
 
+            flagdata(vis=myvis, mode='extend', extendpols=True, action='apply',
+                     display='', flagbackup=False, intent='*CALIBRATE*')
+            flagdata(vis=myvis, mode='extend', growtime=50.0, growfreq=90.0,
+                    action='apply', display='', flagbackup=False, intent='*CALIBRATE*')
+
         if restart_stage <= 9:
             hifv_semiFinalBPdcals(weakbp=False,
                                   refantignore=refantignore)
