@@ -193,11 +193,10 @@ if not skip_pipeline:
                         baseband=True,
                         clip=True,
                         autocorr=True,
-                        hm_tbuff='1.5int',
+                        hm_tbuff='2.5int',
                         template=True,
-                        # TODO: ensure we consistently use the same filename
                         filetemplate="manual_flagging.txt",
-                        online=False,
+                        online=True,
                         tbuff=0.0,
                         fracspw=0.05,
                         shadow=True,
