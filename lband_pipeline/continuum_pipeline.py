@@ -147,7 +147,7 @@ if not skip_pipeline:
 
         if restart_stage <= 2:
 
-            hifv_flagdata(tbuff=1.5 * int_time,
+            hifv_flagdata(tbuff=0.0,
                           flagbackup=False,
                           scan=True,
                           fracspw=0.05,
