@@ -312,8 +312,9 @@ def interpolate_bandpass(tablename,
 
                 # Otherwise we'll mask out the middle gaps
                 # Remove the edges.
-                blank_slices.pop(0)
-                blank_slices.pop(-1)
+                if len(blank_slices) > 1:
+                    blank_slices.pop(0)
+                    blank_slices.pop(-1)
 
                 nchans_in_gap = max([(thisslc[0].stop - thisslc[0].start)
                                      for thisslc in blank_slices])
