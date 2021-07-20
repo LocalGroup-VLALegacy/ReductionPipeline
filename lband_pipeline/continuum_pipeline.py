@@ -1,5 +1,4 @@
 
-from ReductionPipeline.lband_pipeline.flagging_tools import flag_quack_integrations
 import sys
 import os
 from glob import glob
