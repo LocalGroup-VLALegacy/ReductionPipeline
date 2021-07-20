@@ -1,4 +1,5 @@
 
+from ReductionPipeline.lband_pipeline.flagging_tools import flag_quack_integrations
 import sys
 import os
 from glob import glob
@@ -17,6 +18,8 @@ from lband_pipeline.spw_setup import create_spw_dict
 # Handle runs where the internet query to the baseline correction site will
 # fail
 from lband_pipeline.offline_antposn_corrections import make_offline_antpos_table
+
+from lband_pipeline.flagging_tools import flag_quack_integrations
 
 # Check that DISPLAY is set. Otherwise, force an error
 # We need DISPLAY set for plotms to export png or txt files.
@@ -147,8 +150,10 @@ if not skip_pipeline:
 
         if restart_stage <= 2:
 
-            hifv_flagdata(tbuff=0.0,
-                          flagbackup=False,
+            # Add additional quacking to the beginning of scans.
+            flag_quack_integrations(myvis, num_ints=3.0)
+
+            hifv_flagdata(flagbackup=False,
                           scan=True,
                           fracspw=0.05,
                           intents='*POINTING*,*FOCUS*,*ATMOSPHERE*,*SIDEBAND_RATIO*,*UNKNOWN*,*SYSTEM_CONFIGURATION*,  *UNSPECIFIED#UNSPECIFIED*',
@@ -158,7 +163,8 @@ if not skip_pipeline:
                           quack=True,
                           edgespw=True,
                           autocorr=True,
-                          hm_tbuff='2.5int',
+                          hm_tbuff='1.5int',
+                          tbuff=0.0,
                           template=True,
                           filetemplate="manual_flagging.txt",
                           online=True)

@@ -34,6 +34,8 @@ from lband_pipeline.calibrator_setup import calibrator_line_range_kms
 # fail
 from lband_pipeline.offline_antposn_corrections import make_offline_antpos_table
 
+from lband_pipeline.flagging_tools import flag_quack_integrations
+
 # Check that DISPLAY is set. Otherwise, force an error
 # We need DISPLAY set for plotms to export png or txt files.
 if os.getenv('DISPLAY') is None:
@@ -185,6 +187,9 @@ if not skip_pipeline:
             # Hanning smoothing is turned off for spectral lines.
             # hifv_hanning(pipelinemode="automatic")
 
+            # Add additional quacking to the beginning of scans.
+            flag_quack_integrations(myvis, num_ints=3.0)
+
             hifv_flagdata(intents='*POINTING*,*FOCUS*,*ATMOSPHERE*,*SIDEBAND_RATIO*, \
                         *UNKNOWN*, *SYSTEM_CONFIGURATION*, \
                         *UNSPECIFIED#UNSPECIFIED*',
@@ -193,10 +198,10 @@ if not skip_pipeline:
                         baseband=True,
                         clip=True,
                         autocorr=True,
-                        hm_tbuff='2.5int',
                         template=True,
                         filetemplate="manual_flagging.txt",
                         online=True,
+                        hm_tbuff='1.5int',
                         tbuff=0.0,
                         fracspw=0.05,
                         shadow=True,
