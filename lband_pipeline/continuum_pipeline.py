@@ -150,7 +150,7 @@ if not skip_pipeline:
         if restart_stage <= 2:
 
             # Add additional quacking to the beginning of scans.
-            flag_quack_integrations(myvis, num_ints=3.0)
+            # flag_quack_integrations(myvis, num_ints=3.0)
 
             hifv_flagdata(flagbackup=False,
                           scan=True,
