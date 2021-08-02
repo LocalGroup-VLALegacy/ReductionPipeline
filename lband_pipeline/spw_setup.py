@@ -146,9 +146,12 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
         # Centre freq.
         # ctr_freq = metadata.chanfreqs
         freqs_lsrk = myms.cvelfreqs(spwids=[spwid], outframe='LSRK')
+        freqs_topo = myms.cvelfreqs(spwids=[spwid], outframe='TOPO')
 
         # Convert from Hz to kHz
         ctr_freq = freqs_lsrk[nchan // 2 - 1] / 1e3
+
+        freq_0_topo = freqs_topo.min()
 
         # Baseband
         bband = spw_name.split("#")[1]
@@ -191,7 +194,8 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
                            'bandwidth': band_width,
                            # 'ncorr': ncorr,
                            'centerfreq': ctr_freq,
-                           'baseband': bband}
+                           'baseband': bband,
+                           'freq_0_topo': freq_0_topo}
 
     myms.close()
 

@@ -205,7 +205,7 @@ if not skip_pipeline:
             # hifv_hanning(pipelinemode="automatic")
 
             # Add additional quacking to the beginning of scans.
-            # flag_quack_integrations(myvis, num_ints=3.0)
+            flag_quack_integrations(myvis, num_ints=2.0)
 
             hifv_flagdata(intents='*POINTING*,*FOCUS*,*ATMOSPHERE*,*SIDEBAND_RATIO*, \
                         *UNKNOWN*, *SYSTEM_CONFIGURATION*, \
