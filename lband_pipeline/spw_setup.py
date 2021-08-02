@@ -73,7 +73,6 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
     use the line dictionary to match line identifications.
     '''
 
-    # TODO: need to CASA 6 proof.
     # from taskinit import ms
 
     from casatools import ms
@@ -197,3 +196,28 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
     myms.close()
 
     return spw_dict
+
+
+def continuum_spws_with_hi(spw_dict):
+    '''
+    Return the SPW #s of continuum SPWs that contain the HI line.
+    Our targets are local, so we're asssuming the HI rest frequency.
+    '''
+
+    # GHz -> kHz to match SPW dict
+    hi_freq = linerest_dict_GHz['HI'] * 1e6
+
+    contains_hi = []
+
+    for name in spw_dict:
+
+        this_spw_props = spw_dict[name]
+        bandwidth_kHz = this_spw_props['bandwidth'] / 1e3
+
+        low_freq = this_spw_props['centerfreq'] - bandwidth_kHz / 2.
+        high_freq = this_spw_props['centerfreq'] + bandwidth_kHz / 2.
+
+        if low_freq < hi_freq and high_freq > hi_freq:
+            contains_hi.append(name)
+
+    return contains_hi

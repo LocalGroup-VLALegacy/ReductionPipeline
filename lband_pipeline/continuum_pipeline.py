@@ -12,7 +12,12 @@ from lband_pipeline.qa_plotting import (make_qa_scan_figures,
                                         make_all_caltable_txt)
 
 # Info for SPW setup
-from lband_pipeline.spw_setup import create_spw_dict
+from lband_pipeline.spw_setup import (create_spw_dict, linerest_dict_GHz,
+                                      continuum_spws_with_hi)
+from lband_pipeline.calibrator_setup import calibrator_line_range_kms
+
+# Flag HI absorption on the calibrators.
+from lband_pipeline.line_tools import flag_hi_foreground
 
 # Handle runs where the internet query to the baseline correction site will
 # fail
@@ -45,6 +50,9 @@ proj_code = mySDM.split(".")[0]
 # Get the SPW mapping for the line MS.
 
 contspw_dict = create_spw_dict(myvis)
+
+# Get SPWs that contain the HI line
+spws_with_hi = continuum_spws_with_hi(contspw_dict)
 
 products_folder = "products"
 
@@ -148,6 +156,14 @@ if not skip_pipeline:
             hifv_hanning(pipelinemode="automatic")
 
         if restart_stage <= 2:
+
+            for thisspw in spws_with_hi:
+                flag_hi_foreground(myvis,
+                                   calibrator_line_range_kms,
+                                   thisspw,
+                                   cal_intents=["CALIBRATE*"],
+                                   test_run=False,
+                                   test_print=True)
 
             # Add additional quacking to the beginning of scans.
             # flag_quack_integrations(myvis, num_ints=3.0)
