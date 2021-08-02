@@ -72,6 +72,13 @@ for spwid in linespw_dict:
 if hi_spw is None:
     raise ValueError("Unable to identify the HI SPW.")
 
+hi_spw_continuum_backup = None
+for spwid in linespw_dict:
+    if linespw_dict[spwid]['label'] == "continuum_A1":
+        hi_spw_continuum_backup = spwid
+        break
+
+
 products_folder = "products"
 
 __rethrow_casa_exceptions = True
@@ -183,6 +190,16 @@ if not skip_pipeline:
                             cal_intents=["CALIBRATE*"],
                             test_run=False,
                             test_print=True)
+
+            # Also flag on continuum SPWs that cover the range
+            if hi_spw_continuum_backup is not None:
+
+                flag_hi_foreground(myvis,
+                                   calibrator_line_range_kms,
+                                   hi_spw_continuum_backup,
+                                   cal_intents=["CALIBRATE*"],
+                                   test_run=False,
+                                   test_print=True)
 
             # Hanning smoothing is turned off for spectral lines.
             # hifv_hanning(pipelinemode="automatic")
