@@ -102,7 +102,7 @@ def make_flagsummary_freq_data(myvis, flag_dict=None, save_name=None):
         return output_data
 
 
-def make_flagsummary_uvdist_data(myvis, flag_dict=None, nbin=25, make_plot=False, save_name=None):
+def make_flagsummary_uvdist_data(myvis, nbin=25, save_name=None, intent='*CALIBRATE*'):
     '''
     Make a binned flagging fraction vs. uv-distance.
     '''
@@ -120,30 +120,60 @@ def make_flagsummary_uvdist_data(myvis, flag_dict=None, nbin=25, make_plot=False
     # Get VLA antenna ID
     antenna_names = mymsmd.antennanames() #returns a list that corresponds to antenna ID
 
-    if flag_dict is None or 'baseline' not in flag_dict:
-        flag_dict = flagdata(vis=myvis, mode='summary', basecnt=True, action='calculate')
+    # Get fields matching intent
+    fieldsnums = mymsmd.fieldsforintent(intent)
 
-    # Make plot of flagging statistics
+    if len(fieldsnums) == 0:
+        raise ValueError("No calibrator intents are in this MS.")
 
-    # Get information for flagging percentage vs. uvdistance
-    myms.selectinit()
-    myms.selectchannel(1, 0, 1, 1) # look at data just for first channel - easily translates
-    gantdata = myms.getdata(['antenna1','antenna2','uvdist']) # get the points I need
+    fields = np.array(mymsmd.fieldnames())[fieldsnums]
+
+    # Get SPWs
+    spw_list = mymsmd.spwsforfield(fieldsnums[0])
+
+    baseline_flagging_table = []
+
+    for field in fields:
+
+        for spw in spw_list:
+
+            flag_dict = flagdata(vis=myvis, mode='summary', basecnt=True, action='calculate',
+                                 field=field, spw=str(spw))
+
+            # Make plot of flagging statistics
+
+            # Get information for flagging percentage vs. uvdistance
+            myms.selectinit()
+            myms.selectchannel(1, 0, 1, 1) # look at data just for first channel - easily translates
+            gantdata = myms.getdata(['antenna1','antenna2','uvdist']) # get the points I need
+
+            # create adictionary with flagging info
+            base_dict = create_baseline_dict(antenna_names, gantdata)
+
+            # match flagging data to dictionary entry
+            datamatch = flag_match_baseline(flag_dict['baseline'], base_dict)
+
+            # 25 is the number of uvdist bins such that there is minimal error in uvdist.
+            binned_stats, barwidth = bin_statistics(datamatch, nbin)
+
+            spw_vals = [spw] * len(binned_stats[0])
+            field_vals = [field] * len(binned_stats[0])
+
+            baseline_flagging_table.append([field_vals, spw_vals, binned_stats[0], binned_stats[1]])
+
+            # if make_plot:
+            #     plt.bar(binned_stats[0], binned_stats[1], width=barwidth, color='grey', align='edge')
+
+    mymsmd.close()
     myms.close()
 
-    # create adictionary with flagging info
-    base_dict = create_baseline_dict(antenna_names, gantdata)
+    baseline_flagging_table = np.hstack(baseline_flagging_table).T
 
-    # match flagging data to dictionary entry
-    datamatch = flag_match_baseline(flag_dict['baseline'], base_dict)
+    if save_name is not None:
+        np.savetxt(save_name, baseline_flagging_table, header="field,spw,uvdist,frac")
+    else:
+        return baseline_flagging_table
 
-    # 25 is the number of uvdist bins such that there is minimal error in uvdist.
-    binned_stats, barwidth = bin_statistics(datamatch, nbin)
-
-    if make_plot:
-        plt.bar(binned_stats[0], binned_stats[1], width=barwidth, color='grey', align='edge')
-
-    return binned_stats
 
 ##########################
 # Code adapted from CHILES
