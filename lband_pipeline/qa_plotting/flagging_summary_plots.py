@@ -167,6 +167,8 @@ def make_flagsummary_uvdist_data(myvis, nbin=25, save_name=None, intent='*CALIBR
     mymsmd.close()
     myms.close()
 
+    return baseline_flagging_table
+
     baseline_flagging_table_hstack = np.hstack(baseline_flagging_table).T
 
     out_table = np.zeros(baseline_flagging_table_hstack.shape[0],
@@ -239,7 +241,7 @@ def bin_statistics(dpoints, nbins):
 
     binned = [[],[]]
     i = 0
-    width = int(max(dpoints[0]) / nbins)
+    width = int(1.05 * max(dpoints[0]) / nbins)
 
     flg_tracker, tot_tracker = 0, 0
     while i < nbins: #loop through number of bins
