@@ -671,3 +671,78 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
             else:
                 casalog.post(message="File {} already exists. Skipping".format(ampresid_filename),
                              origin='make_qa_tables')
+
+            # Plot amplitude vs antenna 1.
+            # Check for ant outliers
+
+            ampant_filename = os.path.join(output_folder,
+                                         'field_{0}_amp_ant1.{1}'.format(names[ii],
+                                                                         outtype))
+
+            if not os.path.exists(ampant_filename):
+
+                plotms(vis=ms_name,
+                    xaxis='antenna1',
+                    yaxis='amp',
+                    ydatacolumn='corrected',
+                    selectdata=True,
+                    field=names[ii],
+                    scan="",
+                    spw="",
+                    correlation="",
+                    avgchannel=str(chanavg),
+                    avgtime='1e8',
+                    averagedata=True,
+                    avgbaseline=False,
+                    transform=False,
+                    extendflag=False,
+                    plotrange=[],
+                    xlabel='antenna 1',
+                    ylabel='Amp',
+                    showmajorgrid=False,
+                    showminorgrid=False,
+                    plotfile=ampant_filename,
+                    overwrite=True,
+                    showgui=False)
+
+            else:
+                casalog.post(message="File {} already exists. Skipping".format(ampant_filename),
+                             origin='make_qa_tables')
+
+
+            # Plot phase vs antenna 1.
+            # Check for ant outliers
+
+            phaseant_filename = os.path.join(output_folder,
+                                         'field_{0}_phase_ant1.{1}'.format(names[ii],
+                                                                         outtype))
+
+            if not os.path.exists(phaseant_filename):
+
+                plotms(vis=ms_name,
+                    xaxis='antenna1',
+                    yaxis='phase',
+                    ydatacolumn='corrected',
+                    selectdata=True,
+                    field=names[ii],
+                    scan="",
+                    spw="",
+                    correlation="",
+                    avgchannel=str(chanavg),
+                    avgtime='1e8',
+                    averagedata=True,
+                    avgbaseline=False,
+                    transform=False,
+                    extendflag=False,
+                    plotrange=[],
+                    xlabel='antenna 1',
+                    ylabel='Phase',
+                    showmajorgrid=False,
+                    showminorgrid=False,
+                    plotfile=phaseant_filename,
+                    overwrite=True,
+                    showgui=False)
+
+            else:
+                casalog.post(message="File {} already exists. Skipping".format(phaseant_filename),
+                             origin='make_qa_tables')
