@@ -167,8 +167,6 @@ def make_flagsummary_uvdist_data(myvis, nbin=25, save_name=None, intent='*CALIBR
     mymsmd.close()
     myms.close()
 
-    return baseline_flagging_table
-
     baseline_flagging_table_hstack = np.hstack(baseline_flagging_table).T
 
     out_table = np.zeros(baseline_flagging_table_hstack.shape[0],
