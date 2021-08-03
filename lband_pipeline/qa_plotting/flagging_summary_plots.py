@@ -167,12 +167,23 @@ def make_flagsummary_uvdist_data(myvis, nbin=25, save_name=None, intent='*CALIBR
     mymsmd.close()
     myms.close()
 
-    baseline_flagging_table = np.hstack(baseline_flagging_table).T
+    baseline_flagging_table_hstack = np.hstack(baseline_flagging_table).T
+
+    out_table = np.zeros(baseline_flagging_table_hstack.shape[0],
+                         dtype=[("field", 'U32'),
+                                ('spw', int),
+                                ('uvdist', float),
+                                ('frac', float)])
+
+    out_table['field'] = baseline_flagging_table_hstack[:, 0].astype('U32')
+    out_table['spw'] = baseline_flagging_table_hstack[:, 1].astype(int)
+    out_table['uvdist'] = baseline_flagging_table_hstack[:, 2].astype(float)
+    out_table['frac'] = baseline_flagging_table_hstack[:, 3].astype(float)
 
     if save_name is not None:
-        np.savetxt(save_name, baseline_flagging_table, header="field,spw,uvdist,frac")
+        np.savetxt(save_name, out_table, fmt='%s %d %f %f', header="field,spw,uvdist,frac")
     else:
-        return baseline_flagging_table
+        return out_table
 
 
 ##########################
