@@ -9,7 +9,8 @@ import numpy as np
 from lband_pipeline.qa_plotting import (make_qa_scan_figures,
                                         make_qa_tables,
                                         run_all_uvstats,
-                                        make_all_caltable_txt)
+                                        make_all_caltable_txt,
+                                        make_all_flagsummary_data)
 
 # Info for SPW setup
 from lband_pipeline.spw_setup import (create_spw_dict, linerest_dict_GHz,
@@ -340,9 +341,12 @@ if text_output:
                    overwrite=True,
                    chanavg=4096,)
 
+    make_all_flagsummary_data(myvis, output_folder='perfield_flagfraction_txt')
+
     # Move these folders to the products folder.
     os.system("cp -r {0} {1}".format('final_caltable_txt', products_folder))
     os.system("cp -r {0} {1}".format('scan_plots_txt', products_folder))
+    os.system("cp -r {0} {1}".format('perfield_flagfraction_txt', products_folder))
 
 else:
 
