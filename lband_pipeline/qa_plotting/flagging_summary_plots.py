@@ -5,6 +5,11 @@ Summary plots from flagdata.
 
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+from casatools import logsink
+
+casalog = logsink()
 
 
 def make_flagsummary_freq_plot(myvis, flag_dict=None, save_name=None):
@@ -56,7 +61,18 @@ def make_flagsummary_freq_plot(myvis, flag_dict=None, save_name=None):
 
     plt.close()
 
-def make_flagsummary_freq_data(myvis, flag_dict=None, save_name=None):
+def make_all_flagsummary_data(myvis, output_folder='perfield_flagfraction'):
+
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
+
+    make_flagsummary_freq_data(myvis, output_folder=output_folder)
+
+    make_flagsummary_uvdist_data(myvis, output_folder=output_folder)
+
+
+def make_flagsummary_freq_data(myvis, output_folder='perfield_flagfraction',
+                               intent="*", overwrite=False):
     '''
     This mimics the summary plots made by flagdata, but removes the interactive
     part so we can save it.
@@ -72,37 +88,61 @@ def make_flagsummary_freq_data(myvis, flag_dict=None, save_name=None):
 
     mymsmd = myms.metadata()
 
-    if flag_dict is None or 'spw:channel' not in flag_dict:
-        flag_dict = flagdata(vis=myvis, mode='summary', spwchan=True, action='calculate')
+    fieldsnums = mymsmd.fieldsforintent(intent)
+
+    if len(fieldsnums) == 0:
+        raise ValueError("No calibrator intents are in this MS.")
+
+    fields = np.array(mymsmd.fieldnames())[fieldsnums]
 
     spw_nums = mymsmd.spwsforscan(1)
 
-    flag_data = []
+    casalog.post(f"Selecting on fields: {fields}")
 
-    for spw in spw_nums:
-        spw_freqs = mymsmd.chanfreqs(spw) / 1e9  # GHz
+    for field in fields:
 
-        spw_flagfracs = []
-        for chan in range(len(spw_freqs)):
-            spw_flagfracs.append(flag_dict['spw:channel'][f"{spw}:{chan}"]['flagged'] / flag_dict['spw:channel'][f'{spw}:{chan}']['total'])
+        casalog.post(f"Creating freq. flagging fraction for {field}")
 
-        # Make an equal length SPW column
-        spw_labels = [spw] * len(spw_freqs)
+        save_name = f"{output_folder}/field_{field}_flagfrac_freq.txt"
 
-        flag_data.append([spw_labels, np.arange(len(spw_freqs)), spw_freqs, spw_flagfracs])
+        if os.path.exists(save_name) and overwrite:
+            os.system(f"rm {save_name}")
+
+        if not os.path.exists(save_name):
+
+            flag_dict = flagdata(vis=myvis, mode='summary', spwchan=True, action='calculate',
+                                field=field)
+
+            flag_data = []
+
+            for spw in spw_nums:
+                spw_freqs = mymsmd.chanfreqs(spw) / 1e9  # GHz
+
+                spw_flagfracs = []
+                for chan in range(len(spw_freqs)):
+                    spw_flagfracs.append(flag_dict['spw:channel'][f"{spw}:{chan}"]['flagged'] / flag_dict['spw:channel'][f'{spw}:{chan}']['total'])
+
+                # Make an equal length SPW column
+                spw_labels = [spw] * len(spw_freqs)
+
+                flag_data.append([spw_labels, np.arange(len(spw_freqs)), spw_freqs, spw_flagfracs])
+
+            output_data = np.hstack(flag_data).T
+
+            np.savetxt(save_name, output_data, header="spw,channel,freq,frac")
+
+        else:
+            casalog.post(message="File {} already exists. Skipping".format(save_name),
+                         origin='make_qa_tables')
+
 
     mymsmd.close()
     myms.close()
 
-    output_data = np.hstack(flag_data).T
-
-    if save_name is not None:
-        np.savetxt(save_name, output_data, header="spw,channel,freq,frac")
-    else:
-        return output_data
 
 
-def make_flagsummary_uvdist_data(myvis, nbin=25, save_name=None, intent='*CALIBRATE*'):
+def make_flagsummary_uvdist_data(myvis, nbin=25, output_folder="perfield_flagfraction",
+                                 intent='*', overwrite=False):
     '''
     Make a binned flagging fraction vs. uv-distance.
     '''
@@ -135,55 +175,58 @@ def make_flagsummary_uvdist_data(myvis, nbin=25, save_name=None, intent='*CALIBR
 
     for field in fields:
 
-        for spw in spw_list:
+        save_name = f"{output_folder}/field_{field}_flagfrac_uvdist.txt"
 
-            flag_dict = flagdata(vis=myvis, mode='summary', basecnt=True, action='calculate',
-                                 field=field, spw=str(spw))
+        if os.path.exists(save_name) and overwrite:
+            os.system(f"rm {save_name}")
 
-            # Make plot of flagging statistics
+        if not os.path.exists(save_name):
 
-            # Get information for flagging percentage vs. uvdistance
-            myms.selectinit()
-            myms.selectchannel(1, 0, 1, 1) # look at data just for first channel - easily translates
-            gantdata = myms.getdata(['antenna1','antenna2','uvdist']) # get the points I need
+            for spw in spw_list:
 
-            # create adictionary with flagging info
-            base_dict = create_baseline_dict(antenna_names, gantdata)
+                flag_dict = flagdata(vis=myvis, mode='summary', basecnt=True, action='calculate',
+                                    field=field, spw=str(spw))
 
-            # match flagging data to dictionary entry
-            datamatch = flag_match_baseline(flag_dict['baseline'], base_dict)
+                # Make plot of flagging statistics
 
-            # 25 is the number of uvdist bins such that there is minimal error in uvdist.
-            binned_stats, barwidth = bin_statistics(datamatch, nbin)
+                # Get information for flagging percentage vs. uvdistance
+                myms.selectinit()
+                myms.selectchannel(1, 0, 1, 1) # look at data just for first channel - easily translates
+                gantdata = myms.getdata(['antenna1','antenna2','uvdist']) # get the points I need
 
-            spw_vals = [spw] * len(binned_stats[0])
-            field_vals = [field] * len(binned_stats[0])
+                # create adictionary with flagging info
+                base_dict = create_baseline_dict(antenna_names, gantdata)
 
-            baseline_flagging_table.append([field_vals, spw_vals, binned_stats[0], binned_stats[1]])
+                # match flagging data to dictionary entry
+                datamatch = flag_match_baseline(flag_dict['baseline'], base_dict)
 
-            # if make_plot:
-            #     plt.bar(binned_stats[0], binned_stats[1], width=barwidth, color='grey', align='edge')
+                # 25 is the number of uvdist bins such that there is minimal error in uvdist.
+                binned_stats, barwidth = bin_statistics(datamatch, nbin)
+
+                spw_vals = [spw] * len(binned_stats[0])
+                field_vals = [field] * len(binned_stats[0])
+
+                baseline_flagging_table.append([field_vals, spw_vals, binned_stats[0], binned_stats[1]])
+
+                baseline_flagging_table_hstack = np.hstack(baseline_flagging_table).T
+
+                out_table = np.zeros(baseline_flagging_table_hstack.shape[0],
+                                    dtype=[("field", 'U32'),
+                                            ('spw', int),
+                                            ('uvdist', float),
+                                            ('frac', float)])
+
+                out_table['field'] = baseline_flagging_table_hstack[:, 0].astype('U32')
+                out_table['spw'] = baseline_flagging_table_hstack[:, 1].astype(int)
+                out_table['uvdist'] = baseline_flagging_table_hstack[:, 2].astype(float)
+                out_table['frac'] = baseline_flagging_table_hstack[:, 3].astype(float)
+
+                np.savetxt(save_name, out_table, fmt='%s %d %f %f', header="field,spw,uvdist,frac")
+
 
     mymsmd.close()
     myms.close()
 
-    baseline_flagging_table_hstack = np.hstack(baseline_flagging_table).T
-
-    out_table = np.zeros(baseline_flagging_table_hstack.shape[0],
-                         dtype=[("field", 'U32'),
-                                ('spw', int),
-                                ('uvdist', float),
-                                ('frac', float)])
-
-    out_table['field'] = baseline_flagging_table_hstack[:, 0].astype('U32')
-    out_table['spw'] = baseline_flagging_table_hstack[:, 1].astype(int)
-    out_table['uvdist'] = baseline_flagging_table_hstack[:, 2].astype(float)
-    out_table['frac'] = baseline_flagging_table_hstack[:, 3].astype(float)
-
-    if save_name is not None:
-        np.savetxt(save_name, out_table, fmt='%s %d %f %f', header="field,spw,uvdist,frac")
-    else:
-        return out_table
 
 
 ##########################
