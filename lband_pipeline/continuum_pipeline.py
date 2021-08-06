@@ -215,14 +215,6 @@ if not skip_pipeline:
         if restart_stage <= 8:
             hifv_checkflag(checkflagmode='semi')
 
-            # Don't grow flags at this step. We have long slews to our pol cals
-            # and growtime=50 can wipe out the whole scan!
-            flagdata(vis=myvis, mode='extend', extendpols=True, action='apply',
-                     display='', flagbackup=False, intent='*CALIBRATE*',
-                     growtime=99.9, growfreq=99.9)
-            flagdata(vis=myvis, mode='extend', growtime=90.0, growfreq=90.0, extendpols=False,
-                     action='apply', display='', flagbackup=False, intent='*CALIBRATE*')
-
         if restart_stage <= 9:
             hifv_semiFinalBPdcals(weakbp=False,
                                   refantignore=refantignore)
@@ -236,6 +228,15 @@ if not skip_pipeline:
                            refantignore=refantignore)
 
         if restart_stage <= 12:
+            # Don't grow flags at this step. We have long slews to our pol cals
+            # and growtime=50 can wipe out the whole scan!
+            flagdata(vis=myvis, mode='extend', extendpols=True, action='apply',
+                     display='', flagbackup=False, intent='*CALIBRATE*',
+                     growtime=99.9, growfreq=99.9)
+            flagdata(vis=myvis, mode='extend', growtime=90.0, growfreq=90.0, extendpols=False,
+                     action='apply', display='', flagbackup=False, intent='*CALIBRATE*',
+                     growaround=True, flagneartime=True, flagnearfreq=True)
+
             hifv_finalcals(weakbp=False,
                            refantignore=refantignore)
 
