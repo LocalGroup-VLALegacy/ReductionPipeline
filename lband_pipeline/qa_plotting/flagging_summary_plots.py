@@ -98,10 +98,12 @@ def make_flagsummary_freq_data(myvis, output_folder='perfield_flagfraction',
     spw_nums = mymsmd.spwsforscan(1)
 
     casalog.post(f"Selecting on fields: {fields}")
+    print(f"Selecting on fields: {fields}")
 
     for field in fields:
 
         casalog.post(f"Creating freq. flagging fraction for {field}")
+        print(f"Creating freq. flagging fraction for {field}")
 
         save_name = f"{output_folder}/field_{field}_flagfrac_freq.txt"
 
@@ -171,9 +173,15 @@ def make_flagsummary_uvdist_data(myvis, nbin=25, output_folder="perfield_flagfra
     # Get SPWs
     spw_list = mymsmd.spwsforfield(fieldsnums[0])
 
-    baseline_flagging_table = []
+    casalog.post(f"Selecting on fields: {fields}")
+    print(f"Selecting on fields: {fields}")
 
     for field in fields:
+
+        casalog.post(f"Creating uvdist flagging fraction for {field}")
+        print(f"Creating uvdist flagging fraction for {field}")
+
+        baseline_flagging_table = []
 
         save_name = f"{output_folder}/field_{field}_flagfrac_uvdist.txt"
 
@@ -208,20 +216,20 @@ def make_flagsummary_uvdist_data(myvis, nbin=25, output_folder="perfield_flagfra
 
                 baseline_flagging_table.append([field_vals, spw_vals, binned_stats[0], binned_stats[1]])
 
-                baseline_flagging_table_hstack = np.hstack(baseline_flagging_table).T
+            baseline_flagging_table_hstack = np.hstack(baseline_flagging_table).T
 
-                out_table = np.zeros(baseline_flagging_table_hstack.shape[0],
-                                    dtype=[("field", 'U32'),
-                                            ('spw', int),
-                                            ('uvdist', float),
-                                            ('frac', float)])
+            out_table = np.zeros(baseline_flagging_table_hstack.shape[0],
+                                dtype=[("field", 'U32'),
+                                        ('spw', int),
+                                        ('uvdist', float),
+                                        ('frac', float)])
 
-                out_table['field'] = baseline_flagging_table_hstack[:, 0].astype('U32')
-                out_table['spw'] = baseline_flagging_table_hstack[:, 1].astype(int)
-                out_table['uvdist'] = baseline_flagging_table_hstack[:, 2].astype(float)
-                out_table['frac'] = baseline_flagging_table_hstack[:, 3].astype(float)
+            out_table['field'] = baseline_flagging_table_hstack[:, 0].astype('U32')
+            out_table['spw'] = baseline_flagging_table_hstack[:, 1].astype(int)
+            out_table['uvdist'] = baseline_flagging_table_hstack[:, 2].astype(float)
+            out_table['frac'] = baseline_flagging_table_hstack[:, 3].astype(float)
 
-                np.savetxt(save_name, out_table, fmt='%s %d %f %f', header="field,spw,uvdist,frac")
+            np.savetxt(save_name, out_table, fmt='%s %d %f %f', header="field,spw,uvdist,frac")
 
 
     mymsmd.close()
