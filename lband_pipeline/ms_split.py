@@ -22,7 +22,7 @@ print("Splitting ms into: {}".format(split_type))
 
 if not os.path.exists(ms_active):
     importasdm(asdm=mySDM, vis=ms_active, ocorr_mode='co',
-               applyflags=True, savecmds=True, tbuff=1.5,
+               applyflags=True, savecmds=True, tbuff=7.5,
                outfile='{}.flagonline.txt'.format(mySDM),
                createmms=False)
 else:
