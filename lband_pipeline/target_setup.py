@@ -99,6 +99,14 @@ target_line_range_kms['WLM']['HI'] = [[50, -40], [-50, -210]]
 
 target_line_range_kms['WLM']['OH'] = [[-70, -180]]
 
+# Use target name Wolf-Lundmark- for the 13A-213 tracks
+target_line_range_kms['Wolf-Lundmark-'] = {}
+
+# Include all foreground MW HI?
+target_line_range_kms['Wolf-Lundmark-']['HI'] = [[50, -40], [-50, -210]]
+
+target_line_range_kms['Wolf-Lundmark-']['OH'] = [[-70, -180]]
+
 
 # --------------------------------------------------------------
 # NGC 6822

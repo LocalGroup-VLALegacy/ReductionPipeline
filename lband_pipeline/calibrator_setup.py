@@ -98,3 +98,7 @@ calibrator_line_range_kms['J0102+5824']['HI'] = [-110, 110]
 # Gain cal
 # calibrator_line_range_kms['J2321-1623'] = {}
 # calibrator_line_range_kms['J2321-1623']['HI'] = [0, 0]
+
+# J2354-1513 (WLM; used in the archival 13A-213 tracks)
+# calibrator_line_range_kms['J2354-1513'] = {}
+# calibrator_line_range_kms['J2354-1513']['HI'] = [0, 0]
