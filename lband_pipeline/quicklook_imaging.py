@@ -17,7 +17,8 @@ from lband_pipeline.target_setup import (target_line_range_kms,
                                          target_vsys_kms)
 
 
-def quicklook_line_imaging(myvis, thisgal, linespw_dict):
+def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
+                           niter=0, nsigma=5.):
 
     if not os.path.exists("quicklook_imaging"):
         os.mkdir("quicklook_imaging")
@@ -34,7 +35,7 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict):
                 break
 
 
-    width_vel = 20.
+    width_vel = channel_width_kms
     width_vel_str = f"{width_vel}km/s"
 
     start_vel = f"{int(min(this_velrange))}km/s"
@@ -94,15 +95,21 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict):
             image_settings = this_im.advise()
             this_im.close()
 
+            # When all data is flagged, uvmax = 0 so cellsize = 0.
+            # Check for that case to avoid tclean failures
+            if image_settings[2]['value'] == 0.:
+                casalog.post(f"All data flagged for {this_imagename}. Skipping")
+                continue
+
             # NOTE: Rounding will only be reasonable for arcsec units with our L-band setup.
             # Could easily fail on ~<0.1 arcsec cell sizes.
             this_cellsize = f"{round(image_settings[2]['value'] * 0.8, 1)}{image_settings[2]['unit']}"
-            this_imsize = synthutil.getOptimumSize(int(image_settings[1] * 1.35))
+            this_imsize = synthutil.getOptimumSize(int(image_settings[1] * 1.5))
 
             this_pblim = 0.5
 
-            this_nsigma = 5.0
-            this_niter = 0
+            this_nsigma = nsigma
+            this_niter = niter
 
             tclean(vis=myvis,
                    field=target_field,
@@ -110,6 +117,7 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict):
                    cell=this_cellsize,
                    imsize=this_imsize,
                    specmode='cube',
+                   weighting='briggs',
                    robust=0.0,
                    start=start_vel,
                    width=width_vel_str,
@@ -122,4 +130,98 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict):
 
     t1 = datetime.datetime.now()
 
-    casalog.post(f"Quicklook imaging took {t1 - t0}")
+    casalog.post(f"Quicklook line imaging took {t1 - t0}")
+
+
+def quicklook_continuum_imaging(myvis, contspw_dict,
+                                niter=0, nsigma=5.):
+    '''
+    Per-SPW MFS, nterm=1, dirty images of the targets
+    '''
+
+    if not os.path.exists("quicklook_imaging"):
+        os.mkdir("quicklook_imaging")
+
+
+    # Select only the continuum SPWs (in case there are any line SPWs).
+    continuum_spws = []
+    for thisspw in contspw_dict:
+        if "continuum" in contspw_dict[thisspw]['label']:
+                continuum_spws.append(str(thisspw))
+
+    # Select our target fields. We will loop through
+    # to avoid the time + memory needed for mosaics.
+
+    synthutil = synthesisutils()
+
+    myms = ms()
+
+    # if no fields are provided use observe_target intent
+    # I saw once a calibrator also has this intent so check carefully
+    # mymsmd.open(vis)
+    myms.open(myvis)
+
+    mymsmd = myms.metadata()
+
+    target_fields = mymsmd.fieldsforintent("*TARGET*", True)
+
+    mymsmd.close()
+    myms.close()
+
+    t0 = datetime.datetime.now()
+
+    # Loop through targets and line SPWs
+    for target_field in target_fields:
+
+        casalog.post(f"Quick look imaging of field {target_field}")
+
+        for thisspw in continuum_spws:
+
+            casalog.post(f"Quick look imaging of field {target_field} SPW {thisspw}")
+
+            this_imagename = f"quicklook_imaging/quicklook_{target_field}_spw{thisspw}_{myvis}"
+
+            if os.path.exists(f"{this_imagename}.image"):
+                rmtables(f"{this_imagename}*")
+
+            # Ask for cellsize
+            this_im = imager()
+            this_im.selectvis(vis=myvis, field=target_field, spw=str(thisspw))
+
+            image_settings = this_im.advise()
+            this_im.close()
+
+            # When all data is flagged, uvmax = 0 so cellsize = 0.
+            # Check for that case to avoid tclean failures
+            if image_settings[2]['value'] == 0.:
+                casalog.post(f"All data flagged for {this_imagename}. Skipping")
+                continue
+
+            # NOTE: Rounding will only be reasonable for arcsec units with our L-band setup.
+            # Could easily fail on ~<0.1 arcsec cell sizes.
+            this_cellsize = f"{round(image_settings[2]['value'] * 0.8, 1)}{image_settings[2]['unit']}"
+            this_imsize = synthutil.getOptimumSize(int(image_settings[1] * 1.5))
+
+            this_pblim = 0.5
+
+            this_nsigma = nsigma
+            this_niter = niter
+
+            tclean(vis=myvis,
+                   field=target_field,
+                   spw=str(thisspw),
+                   cell=this_cellsize,
+                   imsize=this_imsize,
+                   specmode='mfs',
+                   nterms=1,
+                   weighting='briggs',
+                   robust=0.0,
+                   niter=this_niter,
+                   nsigma=this_nsigma,
+                   fastnoise=True,
+                   imagename=this_imagename,
+                   pblimit=this_pblim)
+
+    t1 = datetime.datetime.now()
+
+    casalog.post(f"Quicklook continuum imaging took {t1 - t0}")
