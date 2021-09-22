@@ -4,7 +4,9 @@ import os
 from glob import glob
 import shutil
 import traceback
+from matplotlib.pyplot import isinteractive
 import numpy as np
+import datetime
 
 # Additional QA plotting routines
 from lband_pipeline.qa_plotting import (make_qa_scan_figures,
@@ -26,7 +28,8 @@ from lband_pipeline.spw_setup import create_spw_dict, linerest_dict_GHz
 
 # Protected velocity range for different targets
 # Used to build `cont.dat` for line SPWs
-from lband_pipeline.target_setup import target_line_range_kms
+from lband_pipeline.target_setup import (target_line_range_kms,
+                                         identify_target)
 
 # For MW HI absorption flagging on calibrators:
 from lband_pipeline.calibrator_setup import calibrator_line_range_kms
@@ -36,6 +39,8 @@ from lband_pipeline.calibrator_setup import calibrator_line_range_kms
 from lband_pipeline.offline_antposn_corrections import make_offline_antpos_table
 
 from lband_pipeline.flagging_tools import flag_quack_integrations
+
+from lband_pipeline.quicklook_imaging import quicklook_line_imaging
 
 # Check that DISPLAY is set. Otherwise, force an error
 # We need DISPLAY set for plotms to export png or txt files.
@@ -79,6 +84,10 @@ for spwid in linespw_dict:
         hi_spw_continuum_backup = spwid
         break
 
+# Identify which of our targets are observed.
+# NOTE: Assumes that we only look at ONE galaxy per MS right now.
+# This will break if more than one galaxy is observed in a single track.
+thisgal = identify_target(myvis)
 
 products_folder = "products"
 
@@ -363,6 +372,16 @@ image_files = glob("oussid*")
 
 for fil in image_files:
     shutil.move(fil, "image_outputs/")
+
+# --------------------------------
+# Make quicklook images of targets
+# --------------------------------
+run_quicklook = True
+
+# Run dirty imaging only for a quicklook
+if run_quicklook:
+    quicklook_line_imaging(myvis, thisgal, linespw_dict)
+
 
 # ----------------------------
 # Now make additional QA plots:
