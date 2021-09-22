@@ -382,6 +382,7 @@ run_quicklook = True
 if run_quicklook:
     quicklook_line_imaging(myvis, thisgal, linespw_dict)
 
+    os.system("cp -r {0} {1}".format('quicklook_imaging', products_folder))
 
 # ----------------------------
 # Now make additional QA plots:
