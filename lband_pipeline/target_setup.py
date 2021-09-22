@@ -149,13 +149,15 @@ def identify_target(vis, fields=None, raise_missing_target=True):
     if len(fields) < 1:
         fields = mymsmd.fieldsforintent("*TARGET*", True)
 
+    mymsmd.close()
+    myms.close()
+
     if len(fields) < 1:
         casalog.post("ERROR: no fields given to identify.")
         return
 
     # generate a dictonary containing continuum chunks for every spw of every field
     for field in fields:
-        spws = mymsmd.spwsforfield(field)
 
         # Match target with the galaxy. Names should be unique enough to do this
         thisgal = None
