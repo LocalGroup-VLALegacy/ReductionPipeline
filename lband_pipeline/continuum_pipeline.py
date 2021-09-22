@@ -20,11 +20,15 @@ from lband_pipeline.calibrator_setup import calibrator_line_range_kms
 # Flag HI absorption on the calibrators.
 from lband_pipeline.line_tools import flag_hi_foreground
 
+from lband_pipeline.target_setup import (identify_target)
+
 # Handle runs where the internet query to the baseline correction site will
 # fail
 from lband_pipeline.offline_antposn_corrections import make_offline_antpos_table
 
 from lband_pipeline.flagging_tools import flag_quack_integrations
+
+from lband_pipeline.quicklook_imaging import quicklook_continuum_imaging
 
 # Check that DISPLAY is set. Otherwise, force an error
 # We need DISPLAY set for plotms to export png or txt files.
@@ -54,6 +58,11 @@ contspw_dict = create_spw_dict(myvis)
 
 # Get SPWs that contain the HI line
 spws_with_hi = continuum_spws_with_hi(contspw_dict)
+
+# Identify which of our targets are observed.
+# NOTE: Assumes that we only look at ONE galaxy per MS right now.
+# This will break if more than one galaxy is observed in a single track.
+thisgal = identify_target(myvis)
 
 products_folder = "products"
 
@@ -323,6 +332,21 @@ image_files = glob("oussid*")
 
 for fil in image_files:
     shutil.move(fil, "image_outputs/")
+
+# --------------------------------
+# Make quicklook images of targets
+# --------------------------------
+run_quicklook = True
+
+# Run dirty imaging only for a quicklook
+if run_quicklook:
+    # NOTE: We will attempt a very light clean as it can really highlight
+    # which SPWs have significant RFI.
+    # TODO: Need to check how much added time this results in for A/B config.
+    quicklook_continuum_imaging(myvis, contspw_dict,
+                                niter=50, nsigma=5.)
+
+    os.system("cp -r {0} {1}".format('quicklook_imaging', products_folder))
 
 # ----------------------------
 # Now make additional QA plots:
