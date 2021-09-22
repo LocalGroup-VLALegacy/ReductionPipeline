@@ -380,7 +380,7 @@ run_quicklook = True
 
 # Run dirty imaging only for a quicklook
 if run_quicklook:
-    quicklook_line_imaging(myvis, thisgal, linespw_dict)
+    quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.)
 
     os.system("cp -r {0} {1}".format('quicklook_imaging', products_folder))
 
