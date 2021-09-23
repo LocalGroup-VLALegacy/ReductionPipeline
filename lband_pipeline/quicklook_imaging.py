@@ -179,7 +179,7 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
             casalog.post(f"Quick look imaging of field {target_field} SPW {thisspw}")
 
-            this_imagename = f"quicklook_imaging/quicklook-{target_field}-spw{thisspw}-{myvis}"
+            this_imagename = f"quicklook_imaging/quicklook-{target_field}-spw{thisspw}-continuum-{myvis}"
 
             if os.path.exists(f"{this_imagename}.image"):
                 rmtables(f"{this_imagename}*")
