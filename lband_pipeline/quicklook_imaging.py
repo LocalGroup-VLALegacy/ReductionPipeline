@@ -83,7 +83,7 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
 
             casalog.post(f"Quick look imaging of field {target_field} SPW {thisspw}")
 
-            this_imagename = f"quicklook_imaging/quicklook_{target_field}_spw{thisspw}_{line_name}_{myvis}"
+            this_imagename = f"quicklook_imaging/quicklook-{target_field}-spw{thisspw}-{line_name}-{myvis}"
 
             if os.path.exists(f"{this_imagename}.image"):
                 rmtables(f"{this_imagename}*")
@@ -179,7 +179,7 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
             casalog.post(f"Quick look imaging of field {target_field} SPW {thisspw}")
 
-            this_imagename = f"quicklook_imaging/quicklook_{target_field}_spw{thisspw}_{myvis}"
+            this_imagename = f"quicklook_imaging/quicklook-{target_field}-spw{thisspw}-{myvis}"
 
             if os.path.exists(f"{this_imagename}.image"):
                 rmtables(f"{this_imagename}*")
