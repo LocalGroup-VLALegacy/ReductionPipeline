@@ -8,6 +8,7 @@ from casatools import logsink
 from casatools import ms
 from casatools import imager
 from casatools import synthesisutils
+from casatools import msmetadata
 
 casalog = logsink()
 
@@ -18,7 +19,7 @@ from lband_pipeline.target_setup import (target_line_range_kms,
 
 
 def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
-                           niter=0, nsigma=5.):
+                           niter=0, nsigma=5., imsize_max=800):
 
     if not os.path.exists("quicklook_imaging"):
         os.mkdir("quicklook_imaging")
@@ -77,6 +78,52 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
 
         casalog.post(f"Quick look imaging of field {target_field}")
 
+        # Loop through the SPWs to identify the biggest image size needed.
+        # For ease downstream, we will use the same imsize for all SPWs.
+        # NOTE: for L-band, that's a factor of ~2 difference. It may be more pronounced in other
+        # bands
+
+        cell_size = {}
+        imsizes = []
+
+        for thisspw_info in line_spws:
+
+            thisspw, line_name = thisspw_info
+
+            # Ask for cellsize
+            this_im = imager()
+            this_im.selectvis(vis=myvis, field=target_field, spw=str(thisspw))
+
+            image_settings = this_im.advise()
+            this_im.close()
+
+            # When all data is flagged, uvmax = 0 so cellsize = 0.
+            # Check for that case to avoid tclean failures
+            # if image_settings[2]['value'] == 0.:
+            #     casalog.post(f"All data flagged for {this_imagename}. Skipping")
+            #     continue
+
+            # NOTE: Rounding will only be reasonable for arcsec units with our L-band setup.
+            # Could easily fail on ~<0.1 arcsec cell sizes.
+            cell_size[thisspw] = [image_settings[2]['value'], image_settings[2]['unit']]
+
+            # No point in estimating image size for an empty SPW.
+            if image_settings[2]['value'] == 0.:
+                continue
+
+            # For the image size, we will do an approx scaling was
+            # theta_PB = 45 / nu (arcmin)
+            this_msmd = msmetadata()
+            this_msmd.open(myvis)
+            mean_freq = this_msmd.chanfreqs(int(thisspw)).mean() / 1.e9 # Hz to GHz
+            this_msmd.close()
+
+            approx_pbsize = 1.2 * (45. / mean_freq) * 60 # arcsec
+            approx_imsize = synthutil.getOptimumSize(int(approx_pbsize / image_settings[2]['value']))
+            imsizes.append(approx_imsize)
+
+        this_imsize = min(imsize_max, max(imsizes))
+
         for thisspw_info in line_spws:
 
             thisspw, line_name = thisspw_info
@@ -88,23 +135,11 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
             if os.path.exists(f"{this_imagename}.image"):
                 rmtables(f"{this_imagename}*")
 
-            # Ask for cellsize
-            this_im = imager()
-            this_im.selectvis(vis=myvis, field=target_field, spw=str(thisspw))
-
-            image_settings = this_im.advise()
-            this_im.close()
-
-            # When all data is flagged, uvmax = 0 so cellsize = 0.
-            # Check for that case to avoid tclean failures
-            if image_settings[2]['value'] == 0.:
+            if cell_size[thisspw][0] == 0:
                 casalog.post(f"All data flagged for {this_imagename}. Skipping")
                 continue
 
-            # NOTE: Rounding will only be reasonable for arcsec units with our L-band setup.
-            # Could easily fail on ~<0.1 arcsec cell sizes.
-            this_cellsize = f"{round(image_settings[2]['value'] * 0.8, 1)}{image_settings[2]['unit']}"
-            this_imsize = synthutil.getOptimumSize(int(image_settings[1] * 1.5))
+            this_cellsize = f"{round(cell_size[thisspw][0] * 0.8, 1)}{cell_size[thisspw][1]}"
 
             this_pblim = 0.5
 
