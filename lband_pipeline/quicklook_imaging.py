@@ -169,7 +169,7 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
 
 
 def quicklook_continuum_imaging(myvis, contspw_dict,
-                                niter=0, nsigma=5.):
+                                niter=0, nsigma=5., imsize_max=800):
     '''
     Per-SPW MFS, nterm=1, dirty images of the targets
     '''
@@ -210,6 +210,45 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
         casalog.post(f"Quick look imaging of field {target_field}")
 
+        cell_size = {}
+        imsizes = []
+
+        for thisspw in continuum_spws:
+
+            # Ask for cellsize
+            this_im = imager()
+            this_im.selectvis(vis=myvis, field=target_field, spw=str(thisspw))
+
+            image_settings = this_im.advise()
+            this_im.close()
+
+            # When all data is flagged, uvmax = 0 so cellsize = 0.
+            # Check for that case to avoid tclean failures
+            # if image_settings[2]['value'] == 0.:
+            #     casalog.post(f"All data flagged for {this_imagename}. Skipping")
+            #     continue
+
+            # NOTE: Rounding will only be reasonable for arcsec units with our L-band setup.
+            # Could easily fail on ~<0.1 arcsec cell sizes.
+            cell_size[thisspw] = [image_settings[2]['value'], image_settings[2]['unit']]
+
+            # No point in estimating image size for an empty SPW.
+            if image_settings[2]['value'] == 0.:
+                continue
+
+            # For the image size, we will do an approx scaling was
+            # theta_PB = 45 / nu (arcmin)
+            this_msmd = msmetadata()
+            this_msmd.open(myvis)
+            mean_freq = this_msmd.chanfreqs(int(thisspw)).mean() / 1.e9 # Hz to GHz
+            this_msmd.close()
+
+            approx_pbsize = 1.2 * (45. / mean_freq) * 60 # arcsec
+            approx_imsize = synthutil.getOptimumSize(int(approx_pbsize / image_settings[2]['value']))
+            imsizes.append(approx_imsize)
+
+        this_imsize = min(imsize_max, max(imsizes))
+
         for thisspw in continuum_spws:
 
             casalog.post(f"Quick look imaging of field {target_field} SPW {thisspw}")
@@ -234,8 +273,7 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
             # NOTE: Rounding will only be reasonable for arcsec units with our L-band setup.
             # Could easily fail on ~<0.1 arcsec cell sizes.
-            this_cellsize = f"{round(image_settings[2]['value'] * 0.8, 1)}{image_settings[2]['unit']}"
-            this_imsize = synthutil.getOptimumSize(int(image_settings[1] * 1.5))
+            this_cellsize = f"{round(cell_size[thisspw][0] * 0.8, 1)}{cell_size[thisspw][1]}"
 
             this_pblim = 0.5
 
