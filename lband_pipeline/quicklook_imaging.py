@@ -27,6 +27,7 @@ def cleanup_misc_quicklook(filename, remove_residual=True,
     rmtables(f"{filename}.model")
     rmtables(f"{filename}.sumwt")
     rmtables(f"{filename}.pb")
+    rmtables(f"{filename}.mask")
 
     if remove_residual:
         rmtables(f"{filename}.residual")
