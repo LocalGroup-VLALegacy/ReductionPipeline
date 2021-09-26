@@ -180,9 +180,9 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
                    restfreq=f"{linerest_dict_GHz[line_name]}GHz",
                    pblimit=this_pblim)
 
-                # Clean-up extra imaging products if they are not needed.
-                cleanup_misc_quicklook(this_imagename, remove_psf=True,
-                                       remove_residual=this_niter == 0)
+            # Clean-up extra imaging products if they are not needed.
+            cleanup_misc_quicklook(this_imagename, remove_psf=True,
+                                    remove_residual=this_niter == 0)
 
     t1 = datetime.datetime.now()
 
