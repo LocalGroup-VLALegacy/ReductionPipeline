@@ -18,6 +18,23 @@ from lband_pipeline.target_setup import (target_line_range_kms,
                                          target_vsys_kms)
 
 
+def cleanup_misc_quicklook(filename, remove_residual=True,
+                           remove_psf=True):
+    '''
+    Reduce number of files that aren't needed for QA.
+    '''
+
+    rmtables(f"{filename}.model")
+    rmtables(f"{filename}.sumwt")
+    rmtables(f"{filename}.pb")
+
+    if remove_residual:
+        rmtables(f"{filename}.residual")
+
+    if remove_psf:
+        rmtables(f"{filename}.psf")
+
+
 def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
                            niter=0, nsigma=5., imsize_max=800):
 
@@ -163,6 +180,10 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
                    restfreq=f"{linerest_dict_GHz[line_name]}GHz",
                    pblimit=this_pblim)
 
+                # Clean-up extra imaging products if they are not needed.
+                cleanup_misc_quicklook(this_imagename, remove_psf=True,
+                                       remove_residual=this_niter == 0)
+
     t1 = datetime.datetime.now()
 
     casalog.post(f"Quicklook line imaging took {t1 - t0}")
@@ -294,6 +315,10 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
                    fastnoise=True,
                    imagename=this_imagename,
                    pblimit=this_pblim)
+
+            # Clean-up extra imaging products if they are not needed.
+            cleanup_misc_quicklook(this_imagename, remove_psf=True,
+                                    remove_residual=this_niter == 0)
 
     t1 = datetime.datetime.now()
 
