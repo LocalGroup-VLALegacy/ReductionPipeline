@@ -156,21 +156,22 @@ def identify_target(vis, fields=None, raise_missing_target=True):
         casalog.post("ERROR: no fields given to identify.")
         return
 
+    # Match target with the galaxy. Names should be unique enough to do this
+    thisgal = None
+
     # generate a dictonary containing continuum chunks for every spw of every field
     for field in fields:
 
-        # Match target with the galaxy. Names should be unique enough to do this
-        thisgal = None
         for gal in target_line_range_kms:
             if gal in field:
                 thisgal = gal
                 break
-        # Check for match
-        if thisgal is None:
-            if raise_missing_target:
-                raise ValueError("Unable to match field {} to expected galaxy targets".format(field))
-            else:
-                casalog.post("Unable to match field {} to expected galaxy targets. Skipping.".format(field))
-                continue
 
-        return thisgal
+    # Check for match after looping through all fields.
+    if thisgal is None:
+        if raise_missing_target:
+            casalog.post("Unable to match fields to expected galaxy targets: {0}".format(fields))
+            raise ValueError("Unable to match fields to expected galaxy targets: {0}".format(fields))
+
+
+    return thisgal
