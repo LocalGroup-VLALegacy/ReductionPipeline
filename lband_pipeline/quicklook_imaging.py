@@ -36,7 +36,8 @@ def cleanup_misc_quicklook(filename, remove_residual=True,
 
 
 def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
-                           niter=0, nsigma=5., imsize_max=800):
+                           niter=0, nsigma=5., imsize_max=800,
+                           overwrite_imaging=False):
 
     if not os.path.exists("quicklook_imaging"):
         os.mkdir("quicklook_imaging")
@@ -150,7 +151,11 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
             this_imagename = f"quicklook_imaging/quicklook-{target_field}-spw{thisspw}-{line_name}-{myvis}"
 
             if os.path.exists(f"{this_imagename}.image"):
-                rmtables(f"{this_imagename}*")
+                if overwrite_imaging:
+                    rmtables(f"{this_imagename}*")
+                else:
+                    casalog.post(f"Found {this_imagename}. Skipping imaging.")
+                    continue
 
             if cell_size[thisspw][0] == 0:
                 casalog.post(f"All data flagged for {this_imagename}. Skipping")
@@ -190,7 +195,8 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
 
 
 def quicklook_continuum_imaging(myvis, contspw_dict,
-                                niter=0, nsigma=5., imsize_max=800):
+                                niter=0, nsigma=5., imsize_max=800,
+                                overwrite_imaging=False):
     '''
     Per-SPW MFS, nterm=1, dirty images of the targets
     '''
@@ -277,7 +283,11 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
             this_imagename = f"quicklook_imaging/quicklook-{target_field}-spw{thisspw}-continuum-{myvis}"
 
             if os.path.exists(f"{this_imagename}.image"):
-                rmtables(f"{this_imagename}*")
+                if overwrite_imaging:
+                    rmtables(f"{this_imagename}*")
+                else:
+                    casalog.post(f"Found {this_imagename}. Skipping imaging.")
+                    continue
 
             # Ask for cellsize
             this_im = imager()
