@@ -336,7 +336,7 @@ for fil in image_files:
 # --------------------------------
 # Make quicklook images of targets
 # --------------------------------
-run_quicklook = True
+run_quicklook = False
 
 # Run dirty imaging only for a quicklook
 if run_quicklook:
@@ -344,7 +344,7 @@ if run_quicklook:
     # which SPWs have significant RFI.
     # TODO: Need to check how much added time this results in for A/B config.
     quicklook_continuum_imaging(myvis, contspw_dict,
-                                niter=50, nsigma=5.)
+                                niter=0, nsigma=5.)
 
     os.system("cp -r {0} {1}".format('quicklook_imaging', products_folder))
 
