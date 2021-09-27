@@ -336,7 +336,7 @@ for fil in image_files:
 # --------------------------------
 # Make quicklook images of targets
 # --------------------------------
-run_quicklook = False
+run_quicklook = True
 
 # Run dirty imaging only for a quicklook
 if run_quicklook:
