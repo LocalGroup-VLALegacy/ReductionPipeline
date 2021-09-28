@@ -169,6 +169,9 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
             this_nsigma = nsigma
             this_niter = niter
 
+            # Clean up any possible imaging remnants first
+            rmtables(f"{this_imagename}*")
+
             tclean(vis=myvis,
                    field=target_field,
                    spw=str(thisspw),
@@ -300,6 +303,9 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
             this_nsigma = nsigma
             this_niter = niter
+
+            # Clean up any possible imaging remnants first
+            rmtables(f"{this_imagename}*")
 
             tclean(vis=myvis,
                    field=target_field,
