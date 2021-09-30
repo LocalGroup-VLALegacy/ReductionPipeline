@@ -2,7 +2,7 @@
 import os
 import datetime
 
-from casatasks import tclean, rmtables
+from casatasks import tclean, rmtables, exportfits
 
 from casatools import logsink
 from casatools import ms
@@ -19,7 +19,8 @@ from lband_pipeline.target_setup import (target_line_range_kms,
 
 
 def cleanup_misc_quicklook(filename, remove_residual=True,
-                           remove_psf=True):
+                           remove_psf=True,
+                           remove_image=False):
     '''
     Reduce number of files that aren't needed for QA.
     '''
@@ -35,10 +36,14 @@ def cleanup_misc_quicklook(filename, remove_residual=True,
     if remove_psf:
         rmtables(f"{filename}.psf")
 
+    if remove_image:
+        rmtables(f"{filename}.image")
+
 
 def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
                            niter=0, nsigma=5., imsize_max=800,
-                           overwrite_imaging=False):
+                           overwrite_imaging=False,
+                           export_fits=True):
 
     if not os.path.exists("quicklook_imaging"):
         os.mkdir("quicklook_imaging")
@@ -189,9 +194,15 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
                    restfreq=f"{linerest_dict_GHz[line_name]}GHz",
                    pblimit=this_pblim)
 
+            if export_fits:
+                exportfits(imagename=f"{this_imagename}.image",
+                           fitsimage=f"{this_imagename}.image.fits",
+                           history=False)
+
             # Clean-up extra imaging products if they are not needed.
             cleanup_misc_quicklook(this_imagename, remove_psf=True,
-                                    remove_residual=this_niter == 0)
+                                    remove_residual=this_niter == 0,
+                                    remove_image=True if export_fits else False)
 
     t1 = datetime.datetime.now()
 
@@ -200,7 +211,8 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
 
 def quicklook_continuum_imaging(myvis, contspw_dict,
                                 niter=0, nsigma=5., imsize_max=800,
-                                overwrite_imaging=False):
+                                overwrite_imaging=False,
+                                export_fits=True):
     '''
     Per-SPW MFS, nterm=1, dirty images of the targets
     '''
@@ -322,9 +334,15 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
                    imagename=this_imagename,
                    pblimit=this_pblim)
 
+            if export_fits:
+                exportfits(imagename=f"{this_imagename}.image",
+                           fitsimage=f"{this_imagename}.image.fits",
+                           history=False)
+
             # Clean-up extra imaging products if they are not needed.
             cleanup_misc_quicklook(this_imagename, remove_psf=True,
-                                    remove_residual=this_niter == 0)
+                                    remove_residual=this_niter == 0,
+                                    remove_image=True if export_fits else False)
 
     t1 = datetime.datetime.now()
 
