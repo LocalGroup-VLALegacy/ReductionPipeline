@@ -156,7 +156,12 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
 
             this_imagename = f"quicklook_imaging/quicklook-{target_field}-spw{thisspw}-{line_name}-{myvis}"
 
-            if os.path.exists(f"{this_imagename}.image"):
+            if export_fits:
+                check_exists = os.path.exists(f"{this_imagename}.image")
+            else:
+                check_exists = os.path.exists(f"{this_imagename}.image.fits")
+
+            if check_exists:
                 if overwrite_imaging:
                     rmtables(f"{this_imagename}*")
                 else:
@@ -197,7 +202,8 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
             if export_fits:
                 exportfits(imagename=f"{this_imagename}.image",
                            fitsimage=f"{this_imagename}.image.fits",
-                           history=False)
+                           history=False,
+                           overwrite=True)
 
             # Clean-up extra imaging products if they are not needed.
             cleanup_misc_quicklook(this_imagename, remove_psf=True,
@@ -298,7 +304,12 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
             this_imagename = f"quicklook_imaging/quicklook-{target_field}-spw{thisspw}-continuum-{myvis}"
 
-            if os.path.exists(f"{this_imagename}.image"):
+            if export_fits:
+                check_exists = os.path.exists(f"{this_imagename}.image")
+            else:
+                check_exists = os.path.exists(f"{this_imagename}.image.fits")
+
+            if check_exists:
                 if overwrite_imaging:
                     rmtables(f"{this_imagename}*")
                 else:
@@ -337,7 +348,8 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
             if export_fits:
                 exportfits(imagename=f"{this_imagename}.image",
                            fitsimage=f"{this_imagename}.image.fits",
-                           history=False)
+                           history=False,
+                           overwrite=True)
 
             # Clean-up extra imaging products if they are not needed.
             cleanup_misc_quicklook(this_imagename, remove_psf=True,
