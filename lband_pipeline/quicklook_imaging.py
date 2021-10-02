@@ -100,6 +100,9 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
     # Loop through targets and line SPWs
     for target_field in target_fields:
 
+        # Catch hyphen in field names
+        target_field = target_field.replace('-', '_')
+
         casalog.post(f"Quick look imaging of field {target_field}")
 
         # Loop through the SPWs to identify the biggest image size needed.
@@ -256,6 +259,9 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
     # Loop through targets and line SPWs
     for target_field in target_fields:
+
+        # Catch hyphen in field names
+        target_field = target_field.replace('-', '_')
 
         casalog.post(f"Quick look imaging of field {target_field}")
 
