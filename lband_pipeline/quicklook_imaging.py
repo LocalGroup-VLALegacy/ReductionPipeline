@@ -100,9 +100,6 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
     # Loop through targets and line SPWs
     for target_field in target_fields:
 
-        # Catch hyphen in field names
-        target_field = target_field.replace('-', '_')
-
         casalog.post(f"Quick look imaging of field {target_field}")
 
         # Loop through the SPWs to identify the biggest image size needed.
@@ -157,7 +154,9 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
 
             casalog.post(f"Quick look imaging of field {target_field} SPW {thisspw}")
 
-            this_imagename = f"quicklook_imaging/quicklook-{target_field}-spw{thisspw}-{line_name}-{myvis}"
+            target_field_label = target_field.replace('-', '_')
+
+            this_imagename = f"quicklook_imaging/quicklook-{target_field_label}-spw{thisspw}-{line_name}-{myvis}"
 
             if export_fits:
                 check_exists = os.path.exists(f"{this_imagename}.image")
@@ -260,9 +259,6 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
     # Loop through targets and line SPWs
     for target_field in target_fields:
 
-        # Catch hyphen in field names
-        target_field = target_field.replace('-', '_')
-
         casalog.post(f"Quick look imaging of field {target_field}")
 
         cell_size = {}
@@ -308,7 +304,9 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
             casalog.post(f"Quick look imaging of field {target_field} SPW {thisspw}")
 
-            this_imagename = f"quicklook_imaging/quicklook-{target_field}-spw{thisspw}-continuum-{myvis}"
+            target_field_label = target_field.replace('-', '_')
+
+            this_imagename = f"quicklook_imaging/quicklook-{target_field_label}-spw{thisspw}-continuum-{myvis}"
 
             if export_fits:
                 check_exists = os.path.exists(f"{this_imagename}.image")
