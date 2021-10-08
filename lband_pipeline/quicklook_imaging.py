@@ -40,7 +40,9 @@ def cleanup_misc_quicklook(filename, remove_residual=True,
         rmtables(f"{filename}.image")
 
 
-def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
+def quicklook_line_imaging(myvis, thisgal, linespw_dict,
+                           nchan_vel=5,
+                           # channel_width_kms=20.,
                            niter=0, nsigma=5., imsize_max=800,
                            overwrite_imaging=False,
                            export_fits=True):
@@ -59,12 +61,15 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict, channel_width_kms=20.,
                 this_velrange = this_range
                 break
 
-
-    width_vel = channel_width_kms
-    width_vel_str = f"{width_vel}km/s"
+    # width_vel = channel_width_kms
+    # width_vel_str = f"{width_vel}km/s"
 
     start_vel = f"{int(min(this_velrange))}km/s"
-    nchan_vel = int(abs(this_velrange[0] - this_velrange[1]) / width_vel)
+
+    # nchan_vel = int(abs(this_velrange[0] - this_velrange[1]) / width_vel)
+
+    width_vel = int(round(abs(this_velrange[0] - this_velrange[1]) / float(nchan_vel)))
+    width_vel_str = f"{width_vel}km/s"
 
     # Select only the non-continuum SPWs
     line_spws = []
