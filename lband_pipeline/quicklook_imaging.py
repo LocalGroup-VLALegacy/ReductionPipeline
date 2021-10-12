@@ -164,13 +164,14 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
             this_imagename = f"quicklook_imaging/quicklook-{target_field_label}-spw{thisspw}-{line_name}-{myvis}"
 
             if export_fits:
-                check_exists = os.path.exists(f"{this_imagename}.image")
-            else:
                 check_exists = os.path.exists(f"{this_imagename}.image.fits")
+            else:
+                check_exists = os.path.exists(f"{this_imagename}.image")
 
             if check_exists:
                 if overwrite_imaging:
                     rmtables(f"{this_imagename}*")
+                    os.remove(f"{this_imagename}.image.fits")
                 else:
                     casalog.post(f"Found {this_imagename}. Skipping imaging.")
                     continue
