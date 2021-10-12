@@ -151,6 +151,10 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
             approx_imsize = synthutil.getOptimumSize(int(approx_pbsize / image_settings[2]['value']))
             imsizes.append(approx_imsize)
 
+        if len(imsize_sizes) == 0:
+            casalog.post(f"{target_field} is fully flagged. Skipping.")
+            continue
+
         this_imsize = min(imsize_max, max(imsizes))
 
         for thisspw_info in line_spws:
@@ -303,6 +307,10 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
             approx_pbsize = 1.2 * (45. / mean_freq) * 60 # arcsec
             approx_imsize = synthutil.getOptimumSize(int(approx_pbsize / image_settings[2]['value']))
             imsizes.append(approx_imsize)
+
+        if len(imsize_sizes) == 0:
+            casalog.post(f"{target_field} is fully flagged. Skipping.")
+            continue
 
         this_imsize = min(imsize_max, max(imsizes))
 
