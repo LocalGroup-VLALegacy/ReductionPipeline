@@ -346,7 +346,8 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
             print("Removing plot tables in {}".format(output_folder))
             os.system("rm -r {}/*".format(output_folder))
         else:
-            raise ValueError("{} already exists. Enable overwrite=True to rerun.".format(output_folder))
+            casalog.post("{} already exists. Will skip existing files.".format(output_folder))
+            # raise ValueError("{} already exists. Enable overwrite=True to rerun.".format(output_folder))
 
     # Read the field names
     tb.open(os.path.join(ms_name, "FIELD"))
