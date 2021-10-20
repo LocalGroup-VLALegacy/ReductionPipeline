@@ -363,7 +363,7 @@ if text_output:
     make_qa_tables(myvis,
                    output_folder='scan_plots_txt',
                    outtype='txt',
-                   overwrite=True,
+                   overwrite=False,
                    chanavg=4096,)
 
     # make_all_flagsummary_data(myvis, output_folder='perfield_flagfraction_txt')
