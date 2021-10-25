@@ -343,7 +343,7 @@ split_ms_final_all(myvis,
                    data_column='CORRECTED',
                    target_name_prefix="",
                    time_bin='0s',
-                   keep_flags=False,
+                   keep_flags=True,
                    overwrite=False)
 
 # --------------------------------
