@@ -307,6 +307,9 @@ def split_ms_final(ms_name,
     if overwrite and os.path.exists(output_ms_name):
         os.system(f"rm -r {output_ms_name}")
 
+    if os.path.exists(output_ms_name):
+        casalog.post(f"Found existing MS and overwrite=False. Skipping. Name: {output_ms_name}")
+
     # We're classifying based on "continuum" or "speclines" in the name.
     if 'speclines' in ms_name_base:
 
