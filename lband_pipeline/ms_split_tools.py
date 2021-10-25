@@ -241,3 +241,100 @@ def split_ms(ms_name,
                     reindex=reindex)
 
 
+def split_ms_target(ms_name,
+                    spw_dict,
+                    data_column='CORRECTED',
+                    target_name_prefix="",
+                    line_intents='*TARGET*',
+                    continuum_intents='*',
+                    time_bin='0s',
+                    keep_flags=False,
+                    overwrite=False):
+    '''
+    Split a calibrated MS into a final version with target or required
+    calibrators (if continuum).
+
+
+    Parameters
+    ----------
+    ms_name : str
+        Name of MS.
+
+    data_column : str, optional
+        Column to keep in the split data. Default is "CORRECTED".
+
+    target_name_prefix : str, optional
+        Give string to match to target fields to split out.
+        Not normally needed if the split intent is TARGET.
+
+    line_intents : str, optional
+        Intents to keep in split for the spectral line data. Default is "*TARGET*".
+
+    continuum intents : str, optional
+        Intents to keep in split for the continuum data. Default is "*" (all).
+        NOTE: Eventually this may be changed to just the target fields, but we want
+        to keep the calibrators for now to test polarization calibration.
+
+    time_bin : str, optional
+        Time average the data to reduce the volume. Default is "0s" (no time averaging).
+
+    keep_flags : bool, optional
+        Keep or removed flag data in the split. Default is False.
+
+    overwrite : bool, optional
+        Overwrite an existing MS with the same output name. Default is False.
+
+    '''
+
+    from casatasks import mstransform
+
+    folder_base, ms_name_base = os.path.split(ms_name)
+
+    if len(folder_base) == 0:
+        folder_base = '.'
+
+    output_ms_name = f"{ms_name_base}.split"
+
+    if overwrite and os.path.exists(output_ms_name):
+        os.system(f"rm -r {output_ms_name}")
+
+    # We're classifying based on "continuum" or "speclines" in the name.
+    if 'speclines' in ms_name_base:
+
+        # Remove the continuum SPWs that are backups for calibration
+        line_spws = []
+        for thisspw in spw_dict:
+            if "continuum" not in spw_dict[thisspw]['label']:
+                line_spws.append(str(thisspw))
+
+        line_spws = list(set(line_spws))
+
+        mstransform(vis=ms_name,
+                    outputvis="{0}/{1}".format(folder_base,
+                                                output_ms_name),
+                    spw=",".join(line_spws),
+                    datacolumn=data_column,
+                    intent=line_intents,
+                    timebin=time_bin,
+                    field=f"{target_name_prefix}*",
+                    keepflags=keep_flags,
+                    reindex=False)
+
+    elif 'continuum' in ms_name_base:
+        # do split
+        # For now, we're keeping the whole MS intact in case data issues/additional
+        # flagging is needed.
+
+        mstransform(vis=ms_name,
+                    outputvis="{0}/{1}".format(folder_base,
+                                                output_ms_name),
+                    spw="",
+                    datacolumn=data_column,
+                    intent=continuum_intents,
+                    timebin=time_bin,
+                    field=f"{target_name_prefix}*",
+                    keepflags=keep_flags,
+                    reindex=False)
+
+    else:
+        raise ValueError(f"Cannot find 'continuum' or 'speclines' in name {ms_name_base}")
