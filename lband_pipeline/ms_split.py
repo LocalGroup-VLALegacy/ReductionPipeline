@@ -46,4 +46,5 @@ split_ms(ms_active,
          continuum_kwargs={"baseband": 'both'},
          line_kwargs={"include_rrls": False,
                       "keep_backup_continuum": keep_backup_continuum},
+         reindex=False,
          overwrite=False)

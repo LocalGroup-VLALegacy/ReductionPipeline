@@ -135,7 +135,7 @@ def split_ms(ms_name,
              line_kwargs={"include_rrls": False,
                           "keep_backup_continuum": True},
              overwrite=False,
-             reindex=True,
+             reindex=False,
              hanningsmooth_continuum=False):
     '''
     Split an MS into continuum and line SPWs.
@@ -161,7 +161,7 @@ def split_ms(ms_name,
     continuum_kwargs : dict, optional
 
     reindex : bool. optional
-        Disable re-indexing the SPW numbers in mstransform. Defaults is True.
+        Disable re-indexing the SPW numbers in mstransform. Defaults is False.
 
     hanningsmooth_continuum : bool, optional
         Apply Hanning smoothing to the continuum. Default is False.
