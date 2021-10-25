@@ -8,6 +8,8 @@ An example format of spw_dict is shown in 20A-246_spw_setup.py.
 
 import os
 
+from numpy.lib.function_base import hanning
+
 from lband_pipeline.spw_setup import create_spw_dict
 
 
@@ -132,7 +134,9 @@ def split_ms(ms_name,
              continuum_kwargs={"baseband": 'both'},
              line_kwargs={"include_rrls": False,
                           "keep_backup_continuum": True},
-             overwrite=False):
+             overwrite=False,
+             reindex=True,
+             hanningsmooth_continuum=False):
     '''
     Split an MS into continuum and line SPWs.
 
@@ -156,10 +160,16 @@ def split_ms(ms_name,
 
     continuum_kwargs : dict, optional
 
+    reindex : bool. optional
+        Disable re-indexing the SPW numbers in mstransform. Defaults is True.
+
+    hanningsmooth_continuum : bool, optional
+        Apply Hanning smoothing to the continuum. Default is False.
+        If enabled, do NOT use `hifv_hanning` in the pipeline!
 
     '''
 
-    from casatasks import split
+    from casatasks import mstransform
 
     folder_base, ms_name_base = os.path.split(ms_name)
 
@@ -199,11 +209,14 @@ def split_ms(ms_name,
         continuum_spw_str = get_continuum_spws(spw_dict, return_string=True,
                                                **continuum_kwargs)
 
-        split(vis=ms_name,
-              outputvis="{0}/{1}.continuum.ms".format(continuum_folder,
-                                                      ms_name_base),
-              spw=continuum_spw_str, datacolumn='DATA',
-              field="")
+        mstransform(vis=ms_name,
+                    outputvis="{0}/{1}.continuum.ms".format(continuum_folder,
+                                                            ms_name_base),
+                    spw=continuum_spw_str,
+                    datacolumn='DATA',
+                    hanning=hanningsmooth_continuum,
+                    field="",
+                    reindex=reindex)
 
     if do_split_lines:
 
@@ -219,11 +232,13 @@ def split_ms(ms_name,
         line_spw_str = get_line_spws(spw_dict, return_string=True,
                                      **line_kwargs)
 
-        split(vis=ms_name,
-              outputvis="{0}/{1}.speclines.ms".format(lines_folder,
-                                                      ms_name_base),
-              spw=line_spw_str, datacolumn='DATA',
-              field="")
+        mstransform(vis=ms_name,
+                    outputvis="{0}/{1}.speclines.ms".format(lines_folder,
+                                                            ms_name_base),
+                    spw=line_spw_str,
+                    datacolumn='DATA',
+                    field="",
+                    reindex=reindex)
 
 
 def reorder_concat(continuum_vis, line_vis, remove_intermediate=True,
