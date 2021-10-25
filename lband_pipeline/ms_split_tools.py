@@ -293,6 +293,9 @@ def split_ms_final(ms_name,
     '''
 
     from casatasks import mstransform
+    from casatools import logsink
+
+    casalog = logsink()
 
     folder_base, ms_name_base = os.path.split(ms_name)
 
@@ -309,6 +312,7 @@ def split_ms_final(ms_name,
 
     if os.path.exists(output_ms_name):
         casalog.post(f"Found existing MS and overwrite=False. Skipping. Name: {output_ms_name}")
+        return
 
     # We're classifying based on "continuum" or "speclines" in the name.
     if 'speclines' in ms_name_base:
