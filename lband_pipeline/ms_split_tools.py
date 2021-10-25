@@ -241,15 +241,17 @@ def split_ms(ms_name,
                     reindex=reindex)
 
 
-def split_ms_target(ms_name,
-                    spw_dict,
-                    data_column='CORRECTED',
-                    target_name_prefix="",
-                    line_intents='*TARGET*',
-                    continuum_intents='*TARGET*',
-                    time_bin='0s',
-                    keep_flags=False,
-                    overwrite=False):
+def split_ms_final(ms_name,
+                   spw_dict,
+                   data_column='CORRECTED',
+                   target_name_prefix="",
+                   line_intents='*TARGET*',
+                   continuum_intents='*TARGET*',
+                   time_bin='0s',
+                   keep_flags=False,
+                   keep_lines_only=True,
+                   overwrite=False,
+                   output_suffix=""):
     '''
     Split a calibrated MS into a final version with target or required
     calibrators (if continuum).
@@ -281,6 +283,10 @@ def split_ms_target(ms_name,
     keep_flags : bool, optional
         Keep or removed flag data in the split. Default is False.
 
+    keep_lines_only : bool, optional
+        For the spectral lines, split out only the spectral line SPWs. In 20A-346
+        tracks, this will remove all backup continuum SPWs. Default is True.
+
     overwrite : bool, optional
         Overwrite an existing MS with the same output name. Default is False.
 
@@ -293,7 +299,10 @@ def split_ms_target(ms_name,
     if len(folder_base) == 0:
         folder_base = '.'
 
-    output_ms_name = f"{ms_name_base}.split"
+    if len(output_suffix) == 0:
+        output_ms_name = f"{ms_name_base}.split"
+    else:
+        output_ms_name = f"{ms_name_base}.split_{output_suffix}"
 
     if overwrite and os.path.exists(output_ms_name):
         os.system(f"rm -r {output_ms_name}")
@@ -302,17 +311,21 @@ def split_ms_target(ms_name,
     if 'speclines' in ms_name_base:
 
         # Remove the continuum SPWs that are backups for calibration
-        line_spws = []
-        for thisspw in spw_dict:
-            if "continuum" not in spw_dict[thisspw]['label']:
-                line_spws.append(str(thisspw))
+        if keep_lines_only:
+            line_spws = []
+            for thisspw in spw_dict:
+                if "continuum" not in spw_dict[thisspw]['label']:
+                    line_spws.append(str(thisspw))
 
-        line_spws = list(set(line_spws))
+            spw_select_str =",".join(list(set(line_spws)))
+
+        else:
+            spw_select_str = ""
 
         mstransform(vis=ms_name,
                     outputvis="{0}/{1}".format(folder_base,
                                                 output_ms_name),
-                    spw=",".join(line_spws),
+                    spw=spw_select_str,
                     datacolumn=data_column,
                     intent=line_intents,
                     timebin=time_bin,
@@ -338,3 +351,41 @@ def split_ms_target(ms_name,
 
     else:
         raise ValueError(f"Cannot find 'continuum' or 'speclines' in name {ms_name_base}")
+
+
+def split_ms_final_all(ms_name,
+                       spw_dict,
+                       data_column='CORRECTED',
+                       target_name_prefix="",
+                       time_bin='0s',
+                       keep_flags=False,
+                       overwrite=False):
+    '''
+    Wrapper to split out the target and calibrator data using `split_ms_final`.
+    '''
+
+    # Target
+    split_ms_final(ms_name,
+                   spw_dict,
+                   data_column=data_column,
+                   target_name_prefix=target_name_prefix,
+                   line_intents='*TARGET*',
+                   continuum_intents='*TARGET*',
+                   time_bin=time_bin,
+                   keep_flags=keep_flags,
+                   keep_lines_only=True,
+                   overwrite=overwrite,
+                   output_suffix="")
+
+    # Calibrators
+    split_ms_final(ms_name,
+                   spw_dict,
+                   data_column=data_column,
+                   target_name_prefix=target_name_prefix,
+                   line_intents='*CALIBRATE*',
+                   continuum_intents='*CALIBRATE*',
+                   time_bin=time_bin,
+                   keep_flags=keep_flags,
+                   keep_lines_only=False,
+                   overwrite=overwrite,
+                   output_suffix="calibrators")
