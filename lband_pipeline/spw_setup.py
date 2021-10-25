@@ -94,6 +94,8 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
     # Our SPW setup is the same for all fields.
     spw_ids = metadata.spwsforfield(science_field0)
 
+    gal_vsys = None
+
     # Identify which target we're looking at.
     # Some of the archival data has a setup scan labeled as a target.
     # Because of this, we will loop through targets until we find one defined
