@@ -246,7 +246,7 @@ def split_ms_target(ms_name,
                     data_column='CORRECTED',
                     target_name_prefix="",
                     line_intents='*TARGET*',
-                    continuum_intents='*',
+                    continuum_intents='*TARGET*',
                     time_bin='0s',
                     keep_flags=False,
                     overwrite=False):
