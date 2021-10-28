@@ -14,7 +14,7 @@ mySDM = sys.argv[-3]
 # Split out the lines, continuum or both
 split_type = sys.argv[-2]
 # Set whether to reindex the SPWs or not.
-reindex_spws = sys.argv[-1]
+reindex_spws = bool(sys.argv[-1])
 
 ms_active = mySDM + ".ms"
 
