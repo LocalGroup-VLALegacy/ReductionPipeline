@@ -15,7 +15,11 @@ from glob import glob
 
 import pipeline.infrastructure as infrastructure
 from pipeline.hif.tasks.antpos import Antpos
-import pipeline.infrastructure.casatools as casatools
+
+try:
+    import pipeline.infrastructure.casatools as casatools
+except ImportError:
+    import casatools
 
 LOG = infrastructure.get_logger(__name__)
 
