@@ -17,9 +17,9 @@ import pipeline.infrastructure as infrastructure
 from pipeline.hif.tasks.antpos import Antpos
 
 try:
-    import pipeline.infrastructure.casatools as casatools
+    import pipeline.infrastructure.casatools as casa_tools
 except ImportError:
-    import casatools
+    import pipeline.infrastructure.casa_tools as casa_tools
 
 LOG = infrastructure.get_logger(__name__)
 
@@ -42,13 +42,13 @@ def correct_ant_posns(vis_name, print_offsets=False,
     #
     # get start date+time of observation
     #
-    with casatools.TableReader(vis_name+'/OBSERVATION') as table:
+    with casa_tools.TableReader(vis_name+'/OBSERVATION') as table:
         # observation = tb.open(vis_name+'/OBSERVATION')
         time_range = table.getcol('TIME_RANGE')
 
     MJD_start_time = time_range[0][0] / 86400
-    q1 = casatools.quanta.quantity(time_range[0][0], 's')
-    date_time = casatools.quanta.time(q1, form='ymd')
+    q1 = casa_tools.quanta.quantity(time_range[0][0], 's')
+    date_time = casa_tools.quanta.time(q1, form='ymd')
     # date_time looks like: '2011/08/10/06:56:49'
     [obs_year, obs_month, obs_day, obs_time_string] = date_time[0].split('/')
     if (int(obs_year) < 2010):
@@ -63,7 +63,7 @@ def correct_ant_posns(vis_name, print_offsets=False,
     #
     # get antenna to station mappings
     #
-    with casatools.TableReader(vis_name+'/ANTENNA') as table:
+    with casa_tools.TableReader(vis_name+'/ANTENNA') as table:
         #observation = tb.open(vis_name+'/ANTENNA')
         ant_names = table.getcol('NAME')
         ant_stations = table.getcol('STATION')
