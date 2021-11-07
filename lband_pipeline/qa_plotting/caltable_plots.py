@@ -1,6 +1,7 @@
 
 import os
 from glob import glob
+import numpy as np
 
 from casatools import logsink
 
@@ -78,14 +79,6 @@ def make_caltable_txt(ms_active, caltable_type):
 
     mySDM = ms_active.rstrip(".ms")
 
-    tb.open(ms_active + "/SPECTRAL_WINDOW")
-    nspws = tb.getcol("NAME").shape[0]
-    tb.close()
-
-    tb.open(ms_active + "/ANTENNA")
-    nants = tb.getcol("NAME").shape[0]
-    tb.close()
-
     if not os.path.exists(caltable_values['output_folder']):
         os.mkdir(caltable_values['output_folder'])
 
@@ -96,10 +89,15 @@ def make_caltable_txt(ms_active, caltable_type):
     # Blindly assume we want the first name
     caltable_name = caltable_name[0]
 
-    # Make txt files per SPW.
-    iteraxis = nspws if caltable_values['iter'] == 'spw' else nants
+    tb.open(caltable_name)
+    spw_vals = np.unique(tb.getcol("SPECTRAL_WINDOW_ID"))
+    ant_vals = np.unique(tb.getcol("ANTENNA1"))
+    tb.close()
 
-    for ii in range(iteraxis):
+    # Make txt files per SPW.
+    iteraxis = spw_vals if caltable_values['iter'] == 'spw' else ant_vals
+
+    for ii in iteraxis:
 
         print("On spectral window: {}".format(ii))
         casalog.post("On spectral window: {}".format(ii))
@@ -115,6 +113,8 @@ def make_caltable_txt(ms_active, caltable_type):
         thisplotfile = os.path.join(caltable_values['output_folder'], out_filename)
 
         if not os.path.exists(thisplotfile):
+
+            print(caltable_name)
 
             plotms(vis=caltable_name,
                    xaxis=caltable_values['x'],
