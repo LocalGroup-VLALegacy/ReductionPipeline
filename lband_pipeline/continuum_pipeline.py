@@ -3,7 +3,6 @@ import sys
 import os
 from glob import glob
 import shutil
-import traceback
 import numpy as np
 
 # Additional QA plotting routines
@@ -93,11 +92,11 @@ if len(context_files) > 0:
                  'hifv_checkflag',
                  'hifv_semiFinalBPdcals',
                  'hifv_checkflag',
+                 'hifv_semiFinalBPdcals',
                  'hifv_solint',
-                 'hifv_fluxboot',
+                 'hifv_fluxboot2',
                  'hifv_finalcals',
                  'hifv_applycals',
-                 'hifv_checkflag',
                  'hifv_targetflag',
                  'hifv_statwt',
                  'hifv_plotsummary',
@@ -183,7 +182,7 @@ if not skip_pipeline:
 
             hifv_flagdata(flagbackup=False,
                           scan=True,
-                          fracspw=0.01,
+                          fracspw=0.05,
                           intents='*POINTING*,*FOCUS*,*ATMOSPHERE*,*SIDEBAND_RATIO*,*UNKNOWN*,*SYSTEM_CONFIGURATION*,  *UNSPECIFIED#UNSPECIFIED*',
                           clip=True,
                           baseband=True,
@@ -198,10 +197,13 @@ if not skip_pipeline:
                           online=True)
 
         if restart_stage <= 3:
-            hifv_vlasetjy(pipelinemode="automatic")
+            hifv_vlasetjy(fluxdensity=-1,
+                          scalebychan=True,
+                          spix=0,
+                          reffreq='1GHz')
 
         if restart_stage <= 4:
-            hifv_priorcals(pipelinemode="automatic")
+            hifv_priorcals(tecmaps=False)
 
             # Check offline tables (updated before each run) for antenna corrections
             # If the online tables were accessed and the correction table already exists,
@@ -211,60 +213,52 @@ if not skip_pipeline:
                                      skip_existing=True)
 
         if restart_stage <= 5:
-            hifv_testBPdcals(pipelinemode="automatic",
-                             weakbp=False,
+            hifv_testBPdcals(weakbp=False,
                              refantignore=refantignore)
 
         if restart_stage <= 6:
-            hifv_checkflag(checkflagmode='bpd-vla')
+            hifv_checkflag(pipelinemode="automatic")
 
         if restart_stage <= 7:
-            hifv_semiFinalBPdcals(pipelinemode="automatic",
-                                  weakbp=False,
+            hifv_semiFinalBPdcals(weakbp=False,
                                   refantignore=refantignore)
 
         if restart_stage <= 8:
-            hifv_checkflag(checkflagmode='allcals-vla')
-
-        # if restart_stage <= 9:
-        #     hifv_semiFinalBPdcals(weakbp=False,
-        #                           refantignore=refantignore)
+            hifv_checkflag(checkflagmode='semi')
 
         if restart_stage <= 9:
+            hifv_semiFinalBPdcals(weakbp=False,
+                                  refantignore=refantignore)
+
+        if restart_stage <= 10:
             hifv_solint(pipelinemode="automatic",
                         refantignore=refantignore)
 
-        if restart_stage <= 10:
-            hifv_fluxboot(pipelinemode="automatic",
-                          fitorder=2,
-                          refantignore=refantignore)
-
         if restart_stage <= 11:
-            # Don't grow flags at this step. We have long slews to our pol cals
-            # and growtime=50 can wipe out the whole scan!
-            # flagdata(vis=myvis, mode='extend', extendpols=True, action='apply',
-            #          display='', flagbackup=False, intent='*CALIBRATE*',
-            #          growtime=99.9, growfreq=99.9)
-            # flagdata(vis=myvis, mode='extend', growtime=90.0, growfreq=90.0, extendpols=False,
-            #          action='apply', display='', flagbackup=False, intent='*CALIBRATE*',
-            #          growaround=True, flagneartime=True, flagnearfreq=True)
-
-            hifv_finalcals(pipelinemode="automatic",
-                           weakbp=False,
+            hifv_fluxboot2(pipelinemode="automatic", fitorder=-1,
                            refantignore=refantignore)
 
         if restart_stage <= 12:
-            hifv_applycals(pipelinemode="automatic",
-                           flagdetailedsum=True,
-                           gainmap=False,
-                           flagbackup=True,
-                           flagsum=True)
+            # Don't grow flags at this step. We have long slews to our pol cals
+            # and growtime=50 can wipe out the whole scan!
+            flagdata(vis=myvis, mode='extend', extendpols=True, action='apply',
+                     display='', flagbackup=False, intent='*CALIBRATE*',
+                     growtime=99.9, growfreq=99.9)
+            flagdata(vis=myvis, mode='extend', growtime=90.0, growfreq=90.0, extendpols=False,
+                     action='apply', display='', flagbackup=False, intent='*CALIBRATE*',
+                     growaround=True, flagneartime=True, flagnearfreq=True)
+
+            hifv_finalcals(weakbp=False,
+                           refantignore=refantignore)
 
         if restart_stage <= 13:
-            hifv_checkflag(checkflagmode='target-vla')
+            hifv_applycals(flagdetailedsum=True,
+                        gainmap=False,
+                        flagbackup=True,
+                        flagsum=True)
 
         if restart_stage <= 14:
-            hifv_targetflag(intents='*TARGET*')
+            hifv_targetflag(intents='*CALIBRATE*,*TARGET*')
 
         if restart_stage <= 15:
             hifv_statwt(datacolumn='corrected')
@@ -274,18 +268,37 @@ if not skip_pipeline:
 
         if restart_stage <= 17:
             hif_makeimlist(nchan=-1,
-                           calcsb=False,
-                           intent='PHASE,BANDPASS',
-                           robust=-999.0,
-                           parallel='automatic',
-                           per_eb=False,
-                           calmaxpix=300,
-                           specmode='cont',
-                           clearlist=True)
+                        calcsb=False,
+                        intent='PHASE,BANDPASS',
+                        robust=-999.0,
+                        parallel='automatic',
+                        per_eb=False,
+                        calmaxpix=300,
+                        specmode='cont',
+                        clearlist=True)
 
         if restart_stage <= 18:
 
-            hif_makeimages(hm_masking='centralregion')
+            hif_makeimages(tlimit=2.0,
+                        hm_perchanweightdensity=False,
+                        hm_npixels=0,
+                        hm_dogrowprune=True,
+                        hm_negativethreshold=-999.0,
+                        calcsb=False,
+                        hm_noisethreshold=-999.0,
+                        hm_fastnoise=True,
+                        hm_masking='none',
+                        hm_minpercentchange=-999.0,
+                        parallel='automatic',
+                        masklimit=4,
+                        hm_nsigma=0.0,
+                        target_list={},
+                        hm_minbeamfrac=-999.0,
+                        hm_lownoisethreshold=-999.0,
+                        hm_growiterations=-999,
+                        overwrite_on_export=True,
+                        cleancontranges=False,
+                        hm_sidelobethreshold=-999.0)
 
         if restart_stage <= 19:
             # Make a folder of products for restoring the pipeline solution
@@ -301,8 +314,6 @@ if not skip_pipeline:
 
     except Exception as ex:
         casalog.post("Encountered exception: {}".format(ex))
-
-        casalog.post("Traceback: {}".format(traceback.print_exc()))
 
         h_save()
 
