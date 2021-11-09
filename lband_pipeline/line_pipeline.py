@@ -4,9 +4,7 @@ import os
 from glob import glob
 import shutil
 import traceback
-from matplotlib.pyplot import isinteractive
 import numpy as np
-import datetime
 
 # Additional QA plotting routines
 from lband_pipeline.qa_plotting import (make_qa_scan_figures,
@@ -110,15 +108,14 @@ if len(context_files) > 0:
                  'hifv_vlasetjy',
                  'hifv_priorcals',
                  'hifv_testBPdcals',
-                #  'hifv_flagbaddef',  # Remove for CASA 6
                  'hifv_checkflag',
                  'hifv_semiFinalBPdcals',
                  'hifv_checkflag',
-                 'hifv_semiFinalBPdcals',
                  'hifv_solint',
-                 'hifv_fluxboot2',
+                 'hifv_fluxboot',
                  'hifv_finalcals',
                  'hifv_applycals',
+                 'hifv_checkflag',
                  'hifv_targetflag',
                  'hifv_statwt',
                  'hifv_plotsummary',
@@ -238,13 +235,10 @@ if not skip_pipeline:
                         edgespw=True)
 
         if restart_stage <= 2:
-            hifv_vlasetjy(fluxdensity=-1,
-                        scalebychan=True,
-                        reffreq='1GHz',
-                        spix=0)
+            hifv_vlasetjy(pipelinemode="automatic")
 
         if restart_stage <= 3:
-            hifv_priorcals(tecmaps=False)
+            hifv_priorcals(pipelinemode="automatic")
 
             # Check offline tables (updated before each run) for antenna corrections
             # If the online tables were accessed and the correction table already exists,
@@ -254,8 +248,9 @@ if not skip_pipeline:
                                       skip_existing=True)
 
         if restart_stage <= 4:
-            hifv_testBPdcals(weakbp=False,
-                            refantignore=refantignore)
+            hifv_testBPdcals(pipelinemode="automatic",
+                             weakbp=False,
+                             refantignore=refantignore)
 
             # We need to interpolate over MW absorption in the bandpass
             # These channels should be flagged in the calibrators.
@@ -265,44 +260,48 @@ if not skip_pipeline:
                                             task_string="hifv_testBPdcals")
 
         if restart_stage <= 5:
-            hifv_checkflag(pipelinemode="automatic")
+            hifv_checkflag(checkflagmode='bpd-vla')
 
         if restart_stage <= 6:
-            hifv_semiFinalBPdcals(weakbp=False,
-                                refantignore=refantignore)
+            hifv_semiFinalBPdcals(pipelinemode="automatic",
+                                  weakbp=False,
+                                  refantignore=refantignore)
 
         if restart_stage <= 7:
-            hifv_checkflag(checkflagmode='semi')
+            hifv_checkflag(checkflagmode='allcals-vla')
 
         if restart_stage <= 8:
-            hifv_semiFinalBPdcals(weakbp=False,
-                                refantignore=refantignore)
-
-            bandpass_with_gap_interpolation(myvis, hi_spw,
-                                            search_string='',
-                                            task_string='hifv_semiFinalBPdcals')
-
-        if restart_stage <= 9:
             hifv_solint(pipelinemode="automatic",
                         refantignore=refantignore)
 
-        if restart_stage <= 10:
-            hifv_fluxboot2(pipelinemode="automatic",
-                        refantignore=refantignore)
+        if restart_stage <= 9:
+            hifv_fluxboot(pipelinemode="automatic",
+                          fitorder=2,
+                          refantignore=refantignore)
 
-        if restart_stage <= 11:
-            hifv_finalcals(weakbp=False,
-                        refantignore=refantignore)
+        if restart_stage <= 10:
+            hifv_finalcals(pipelinemode="automatic",
+                           weakbp=False,
+                           refantignore=refantignore)
 
             bandpass_with_gap_interpolation(myvis, hi_spw,
                                             search_string='final',
                                             task_string='hifv_finalcals')
 
+        if restart_stage <= 11:
+            hifv_applycals(pipelinemode="automatic",
+                           flagdetailedsum=True,
+                           gainmap=False,
+                           flagbackup=True,
+                           flagsum=True)
+
+        # Keep the following step in the script if cont.dat exists.
+        # Remove RFI flagging the lines in target fields.
         if restart_stage <= 12:
-            hifv_applycals(flagdetailedsum=True,
-                        gainmap=False,
-                        flagbackup=True,
-                        flagsum=True)
+            if os.path.exists('cont.dat'):
+                hifv_checkflag(checkflagmode='target-vla')
+            else:
+                hifv_checkflag(checkflagmode='allcals-vla')
 
         # Keep the following step in the script if cont.dat exists.
         # Remove RFI flagging the lines in target fields.
@@ -313,33 +312,24 @@ if not skip_pipeline:
                 hifv_targetflag(intents='*CALIBRATE*')
 
         if restart_stage <= 14:
-            hifv_statwt(pipelinemode="automatic")
+            hifv_statwt(datacolumn='corrected')
 
         if restart_stage <= 15:
             hifv_plotsummary(pipelinemode="automatic")
 
         if restart_stage <= 16:
-            # TODO: Choose a representative target field to image?
             hif_makeimlist(nchan=-1,
-                        calmaxpix=300,
-                        intent='PHASE,BANDPASS')
+                           calcsb=False,
+                           intent='PHASE,BANDPASS',
+                           robust=-999.0,
+                           parallel='automatic',
+                           per_eb=False,
+                           calmaxpix=300,
+                           specmode='mfs',
+                           clearlist=True)
 
         if restart_stage <= 17:
-            hif_makeimages(tlimit=2.0,
-                        hm_minbeamfrac=-999.0,
-                        hm_dogrowprune=True,
-                        hm_negativethreshold=-999.0,
-                        calcsb=False,
-                        target_list={},
-                        hm_noisethreshold=-999.0,
-                        hm_masking='none',
-                        hm_minpercentchange=-999.0,
-                        parallel='automatic',
-                        masklimit=4,
-                        hm_lownoisethreshold=-999.0,
-                        hm_growiterations=-999,
-                        cleancontranges=False,
-                        hm_sidelobethreshold=-999.0)
+            hif_makeimages(hm_masking='centralregion')
 
         if restart_stage <= 18:
             # Make a folder of products for restoring the pipeline solution
@@ -348,7 +338,10 @@ if not skip_pipeline:
 
             # TODO: review whether we should be including additional products
             # here
-            hifv_exportdata(products_dir=products_folder + '/')
+            hifv_exportdata(products_dir=products_folder + '/',
+                            gainmap=False,
+                            exportmses=False,
+                            exportcalprods=True)
 
     except Exception as ex:
         casalog.post("Encountered exception: {}".format(ex))
