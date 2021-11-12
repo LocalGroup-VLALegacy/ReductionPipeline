@@ -117,7 +117,7 @@ if len(context_files) > 0:
                  'hifv_applycals',
                  'hifv_checkflag',
                  'hifv_targetflag',
-                 'hifv_statwt',
+                #  'hifv_statwt',
                  'hifv_plotsummary',
                  'hif_makeimlist',
                  'hif_makeimages',
@@ -311,13 +311,13 @@ if not skip_pipeline:
             else:
                 hifv_targetflag(intents='*CALIBRATE*')
 
-        if restart_stage <= 14:
-            hifv_statwt(datacolumn='corrected')
+        # if restart_stage <= 14:
+        #     hifv_statwt(datacolumn='corrected')
 
-        if restart_stage <= 15:
+        if restart_stage <= 14:
             hifv_plotsummary(pipelinemode="automatic")
 
-        if restart_stage <= 16:
+        if restart_stage <= 15:
             hif_makeimlist(nchan=-1,
                            calcsb=False,
                            intent='PHASE,BANDPASS',
@@ -328,10 +328,10 @@ if not skip_pipeline:
                            specmode='mfs',
                            clearlist=True)
 
-        if restart_stage <= 17:
+        if restart_stage <= 16:
             hif_makeimages(hm_masking='centralregion')
 
-        if restart_stage <= 18:
+        if restart_stage <= 17:
             # Make a folder of products for restoring the pipeline solution
             if not os.path.exists(products_folder):
                 os.mkdir(products_folder + '/')
