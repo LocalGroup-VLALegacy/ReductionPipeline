@@ -120,7 +120,7 @@ if len(context_files) > 0:
                  'hifv_finalcals',
                  'hifv_applycals',
                  'hifv_targetflag',
-                 'hifv_statwt',
+                #  'hifv_statwt',  # Disabling statwt on 11/12/21 due to high memory usage
                  'hifv_plotsummary',
                  'hif_makeimlist',
                  'hif_makeimages',
@@ -312,19 +312,21 @@ if not skip_pipeline:
             else:
                 hifv_targetflag(intents='*CALIBRATE*')
 
-        if restart_stage <= 14:
-            hifv_statwt(pipelinemode="automatic")
+        # Disabling statwt on 11/12/21 due to high memory usage and long run times.
+        # NOTE: we will run statwt in the imaging pipeline. This should be OK.
+        # if restart_stage <= 14:
+        #     hifv_statwt(pipelinemode="automatic")
 
-        if restart_stage <= 15:
+        if restart_stage <= 14:
             hifv_plotsummary(pipelinemode="automatic")
 
-        if restart_stage <= 16:
+        if restart_stage <= 15:
             # TODO: Choose a representative target field to image?
             hif_makeimlist(nchan=-1,
                         calmaxpix=300,
                         intent='PHASE,BANDPASS')
 
-        if restart_stage <= 17:
+        if restart_stage <= 16:
             hif_makeimages(tlimit=2.0,
                         hm_minbeamfrac=-999.0,
                         hm_dogrowprune=True,
@@ -341,7 +343,7 @@ if not skip_pipeline:
                         cleancontranges=False,
                         hm_sidelobethreshold=-999.0)
 
-        if restart_stage <= 18:
+        if restart_stage <= 17:
             # Make a folder of products for restoring the pipeline solution
             if not os.path.exists(products_folder):
                 os.mkdir(products_folder + '/')
