@@ -1,6 +1,11 @@
 # ReductionPipeline
 L-band VLA reduction pipeline
 
+Current version works on version 6.2 of the VLA pipeline.
+
+Pipeline scripts for older versions are maintained in separate branches
+(though these are likely to be stale).
+
 Add the repository path to the system path.
 ```
 import sys
