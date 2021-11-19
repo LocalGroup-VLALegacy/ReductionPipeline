@@ -136,3 +136,9 @@ def make_all_caltable_txt(msname):
     for key in CALTABLE_MAPPING:
         make_caltable_txt(msname, key)
 
+
+# hifv_plotsummary amp vs freq coloured by ant1
+# plotms(vis='14B-212.sb30132182.eb30190975.57045.74273331018.continuum.ms',
+#        xaxis='freq', yaxis='amp', ydatacolumn='corrected', field='J1923-2104',
+#        spw='0,1,2,3,4,5,6,7', correlation='LL,RR', intent='CALIBRATE_AMPLI#UNSPECIFIED,CALIBRATE_PHASE#UNSPECIFIED', avgtime='1e8', avgscan=True, avgantenna=True, coloraxis='antenna1', plotrange=[0, 0, 0, 0], plotfile='14B-212.sb30132182.eb30190975.57045.74273331018.continuum.ms-J1923-2104-bb12-PHASE-amp_vs_freq-LL_RR.png',
+#        overwrite=True, showgui=False, clearplots=True)
