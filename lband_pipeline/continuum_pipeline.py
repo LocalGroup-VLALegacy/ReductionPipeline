@@ -56,8 +56,9 @@ myvis = mySDM if mySDM.endswith("ms") else mySDM + ".ms"
 proj_code = mySDM.split(".")[0]
 
 # Get the SPW mapping for the line MS.
-
-contspw_dict = create_spw_dict(myvis)
+spwdict_filename = "spw_definitions.npy"
+contspw_dict = create_spw_dict(myvis, save_spwdict=True,
+                               spwdict_filename=spwdict_filename)
 
 # Get SPWs that contain the HI line
 spws_with_hi = continuum_spws_with_hi(contspw_dict)
@@ -323,6 +324,10 @@ image_files = glob("oussid*")
 
 for fil in image_files:
     shutil.move(fil, "image_outputs/")
+
+# Copy the SPW dictionary file into products
+if os.path.exists(spwdict_filename):
+    os.system(f"cp {spwdict_filename} product/")
 
 # --------------------------------
 # Split the calibrated column out into target and calibrator parts.
