@@ -12,6 +12,9 @@ Currently only tested for 20A-346, 13A-213 (NGC6822 track).
 
 '''
 
+import numpy as np
+import os
+
 # Vsys for matching targets.
 from lband_pipeline.target_setup import target_vsys_kms
 
@@ -67,13 +70,12 @@ linerest_dict_GHz = {"HI": 1.420405752,
                      }
 
 
-def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
+def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50,
+                    save_spwdict=False, spwdict_filename="spw_definitions.npy"):
     '''
     Create the SPW dict from MS metadata. Split based on continuum and
     use the line dictionary to match line identifications.
     '''
-
-    # from taskinit import ms
 
     from casatools import ms
 
@@ -203,6 +205,14 @@ def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50):
                            'freq_0_topo': freq_0_topo}
 
     myms.close()
+
+    if save_spwdict:
+        # Remove existing saved file
+        if os.path.exists(spwdict_filename):
+            os.remove(spwdict_filename)
+
+        # Save a pickled version of the dictionary as a npy file
+        np.save(spwdict_filename, spw_dict)
 
     return spw_dict
 
