@@ -168,6 +168,7 @@ if not skip_pipeline:
         # ONLY run if we're starting the first reduction to avoid
         if restart_stage <= 1:
             hifv_hanning(pipelinemode="automatic")
+            h_save()
 
         if restart_stage <= 2:
 
@@ -197,12 +198,14 @@ if not skip_pipeline:
                           template=True,
                           filetemplate="manual_flagging.txt",
                           online=True)
+            h_save()
 
         if restart_stage <= 3:
             hifv_vlasetjy(pipelinemode="automatic")
 
         if restart_stage <= 4:
             hifv_priorcals(pipelinemode="automatic")
+            h_save()
 
             # Check offline tables (updated before each run) for antenna corrections
             # If the online tables were accessed and the correction table already exists,
@@ -218,6 +221,7 @@ if not skip_pipeline:
 
         if restart_stage <= 6:
             hifv_checkflag(checkflagmode='bpd-vla')
+            h_save()
 
         if restart_stage <= 7:
             hifv_semiFinalBPdcals(pipelinemode="automatic",
@@ -226,6 +230,7 @@ if not skip_pipeline:
 
         if restart_stage <= 8:
             hifv_checkflag(checkflagmode='allcals-vla')
+            h_save()
 
         # if restart_stage <= 9:
         #     hifv_semiFinalBPdcals(weakbp=False,
@@ -239,6 +244,7 @@ if not skip_pipeline:
             hifv_fluxboot(pipelinemode="automatic",
                           fitorder=2,
                           refantignore=refantignore)
+            h_save()
 
         if restart_stage <= 11:
             # Don't grow flags at this step. We have long slews to our pol cals
@@ -260,15 +266,19 @@ if not skip_pipeline:
                            gainmap=False,
                            flagbackup=True,
                            flagsum=True)
+            h_save()
 
         if restart_stage <= 13:
             hifv_checkflag(checkflagmode='target-vla')
+            h_save()
 
         if restart_stage <= 14:
             hifv_targetflag(intents='*TARGET*')
+            h_save()
 
         if restart_stage <= 15:
             hifv_statwt(datacolumn='corrected')
+            h_save()
 
         if restart_stage <= 16:
             hifv_plotsummary(pipelinemode="automatic")
@@ -287,6 +297,7 @@ if not skip_pipeline:
         if restart_stage <= 18:
 
             hif_makeimages(hm_masking='centralregion')
+            h_save()
 
         if restart_stage <= 19:
             # Make a folder of products for restoring the pipeline solution

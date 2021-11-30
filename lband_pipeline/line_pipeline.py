@@ -240,6 +240,7 @@ if not skip_pipeline:
 
         if restart_stage <= 3:
             hifv_priorcals(pipelinemode="automatic")
+            h_save()
 
             # Check offline tables (updated before each run) for antenna corrections
             # If the online tables were accessed and the correction table already exists,
@@ -252,6 +253,7 @@ if not skip_pipeline:
             hifv_testBPdcals(pipelinemode="automatic",
                              weakbp=False,
                              refantignore=refantignore)
+            h_save()
 
             # We need to interpolate over MW absorption in the bandpass
             # These channels should be flagged in the calibrators.
@@ -262,6 +264,7 @@ if not skip_pipeline:
 
         if restart_stage <= 5:
             hifv_checkflag(checkflagmode='bpd-vla')
+            h_save()
 
         if restart_stage <= 6:
             hifv_semiFinalBPdcals(pipelinemode="automatic",
@@ -270,6 +273,7 @@ if not skip_pipeline:
 
         if restart_stage <= 7:
             hifv_checkflag(checkflagmode='allcals-vla')
+            h_save()
 
         if restart_stage <= 8:
             hifv_solint(pipelinemode="automatic",
@@ -279,6 +283,7 @@ if not skip_pipeline:
             hifv_fluxboot(pipelinemode="automatic",
                           fitorder=2,
                           refantignore=refantignore)
+            h_save()
 
         if restart_stage <= 10:
             hifv_finalcals(pipelinemode="automatic",
@@ -295,6 +300,7 @@ if not skip_pipeline:
                            gainmap=False,
                            flagbackup=True,
                            flagsum=True)
+            h_save()
 
         # Keep the following step in the script if cont.dat exists.
         # Remove RFI flagging the lines in target fields.
@@ -303,6 +309,7 @@ if not skip_pipeline:
                 hifv_checkflag(checkflagmode='target-vla')
             else:
                 hifv_checkflag(checkflagmode='allcals-vla')
+            h_save()
 
         # Keep the following step in the script if cont.dat exists.
         # Remove RFI flagging the lines in target fields.
@@ -331,6 +338,7 @@ if not skip_pipeline:
 
         if restart_stage <= 15:
             hif_makeimages(hm_masking='centralregion')
+            h_save()
 
         if restart_stage <= 16:
             # Make a folder of products for restoring the pipeline solution
