@@ -379,7 +379,7 @@ for fil in image_files:
 
 # Copy the SPW dictionary file into products
 if os.path.exists(spwdict_filename):
-    os.system(f"cp {spwdict_filename} product/")
+    os.system(f"cp {spwdict_filename} products/")
 
 # --------------------------------
 # Split the calibrated column out into target and calibrator parts.
