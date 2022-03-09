@@ -29,6 +29,30 @@ From this point, the interactive plotting and expanded weblog are created in a s
 
 Additional support for continuum-only L-band data, or other VLA bands, may be added in the future.
 
+# Calling the pipeline scripts
+
+The scripts to run the pipeline steps are designed to be run from the command line:
+
+    >>> casa --pipeline -c script.py args
+
+The command line arguments for the scripts are:
+
+MS import and continuum/lines split with `ms_split.py`
+
+    >>> casa --pipeline -c ms_split.py SDM_name Split_Type Reindex_SPW_numbers
+
+`Split_Type` accepts `all`, `continuum`, or `lines` (see [split_ms](https://github.com/LocalGroup-VLALegacy/ReductionPipeline/blob/main/lband_pipeline/ms_split_tools.py#L157)). `Reindex_SPW_numbers` is a boolean flag that accepts True/False and is passed to [mstransform](https://casadocs.readthedocs.io/en/stable/api/tt/casatasks.manipulation.mstransform.html?highlight=mstransform#reindex) to keep the original SPW numbering after splitting.
+
+The continuum and line pipeline scripts use the same command line args:
+
+    >>> casa --pipeline -c continuum_pipeline.py MS_name
+    >>> casa --pipeline -c line_pipeline.py MS_name
+
+The pipeline scripts should be run in the same directory as the split MS output of `ms_split.py` that, by default,
+will be the name of the parent directory with "_continuum" or "_speclines" appended to the end. For example, if the
+SDM is in the `M33_track` folder, the split MS will be in the `M33_track_continuum` and `M33_track_speclines`
+folders.
+
 # Legacy code (mostly HI)
 
 M33 projects: https://github.com/e-koch/VLA_Lband
