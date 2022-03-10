@@ -11,7 +11,7 @@ Add the repository path to the system path.
 import sys
 sys.path += ['/path/to/this/repository/']
 ```
-Easiest to add to the `.casa/init.py` file.
+Easiest to add to the `.casa/config.py` file (or `startup.py`) for CASA 6.
 
 # Using the pipeline
 
