@@ -72,7 +72,7 @@ linespw_dict = create_spw_dict(myvis, save_spwdict=True,
 # Identify which SPW is the HI line
 hi_spw = None
 for spwid in linespw_dict:
-    if linespw_dict[spwid]['label'] == "HI":
+    if "HI" in linespw_dict[spwid]['label']:
         hi_spw = spwid
         break
 
