@@ -57,9 +57,14 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
     # We have a MW foreground window on some targets. Skip this for the galaxy range.
     if isinstance(this_velrange[0], list):
         for this_range in this_velrange:
-            if this_vsys > this_range[1] and this_vsys < this_range[0]:
+            if min(this_range) < this_vsys < max(this_range):
                 this_velrange = this_range
                 break
+
+    # Check that the search for the right velocity range didn't fail
+    if isinstance(this_velrange, list):
+        raise ValueError(f"Unable to find range with target vsys ({this_vsys}) from {this_velrange}."
+                         f" Check the velocity ranges defined in target_setup.py for {thisgal}")
 
     # width_vel = channel_width_kms
     # width_vel_str = f"{width_vel}km/s"
