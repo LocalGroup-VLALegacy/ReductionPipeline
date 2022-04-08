@@ -62,7 +62,7 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
                 break
 
     # Check that the search for the right velocity range didn't fail
-    if isinstance(this_velrange, list):
+    if isinstance(this_velrange[0], list):
         raise ValueError(f"Unable to find range with target vsys ({this_vsys}) from {this_velrange}."
                          f" Check the velocity ranges defined in target_setup.py for {thisgal}")
 
