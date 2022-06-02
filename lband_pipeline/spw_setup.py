@@ -15,11 +15,8 @@ Currently only tested for 20A-346, 13A-213 (NGC6822 track).
 import numpy as np
 import os
 
-# Vsys for matching targets.
-from lband_pipeline.target_setup import target_vsys_kms
-
-
 from lband_pipeline.line_tools.line_flagging import lines_rest2obs
+from lband_pipeline.read_config_files import read_target_vsys_cfg
 
 # This is all lines in L-band that we care about
 # Most of the RRLs aren't observed, this is just complete
@@ -70,12 +67,16 @@ linerest_dict_GHz = {"HI": 1.420405752,
                      }
 
 
-def create_spw_dict(myvis, min_continuum_chanwidth_kHz=50,
+def create_spw_dict(myvis, target_vsys_kms=None, min_continuum_chanwidth_kHz=50,
                     save_spwdict=False, spwdict_filename="spw_definitions.npy"):
     '''
     Create the SPW dict from MS metadata. Split based on continuum and
     use the line dictionary to match line identifications.
     '''
+
+    if target_vsys_kms is None:
+        # Will read from config file defined in `config_files/master_config.cfg`
+        target_vsys_kms = read_target_vsys_cfg(filename=None)
 
     from casatools import ms
 

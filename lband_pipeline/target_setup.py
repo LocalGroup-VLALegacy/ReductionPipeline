@@ -11,94 +11,9 @@ smaller range to be flagged instead of the whole galaxy range (e.g., M31).
 
 '''
 
-import configparser
-import os
-
 from casatools import logsink
 
 casalog = logsink()
-
-
-def read_target_vsys_cfg(filename='../config_files/lglbs_targets_vsys.cfg'):
-
-    if not os.path.exists(filename):
-        raise OSError(f"Unable to find filename: {filename}")
-
-    config = configparser.RawConfigParser()
-    # This keeps the case of the line names (e.g. HI vs hi)
-    config.optionxform = str
-
-    config.read(filename)
-
-    def get_config_section():
-        if not hasattr(get_config_section, 'section_dict'):
-            get_config_section.section_dict = {}
-
-            for section in config.sections():
-                get_config_section.section_dict[section] = dict(config.items(section))
-
-        return get_config_section.section_dict
-
-    out_dict = get_config_section()
-
-    assert "target_vsys_kms" in out_dict
-
-    # Check expected format
-    for source in out_dict['target_vsys_kms']:
-        out_dict['target_vsys_kms'][source] = float(out_dict['target_vsys_kms'][source])
-
-    return out_dict['target_vsys_kms']
-
-
-def read_targets_vrange_cfg(filename='../config_files/lglbs_targets_vrange.cfg'):
-
-    if not os.path.exists(filename):
-        raise OSError(f"Unable to find filename: {filename}")
-
-    config = configparser.RawConfigParser()
-    # Keep case sensitive when reading
-    config.optionxform = str
-
-    config.read(filename)
-
-    def get_config_section():
-        if not hasattr(get_config_section, 'section_dict'):
-            get_config_section.section_dict = {}
-
-            for section in config.sections():
-                get_config_section.section_dict[section] = dict(config.items(section))
-
-        return get_config_section.section_dict
-
-    out_dict = get_config_section()
-
-    # Check expected format
-    for source in out_dict:
-        for line in out_dict[source]:
-            vrange = [float(val) for val in out_dict[source][line].replace(" ", "").split(",")]
-
-            # Make a nested loop in groups of 2. This supportws specifying multiple protected
-            # ranges.
-            if len(vrange) % 2 != 0:
-                raise ValueError(f"vrange must have pairs of values specifying vhigh,vlow."
-                                 f" Given {vrange} for {line} and {source}")
-
-            npairs = len(vrange) // 2
-
-            vrange_pairs = []
-            for ii in range(npairs):
-                vrange_pairs.append([vrange[2*ii], vrange[2*ii+1]])
-
-            out_dict[source][line] = vrange_pairs
-
-    return out_dict
-
-
-# These shouldn't change, so just hard-code in for our targets.
-target_vsys_kms = read_target_vsys_cfg(filename='../config_files/lglbs_targets_vsys.cfg')
-
-target_line_range_kms = read_targets_vrange_cfg(filename='../config_files/lglbs_targets_vrange.cfg')
-
 
 # Function to identify the target from field names in the MS
 

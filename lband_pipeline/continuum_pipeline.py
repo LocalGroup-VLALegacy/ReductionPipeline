@@ -16,7 +16,10 @@ from lband_pipeline.qa_plotting import (make_qa_scan_figures,
 # Info for SPW setup
 from lband_pipeline.spw_setup import (create_spw_dict, linerest_dict_GHz,
                                       continuum_spws_with_hi)
-from lband_pipeline.calibrator_setup import calibrator_line_range_kms
+from lband_pipeline.read_config_files import read_calibrator_absorption_cfg
+
+# Will read from the filename defined in `config_files/master_config.cfg`
+calibrator_line_range_kms = read_calibrator_absorption_cfg(filename=None)
 
 # Flag HI absorption on the calibrators.
 from lband_pipeline.line_tools import flag_hi_foreground
@@ -53,9 +56,10 @@ mySDM = sys.argv[-1]
 myvis = mySDM if mySDM.endswith("ms") else mySDM + ".ms"
 
 # Tracks should follow the VLA format, starting with the project code
+# e.g. 14B-088.sbXX.ebXX.mjd
 proj_code = mySDM.split(".")[0]
 
-# Get the SPW mapping for the line MS.
+# Get the SPW mapping for the continuum MS.
 spwdict_filename = "spw_definitions.npy"
 contspw_dict = create_spw_dict(myvis, save_spwdict=True,
                                spwdict_filename=spwdict_filename)
@@ -66,10 +70,10 @@ spws_with_hi = continuum_spws_with_hi(contspw_dict)
 # Identify which of our targets are observed.
 # NOTE: Assumes that we only look at ONE galaxy per MS right now.
 # This will break if more than one galaxy is observed in a single track.
+# NOTE: the target name must be specified in "target_setup.py"
 thisgal = identify_target(myvis)
 
 products_folder = "products"
-
 
 __rethrow_casa_exceptions = True
 
