@@ -20,3 +20,9 @@ The calibrator entry is optional and will not crash the pipeline. A missing targ
 The calibrator entry is optional as it is only important for calibrator sources with line absorption
 within the coverage of relevant spectral windows. For LGLBS, 0 km/s is within the HI bandwidth
 and so we often have Galactic HI absorption against the background calibrators.
+
+Using custom config files
+-------------------------
+
+The scripts grab filenames from `master_config.cfg`. Change the filenames to use a
+different set of config files.
