@@ -11,118 +11,93 @@ smaller range to be flagged instead of the whole galaxy range (e.g., M31).
 
 '''
 
+import configparser
+import os
+
 from casatools import logsink
 
 casalog = logsink()
 
 
-# km/s in LSRK
-target_vsys_kms = {"M31": -296.,
-                   "M33": -180.,
-                   "NGC604": -180.,
-                   "M33_Sarm": -180.,
-                   "NGC6822": -44.,
-                   "WLM": -122.,
-                   "Wolf-Lundmark-": -122.,
-                   "IC10": -340.,
-                   "IC1613": -238.}
+def read_target_vsys_cfg(filename='../config_files/lglbs_targets_vsys.cfg'):
+
+    if not os.path.exists(filename):
+        raise OSError(f"Unable to find filename: {filename}")
+
+    config = configparser.RawConfigParser()
+    # This keeps the case of the line names (e.g. HI vs hi)
+    config.optionxform = str
+
+    config.read(filename)
+
+    def get_config_section():
+        if not hasattr(get_config_section, 'section_dict'):
+            get_config_section.section_dict = {}
+
+            for section in config.sections():
+                get_config_section.section_dict[section] = dict(config.items(section))
+
+        return get_config_section.section_dict
+
+    out_dict = get_config_section()
+
+    assert "target_vsys_kms" in out_dict
+
+    # Check expected format
+    for source in out_dict['target_vsys_kms']:
+        out_dict['target_vsys_kms'][source] = float(out_dict['target_vsys_kms'][source])
+
+    return out_dict['target_vsys_kms']
+
+
+def read_targets_vrange_cfg(filename='../config_files/lglbs_targets_vrange.cfg'):
+
+    if not os.path.exists(filename):
+        raise OSError(f"Unable to find filename: {filename}")
+
+    config = configparser.RawConfigParser()
+    # Keep case sensitive when reading
+    config.optionxform = str
+
+    config.read(filename)
+
+    def get_config_section():
+        if not hasattr(get_config_section, 'section_dict'):
+            get_config_section.section_dict = {}
+
+            for section in config.sections():
+                get_config_section.section_dict[section] = dict(config.items(section))
+
+        return get_config_section.section_dict
+
+    out_dict = get_config_section()
+
+    # Check expected format
+    for source in out_dict:
+        for line in out_dict[source]:
+            vrange = [float(val) for val in out_dict[source][line].replace(" ", "").split(",")]
+
+            # Make a nested loop in groups of 2. This supportws specifying multiple protected
+            # ranges.
+            if len(vrange) % 2 != 0:
+                raise ValueError(f"vrange must have pairs of values specifying vhigh,vlow."
+                                 f" Given {vrange} for {line} and {source}")
+
+            npairs = len(vrange) // 2
+
+            vrange_pairs = []
+            for ii in range(npairs):
+                vrange_pairs.append([vrange[2*ii], vrange[2*ii+1]])
+
+            out_dict[source][line] = vrange_pairs
+
+    return out_dict
 
 
 # These shouldn't change, so just hard-code in for our targets.
-target_line_range_kms = {}
+target_vsys_kms = read_target_vsys_cfg(filename='../config_files/lglbs_targets_vsys.cfg')
 
-
-# Velocities are in km/s in the LSRK frame.
-
-# --------------------------------------------------------------
-# M31
-
-target_line_range_kms['M31'] = {}
-# Based on EBHIS M31 map: CAR_C01.fits. And our archival D-config HI map from 14A-235.
-# Also excludes MW foreground.
-target_line_range_kms['M31']['HI'] = [[50, -625]]
-
-# Limited to "bright" HI extent of M31
-# For the 4 MHz SPWs, there's still 25% outside this region.
-target_line_range_kms['M31']['OH'] = [[-20, -600]]
-
-
-# --------------------------------------------------------------
-# M33
-
-target_line_range_kms['M33'] = {}
-
-target_line_range_kms['M33']['HI'] = [[40, -340]]
-
-target_line_range_kms['M33']['OH'] = [[-50, -280]]
-
-# The 16B A-configuration projects use field names "NGC604" and "M33_Sarm"
-# While only single fields in M33, we will just adopt a consistent
-# velocity range:
-target_line_range_kms['NGC604'] = {}
-
-target_line_range_kms['NGC604']['HI'] = [[40, -340]]
-
-target_line_range_kms['NGC604']['OH'] = [[-50, -280]]
-
-
-target_line_range_kms['M33_Sarm'] = {}
-
-target_line_range_kms['M33_Sarm']['HI'] = [[40, -340]]
-
-target_line_range_kms['M33_Sarm']['OH'] = [[-50, -280]]
-
-# --------------------------------------------------------------
-# IC10
-
-target_line_range_kms['IC10'] = {}
-
-target_line_range_kms['IC10']['HI'] = [[50, -140], [-240, -450]]
-
-target_line_range_kms['IC10']['OH'] = [[-270, -410]]
-
-
-# --------------------------------------------------------------
-# IC1613
-
-target_line_range_kms['IC1613'] = {}
-
-# target_line_range_kms['IC1613']['HI'] = [-290, -170]
-# Include all foreground MW HI?
-target_line_range_kms['IC1613']['HI'] = [[50, -60], [-170, -290]]
-
-
-target_line_range_kms['IC1613']['OH'] = [[-200, -260]]
-
-
-# --------------------------------------------------------------
-# WLM
-
-target_line_range_kms['WLM'] = {}
-
-# Include all foreground MW HI?
-target_line_range_kms['WLM']['HI'] = [[50, -40], [-50, -210]]
-
-target_line_range_kms['WLM']['OH'] = [[-70, -180]]
-
-# Use target name Wolf-Lundmark- for the 13A-213 tracks
-target_line_range_kms['Wolf-Lundmark-'] = {}
-
-# Include all foreground MW HI?
-target_line_range_kms['Wolf-Lundmark-']['HI'] = [[50, -40], [-50, -210]]
-
-target_line_range_kms['Wolf-Lundmark-']['OH'] = [[-70, -180]]
-
-
-# --------------------------------------------------------------
-# NGC 6822
-
-target_line_range_kms['NGC6822'] = {}
-
-# Include all foreground MW HI?
-target_line_range_kms['NGC6822']['HI'] = [[80, -150]]
-
-target_line_range_kms['NGC6822']['OH'] = [[-10, -120]]
+target_line_range_kms = read_targets_vrange_cfg(filename='../config_files/lglbs_targets_vrange.cfg')
 
 
 # Function to identify the target from field names in the MS
