@@ -11,6 +11,8 @@ smaller range to be flagged instead of the whole galaxy range (e.g., M31).
 
 '''
 
+from lband_pipeline.read_config_files import read_target_vsys_cfg
+
 from casatools import logsink
 
 casalog = logsink()
@@ -49,10 +51,12 @@ def identify_target(vis, fields=None, raise_missing_target=True):
     # Match target with the galaxy. Names should be unique enough to do this
     thisgal = None
 
+    target_vsys_kms = read_target_vsys_cfg()
+
     # generate a dictonary containing continuum chunks for every spw of every field
     for field in fields:
 
-        for gal in target_line_range_kms:
+        for gal in target_vsys_kms:
             if gal in field:
                 thisgal = gal
                 break
