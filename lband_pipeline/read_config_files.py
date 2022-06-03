@@ -88,7 +88,6 @@ def read_target_vsys_cfg(filename=None):
         filename = os.path.join(os.path.dirname(__file__), "..", "config_files",
                                 master_config['source_configs']['targets_vsys_filename'])
 
-
     if not os.path.exists(filename):
         raise OSError(f"Unable to find filename: {filename}")
 
@@ -119,6 +118,12 @@ def read_target_vsys_cfg(filename=None):
 
 
 def read_targets_vrange_cfg(filename=None):
+
+    master_config = get_master_config()
+
+    if filename is None:
+        filename = os.path.join(os.path.dirname(__file__), "..", "config_files",
+                                master_config['source_configs']['targets_vsys_filename'])
 
     if not os.path.exists(filename):
         raise OSError(f"Unable to find filename: {filename}")
