@@ -8,8 +8,6 @@ An example format of spw_dict is shown in 20A-246_spw_setup.py.
 
 import os
 
-from numpy.lib.function_base import hanning
-
 from lband_pipeline.spw_setup import create_spw_dict
 
 

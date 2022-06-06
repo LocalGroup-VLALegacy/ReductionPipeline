@@ -26,11 +26,15 @@ from lband_pipeline.spw_setup import create_spw_dict, linerest_dict_GHz
 
 # Protected velocity range for different targets
 # Used to build `cont.dat` for line SPWs
-from lband_pipeline.target_setup import (target_line_range_kms,
-                                         identify_target)
+from lband_pipeline.target_setup import identify_target
 
 # For MW HI absorption flagging on calibrators:
-from lband_pipeline.calibrator_setup import calibrator_line_range_kms
+from lband_pipeline.read_config_files import (read_calibrator_absorption_cfg,
+                                              read_targets_vrange_cfg)
+
+# Will read from the filenames defined in `config_files/master_config.cfg`
+calibrator_line_range_kms = read_calibrator_absorption_cfg(filename=None)
+target_line_range_kms = read_targets_vrange_cfg(filename=None)
 
 # Handle runs where the internet query to the baseline correction site will
 # fail

@@ -14,8 +14,9 @@ casalog = logsink()
 
 from lband_pipeline.spw_setup import linerest_dict_GHz
 
-from lband_pipeline.target_setup import (target_line_range_kms,
-                                         target_vsys_kms)
+# from lband_pipeline.target_setup import (target_line_range_kms,
+#                                          target_vsys_kms)
+from lband_pipeline.read_config_files import read_target_vsys_cfg, read_targets_vrange_cfg
 
 
 def cleanup_misc_quicklook(filename, remove_residual=True,
@@ -45,7 +46,17 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
                            # channel_width_kms=20.,
                            niter=0, nsigma=5., imsize_max=800,
                            overwrite_imaging=False,
-                           export_fits=True):
+                           export_fits=True,
+                           target_vsys_kms=None,
+                           target_line_range_kms=None):
+
+    if target_vsys_kms is None:
+        # Will read from config file defined in `config_files/master_config.cfg`
+        target_vsys_kms = read_target_vsys_cfg(filename=None)
+
+    if target_line_range_kms is None:
+        # Will read from config file defined in `config_files/master_config.cfg`
+        target_line_range_kms = read_targets_vrange_cfg(filename=None)
 
     if not os.path.exists("quicklook_imaging"):
         os.mkdir("quicklook_imaging")

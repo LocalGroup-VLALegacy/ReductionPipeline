@@ -15,10 +15,31 @@ Easiest to add to the `.casa/config.py` file (or `startup.py`) for CASA 6.
 
 # Using the pipeline
 
-This pipeline should work for any any EVLA L-band data with a mixed line+continuum setup, where the two parts are split into the continuum and lines. The two places manual changes are needed are:
+This pipeline should work for any any EVLA L-band data with a mixed line+continuum setup, where the two parts are split into the continuum and lines. To use with non-LGLBS data,
+you can create configuration files defining calibrator and target properties in the `config_files` folder, and give the configuration file names in `master_config.cfg`.
+The LGLBS config files are in the same folder and are good examples on how to use with
+other sources.
 
-1. Adding the target name, Vsys and expected velocity range here: https://github.com/LocalGroup-VLALegacy/ReductionPipeline/blob/main/lband_pipeline/target_setup.py
-2. Adding the calibrator names and Galactic HI absorption avoidance windows here: https://github.com/LocalGroup-VLALegacy/ReductionPipeline/blob/main/lband_pipeline/calibrator_setup.py
+A README file in the `config_files` folder gives instructions for customizing the configuration for other L-band VLA data sets.
+
+The LGLBS line and continuum pipeline use 3 different field configurations:
+1. For calibrators and data sets with a 21-cm HI SPW covering near 0 km/s, a velocity range can be specified to flag this range to avoid incorporating Galactic HI absorption in the calibration solutions. For the bandpass, `lband_pipeline/line_pipeline.py` includes a routine to interpolate across this velocity range. Example for 3C48 flagging the HI line from 50 to -50 km/s:
+
+        [3C48]
+        HI = 50, -50
+
+2. For targets, the Vsys of the science target should be specified. This is used in a few places, but notably finding the frequency range for quicklook imaging and target name matching in the SDM or measurement set. The latter means it is currently used by the continuum pipeline, though the actual Vsys value is not being used (and so could be set to something arbitrary). Example for M31:
+
+        [target_vsys_kms]
+        M31 = -296
+
+3. For targets, the line pipeline requires a protected velocity range to avoid automated RFI flagging on spectral lines. We also use this velocity range to define the extent used in quicklook imaging of spectral lines. Multiple protected ranges can be given as pairs of velocity values (`vhigh1,vlow1,vhigh2,vlow2`, where `vlow1 > vhigh2`). This is useful for compact configurations to avoid flagging Galactic HI emission along the line of sight towards a background source. Example of velocity range for IC1613 of the HI (plus Galactic) and OH:
+
+        [IC1613]
+        HI = 50,-60,-170,-290
+        OH = -200,-260
+
+
 
 The pipeline is meant to run in 2 steps, calling the scripts in casa from the command lines:
 
