@@ -364,8 +364,13 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
     tb.open(ms_name)
     is_calibrator = np.empty((numFields,), dtype='bool')
 
+    has_data = np.ones((numFields,), dtype='bool')
+
     for ii in range(numFields):
         subtable = tb.query('FIELD_ID==%s' % ii)
+
+        # Is there any data for this field?
+        has_data[ii] = subtable.nrows() > 0
 
         # Is the intent for calibration?
         scan_intents = intentcol[np.unique(subtable.getcol("STATE_ID"))]
@@ -390,6 +395,12 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
     for ii in range(numFields):
         casalog.post(message="On field {}".format(names[ii]), origin='make_qa_plots')
         print("On field {}".format(names[ii]))
+
+        # If field has data, continue. If not skip and log it.
+        if not has_data[ii]:
+            casalog.post(message='Field {} has no data in the table. Skipping.'.format(names[ii]),
+                         origin='make_qa_plots')
+            continue
 
         # Amp vs. time
         amptime_filename = os.path.join(output_folder,
