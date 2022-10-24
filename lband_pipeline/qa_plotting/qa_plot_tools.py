@@ -758,3 +758,52 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
             else:
                 casalog.post(message="File {} already exists. Skipping".format(phaseant_filename),
                              origin='make_qa_tables')
+
+
+
+def extract_and_append_fieldnames(tablename, txtfilename,
+                                  raise_importerror=False,
+                                  overwrite_txt=False):
+    '''
+    plotms tables only contain the field ID numbers. Here we
+    append a new column
+    '''
+
+    raise NotImplementedError("Table writing not yet implemented.")
+
+    try:
+        from astropy.table import Table, Column
+    except ImportError as exc:
+        if raise_importerror:
+            raise exc
+        else:
+            casalog.post(message='astropy is not installed. Skipping adding field column.',
+                         origin='extract_and_append_fieldnames')
+            return
+
+    from casatools import table
+
+    tb = table()
+
+    tb.open(f"{tablename}/FIELD")
+    all_fieldnames = tb.getcol('NAME')
+    tb.close()
+
+    tab = Table.read(txtfilename,
+                     format='ascii.commented_header',
+                     header_start=header_start,
+                     data_start=data_start)
+
+    # Get field IDs
+    field_id = tab['field']
+
+    field_names = np.empty(field_id.shape, dtype=all_fieldnames.dtype)
+    for idx in np.unique(field_id):
+        field_names[field_id == idx] = all_fieldnames[idx]
+
+
+    tab.append(Column(field_names, name='fieldname'))
+
+    if overwrite_txt:
+        tab.write(txtfilename, overwrite=True,
+                  format='ascii.commented_header')
