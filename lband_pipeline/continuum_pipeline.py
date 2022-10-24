@@ -94,6 +94,7 @@ if len(context_files) > 0:
                  'hifv_flagdata',
                  'hifv_vlasetjy',
                  'hifv_priorcals',
+                 'hifv_syspower',
                  'hifv_testBPdcals',
                  'hifv_checkflag',
                  'hifv_semiFinalBPdcals',
@@ -103,7 +104,6 @@ if len(context_files) > 0:
                  'hifv_finalcals',
                  'hifv_applycals',
                  'hifv_checkflag',
-                 'hifv_targetflag',
                  'hifv_statwt',
                  'hifv_plotsummary',
                  'hif_makeimlist',
@@ -219,38 +219,37 @@ if not skip_pipeline:
                                      skip_existing=True)
 
         if restart_stage <= 5:
+            hifv_syspower(pipelinemode="automatic")
+
+        if restart_stage <= 6:
             hifv_testBPdcals(pipelinemode="automatic",
                              weakbp=False,
                              refantignore=refantignore)
 
-        if restart_stage <= 6:
+        if restart_stage <= 7:
             hifv_checkflag(checkflagmode='bpd-vla')
             h_save()
 
-        if restart_stage <= 7:
+        if restart_stage <= 8:
             hifv_semiFinalBPdcals(pipelinemode="automatic",
                                   weakbp=False,
                                   refantignore=refantignore)
 
-        if restart_stage <= 8:
+        if restart_stage <= 9:
             hifv_checkflag(checkflagmode='allcals-vla')
             h_save()
 
-        # if restart_stage <= 9:
-        #     hifv_semiFinalBPdcals(weakbp=False,
-        #                           refantignore=refantignore)
-
-        if restart_stage <= 9:
+        if restart_stage <= 10:
             hifv_solint(pipelinemode="automatic",
                         refantignore=refantignore)
 
-        if restart_stage <= 10:
+        if restart_stage <= 11:
             hifv_fluxboot(pipelinemode="automatic",
                           fitorder=2,
                           refantignore=refantignore)
             h_save()
 
-        if restart_stage <= 11:
+        if restart_stage <= 12:
             # Don't grow flags at this step. We have long slews to our pol cals
             # and growtime=50 can wipe out the whole scan!
             # flagdata(vis=myvis, mode='extend', extendpols=True, action='apply',
@@ -264,7 +263,7 @@ if not skip_pipeline:
                            weakbp=False,
                            refantignore=refantignore)
 
-        if restart_stage <= 12:
+        if restart_stage <= 13:
             hifv_applycals(pipelinemode="automatic",
                            flagdetailedsum=True,
                            gainmap=False,
@@ -272,13 +271,13 @@ if not skip_pipeline:
                            flagsum=True)
             h_save()
 
-        if restart_stage <= 13:
+        if restart_stage <= 14:
             hifv_checkflag(checkflagmode='target-vla')
             h_save()
 
-        if restart_stage <= 14:
-            hifv_targetflag(intents='*TARGET*')
-            h_save()
+        # if restart_stage <= 14:
+        #     hifv_targetflag(intents='*TARGET*')
+        #     h_save()
 
         if restart_stage <= 15:
             hifv_statwt(datacolumn='corrected')
@@ -308,8 +307,6 @@ if not skip_pipeline:
             if not os.path.exists(products_folder):
                 os.mkdir(products_folder + '/')
 
-            # TODO: review whether we should be including additional products
-            # here
             hifv_exportdata(products_dir=products_folder + '/',
                             gainmap=False,
                             exportmses=False,
