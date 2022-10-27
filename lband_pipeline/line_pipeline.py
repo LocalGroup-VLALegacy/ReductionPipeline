@@ -258,7 +258,8 @@ if not skip_pipeline:
         if restart_stage <= 5:
             hifv_testBPdcals(pipelinemode="automatic",
                              weakbp=False,
-                             refantignore=refantignore)
+                             refantignore=refantignore,
+                             doflagundernspwlimit=True)
             h_save()
 
             # We need to interpolate over MW absorption in the bandpass

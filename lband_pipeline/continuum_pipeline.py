@@ -224,7 +224,8 @@ if not skip_pipeline:
         if restart_stage <= 6:
             hifv_testBPdcals(pipelinemode="automatic",
                              weakbp=False,
-                             refantignore=refantignore)
+                             refantignore=refantignore,
+                             doflagundernspwlimit=True)
 
         if restart_stage <= 7:
             hifv_checkflag(checkflagmode='bpd-vla')
