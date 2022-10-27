@@ -112,6 +112,7 @@ if len(context_files) > 0:
                  'hifv_flagdata',
                  'hifv_vlasetjy',
                  'hifv_priorcals',
+                 'hifv_syspower',
                  'hifv_testBPdcals',
                  'hifv_checkflag',
                  'hifv_semiFinalBPdcals',
@@ -121,8 +122,6 @@ if len(context_files) > 0:
                  'hifv_finalcals',
                  'hifv_applycals',
                  'hifv_checkflag',
-                #  'hifv_targetflag',
-                #  'hifv_statwt',
                  'hifv_plotsummary',
                  'hif_makeimlist',
                  'hif_makeimages',
@@ -254,9 +253,13 @@ if not skip_pipeline:
                                       skip_existing=True)
 
         if restart_stage <= 4:
+            hifv_syspower(pipelinemode="automatic")
+
+        if restart_stage <= 5:
             hifv_testBPdcals(pipelinemode="automatic",
                              weakbp=False,
-                             refantignore=refantignore)
+                             refantignore=refantignore,
+                             doflagundernspwlimit=True)
             h_save()
 
             # We need to interpolate over MW absorption in the bandpass
@@ -266,30 +269,30 @@ if not skip_pipeline:
                                             search_string="test",
                                             task_string="hifv_testBPdcals")
 
-        if restart_stage <= 5:
+        if restart_stage <= 6:
             hifv_checkflag(checkflagmode='bpd-vla')
             h_save()
 
-        if restart_stage <= 6:
+        if restart_stage <= 7:
             hifv_semiFinalBPdcals(pipelinemode="automatic",
                                   weakbp=False,
                                   refantignore=refantignore)
 
-        if restart_stage <= 7:
+        if restart_stage <= 8:
             hifv_checkflag(checkflagmode='allcals-vla')
             h_save()
 
-        if restart_stage <= 8:
+        if restart_stage <= 9:
             hifv_solint(pipelinemode="automatic",
                         refantignore=refantignore)
 
-        if restart_stage <= 9:
+        if restart_stage <= 10:
             hifv_fluxboot(pipelinemode="automatic",
                           fitorder=2,
                           refantignore=refantignore)
             h_save()
 
-        if restart_stage <= 10:
+        if restart_stage <= 11:
             hifv_finalcals(pipelinemode="automatic",
                            weakbp=False,
                            refantignore=refantignore)
@@ -298,7 +301,7 @@ if not skip_pipeline:
                                             search_string='final',
                                             task_string='hifv_finalcals')
 
-        if restart_stage <= 11:
+        if restart_stage <= 12:
             hifv_applycals(pipelinemode="automatic",
                            flagdetailedsum=True,
                            gainmap=False,
@@ -308,7 +311,7 @@ if not skip_pipeline:
 
         # Keep the following step in the script if cont.dat exists.
         # Remove RFI flagging the lines in target fields.
-        if restart_stage <= 12:
+        if restart_stage <= 13:
             if os.path.exists('cont.dat'):
                 hifv_checkflag(checkflagmode='target-vla')
             else:
@@ -326,10 +329,10 @@ if not skip_pipeline:
         # if restart_stage <= 14:
         #     hifv_statwt(datacolumn='corrected')
 
-        if restart_stage <= 13:
+        if restart_stage <= 14:
             hifv_plotsummary(pipelinemode="automatic")
 
-        if restart_stage <= 14:
+        if restart_stage <= 15:
             hif_makeimlist(nchan=-1,
                            calcsb=False,
                            intent='PHASE,BANDPASS',
@@ -340,17 +343,15 @@ if not skip_pipeline:
                            specmode='mfs',
                            clearlist=True)
 
-        if restart_stage <= 15:
+        if restart_stage <= 16:
             hif_makeimages(hm_masking='centralregion')
             h_save()
 
-        if restart_stage <= 16:
+        if restart_stage <= 17:
             # Make a folder of products for restoring the pipeline solution
             if not os.path.exists(products_folder):
                 os.mkdir(products_folder + '/')
 
-            # TODO: review whether we should be including additional products
-            # here
             hifv_exportdata(products_dir=products_folder + '/',
                             gainmap=False,
                             exportmses=False,
