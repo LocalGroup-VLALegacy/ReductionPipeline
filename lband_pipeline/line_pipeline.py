@@ -121,11 +121,13 @@ if len(context_files) > 0:
                  'hifv_fluxboot',
                  'hifv_finalcals',
                  'hifv_applycals',
-                 'hifv_checkflag',
+                #  'hifv_checkflag',  # **note below
                  'hifv_plotsummary',
                  'hif_makeimlist',
                  'hif_makeimages',
                  'hifv_exportdata']
+
+    # ** Disabling on 03/21/2023 due to bias found in some WLM D config tracks
 
     # Get existing order to match with the call order:
     current_callorder = [result.read().taskname for result in context.results]
@@ -311,12 +313,12 @@ if not skip_pipeline:
 
         # Keep the following step in the script if cont.dat exists.
         # Remove RFI flagging the lines in target fields.
-        if restart_stage <= 13:
-            if os.path.exists('cont.dat'):
-                hifv_checkflag(checkflagmode='target-vla')
-            else:
-                hifv_checkflag(checkflagmode='allcals-vla')
-            h_save()
+        # if restart_stage <= 13:
+        #     if os.path.exists('cont.dat'):
+        #         hifv_checkflag(checkflagmode='target-vla')
+        #     else:
+        #         hifv_checkflag(checkflagmode='allcals-vla')
+        #     h_save()
 
         # Keep the following step in the script if cont.dat exists.
         # Remove RFI flagging the lines in target fields.
@@ -329,10 +331,10 @@ if not skip_pipeline:
         # if restart_stage <= 14:
         #     hifv_statwt(datacolumn='corrected')
 
-        if restart_stage <= 14:
+        if restart_stage <= 13:
             hifv_plotsummary(pipelinemode="automatic")
 
-        if restart_stage <= 15:
+        if restart_stage <= 14:
             hif_makeimlist(nchan=-1,
                            calcsb=False,
                            intent='PHASE,BANDPASS',
@@ -343,11 +345,11 @@ if not skip_pipeline:
                            specmode='mfs',
                            clearlist=True)
 
-        if restart_stage <= 16:
+        if restart_stage <= 15:
             hif_makeimages(hm_masking='centralregion')
             h_save()
 
-        if restart_stage <= 17:
+        if restart_stage <= 16:
             # Make a folder of products for restoring the pipeline solution
             if not os.path.exists(products_folder):
                 os.mkdir(products_folder + '/')
@@ -385,6 +387,10 @@ for fil in image_files:
 # Copy the SPW dictionary file into products
 if os.path.exists(spwdict_filename):
     os.system(f"cp {spwdict_filename} products/")
+
+# Copy the cont.dat file to products
+if os.path.exists("cont.dat"):
+    os.system(f"cp cont.dat products/")
 
 # --------------------------------
 # Split the calibrated column out into target and calibrator parts.
@@ -467,8 +473,3 @@ if not os.path.exists(uvresid_path):
 
 else:
     casalog.post("Found existing uvresidual checks. Skipping.")
-
-
-# Copy and zip into the pipeline products output.
-
-# Zip, tag, and rename the products folder to copy out on completion.
