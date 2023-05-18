@@ -343,8 +343,15 @@ def interpolate_bandpass(tablename,
                 rolled_array = rolling_window(smooth_dat[pol, :, ant], window_size)
 
                 for i in range(dat_shape[1]):
+                    # Skip if too few points:
+                    if (rolled_array[i].mask == False).sum() < poly_order + 1:
+                        smooth_dat[pol, i, ant] = np.NaN
+                        continue
+
                     # try:
-                    smooth_dat[pol, i, ant] = np.ma.polyfit(x_polyfit, rolled_array[i], poly_order)[-1]
+                    smooth_dat[pol, i, ant] = np.ma.polyfit(x_polyfit,
+                                                            rolled_array[i],
+                                                            poly_order)[-1]
                     # What's the catch here? ValueError is all flagged?
                     # except:
                     #     pass
