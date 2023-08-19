@@ -1,8 +1,9 @@
 
 import os
 import datetime
+import numpy as np
 
-from casatasks import tclean, rmtables, exportfits
+from casatasks import (tclean, rmtables, exportfits, apparentsens)
 
 from casatools import logsink
 from casatools import ms
@@ -116,6 +117,9 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
     mymsmd.close()
     myms.close()
 
+    # record expected sensitivity
+    exp_sens = {}
+
     t0 = datetime.datetime.now()
 
     # Loop through targets and line SPWs
@@ -227,6 +231,29 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
                    restfreq=f"{linerest_dict_GHz[line_name]}GHz",
                    pblimit=this_pblim)
 
+            # Estimate the expected sensitivity
+            out = apparentsens(myvis,
+                               field=target_field,
+                               spw=str(thisspw),
+                               cell=this_cellsize,
+                               imsize=this_imsize,
+                               specmode='mfs',
+                               weighting='briggs',
+                               robust=0.0)
+
+            # Can only do mfs mode here so approx scale to the channel
+            # width used.
+            bandwidth = linespw_dict[thisspw]['bandwidth'] / 1.e9
+            # v / c in km/s
+            width_freq = (width_vel / 3.e5) * linerest_dict_GHz[line_name]
+            chan_to_bandwidth_ratio = width_freq / bandwidth
+
+            exp_sens[f"{target_field_label}-spw{thisspw}"] = \
+                    out['effSens'] * np.sqrt(chan_to_bandwidth_ratio)
+
+            # Remove any "apparentsens" image products
+            rmtables(f"{myvis}*.apparentsens.*")
+
             if export_fits:
                 exportfits(imagename=f"{this_imagename}.image",
                            fitsimage=f"{this_imagename}.image.fits",
@@ -237,6 +264,10 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
             cleanup_misc_quicklook(this_imagename, remove_psf=True,
                                     remove_residual=this_niter == 0,
                                     remove_image=True if export_fits else False)
+
+    # Save the dictionary of expected sensitivity
+    np.save(f"quicklook_imaging/expected_sensitivity_dict.npy", exp_sens,
+            allow_pickle=True)
 
     t1 = datetime.datetime.now()
 
@@ -279,6 +310,9 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
     mymsmd.close()
     myms.close()
+
+    # record expected sensitivity
+    exp_sens = {}
 
     t0 = datetime.datetime.now()
 
@@ -380,6 +414,21 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
                    imagename=this_imagename,
                    pblimit=this_pblim)
 
+            # Estimate the expected sensitivity
+            out = apparentsens(myvis,
+                               field=target_field,
+                               spw=str(thisspw),
+                               cell=this_cellsize,
+                               imsize=this_imsize,
+                               specmode='mfs',
+                               weighting='briggs',
+                               robust=0.0)
+            exp_sens[f"{target_field_label}-spw{thisspw}"] = out['effSens']
+
+            # Remove any "apparentsens" image products
+            rmtables(f"{myvis}*.apparentsens.*")
+
+
             if export_fits:
                 exportfits(imagename=f"{this_imagename}.image",
                            fitsimage=f"{this_imagename}.image.fits",
@@ -390,6 +439,10 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
             cleanup_misc_quicklook(this_imagename, remove_psf=True,
                                     remove_residual=this_niter == 0,
                                     remove_image=True if export_fits else False)
+
+    # Save the dictionary of expected sensitivity
+    np.save(f"quicklook_imaging/expected_sensitivity_dict.npy", exp_sens,
+            allow_pickle=True)
 
     t1 = datetime.datetime.now()
 
