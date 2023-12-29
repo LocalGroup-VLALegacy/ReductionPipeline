@@ -243,7 +243,7 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
 
             # Can only do mfs mode here so approx scale to the channel
             # width used.
-            bandwidth = linespw_dict[thisspw]['bandwidth'] / 1.e9
+            bandwidth = linespw_dict[int(thisspw)]['bandwidth'] / 1.e9
             # v / c in km/s
             width_freq = (width_vel / 3.e5) * linerest_dict_GHz[line_name]
             chan_to_bandwidth_ratio = width_freq / bandwidth
