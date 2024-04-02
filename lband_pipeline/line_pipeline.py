@@ -382,7 +382,7 @@ if not os.path.exists("image_outputs"):
 image_files = glob("oussid*")
 
 for fil in image_files:
-    shutil.move(fil, "image_outputs/")
+    shutil.move(fil, f"image_outputs/{fil}")
 
 # Copy the SPW dictionary file into products
 if os.path.exists(spwdict_filename):
