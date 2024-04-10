@@ -244,6 +244,9 @@ if not skip_pipeline:
             hifv_vlasetjy(pipelinemode="automatic")
 
         if restart_stage <= 3:
+            # Remove existing iono correction images if they exist.
+            os.system("rm -r iono.*.im")
+
             hifv_priorcals(pipelinemode="automatic")
             h_save()
 
