@@ -162,7 +162,12 @@ def create_spw_dict(myvis, target_vsys_kms=None, min_continuum_chanwidth_kHz=50,
         freq_0_topo = freqs_topo.min()
 
         # Baseband
-        bband = spw_name.split("#")[1]
+        # Baseband
+        try:
+            bband = spw_name.split("#")[1]
+        except IndexError:
+            # Pre-JVLA data have a different spw naming scheme.
+            bband = spw_name
 
         # Ncorr
         # ncorr = metadata.ncorrforpol(spwid)
