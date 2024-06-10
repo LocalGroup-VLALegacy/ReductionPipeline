@@ -316,6 +316,17 @@ def make_qa_scan_figures(ms_name, output_folder='scan_plots',
                            showgui=False)
 
 
+def remove_minsize(filename, min_size=50):
+    '''
+    plotms occasionally fails but still writes out a ~9 B file.
+    Check if the file is too small, and if so, remove it.
+    '''
+
+    if os.path.exists(filename):
+        if os.path.getsize(filename) < min_size:
+            os.remove(filename)
+
+
 def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                    outtype='txt', overwrite=True,
                    chanavg=4096,):
@@ -406,6 +417,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
         amptime_filename = os.path.join(output_folder,
                                         'field_{0}_amp_time.{1}'.format(names[ii], outtype))
 
+        # Remove existing file if it exists and is very small
+        # indicating a plotms failure
+        remove_minsize(amptime_filename, min_size=50)
+
         if not os.path.exists(amptime_filename):
 
             plotms(vis=ms_name,
@@ -438,6 +453,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
         # Amp vs. channel
         ampchan_filename = os.path.join(output_folder,
                                      'field_{0}_amp_chan.{1}'.format(names[ii], outtype))
+
+        # Remove existing file if it exists and is very small
+        # indicating a plotms failure
+        remove_minsize(ampchan_filename, min_size=50)
 
         if not os.path.exists(ampchan_filename):
 
@@ -472,6 +491,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
         # Plot amp vs uvdist
         ampuvdist_filename = os.path.join(output_folder,
                                      'field_{0}_amp_uvdist.{1}'.format(names[ii], outtype))
+
+        # Remove existing file if it exists and is very small
+        # indicating a plotms failure
+        remove_minsize(ampuvdist_filename, min_size=50)
 
         if not os.path.exists(ampuvdist_filename):
 
@@ -515,6 +538,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
             phasetime_filename = os.path.join(output_folder,
                                          'field_{0}_phase_time.{1}'.format(names[ii], outtype))
 
+            # Remove existing file if it exists and is very small
+            # indicating a plotms failure
+            remove_minsize(phasetime_filename, min_size=50)
+
             if not os.path.exists(phasetime_filename):
 
                 plotms(vis=ms_name,
@@ -547,6 +574,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
             # Plot phase vs channel
             phasechan_filename = os.path.join(output_folder,
                                          'field_{0}_phase_chan.{1}'.format(names[ii], outtype))
+
+            # Remove existing file if it exists and is very small
+            # indicating a plotms failure
+            remove_minsize(phasechan_filename, min_size=50)
 
             if not os.path.exists(phasechan_filename):
 
@@ -582,7 +613,12 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
             phaseuvdist_filename = os.path.join(output_folder,
                                          'field_{0}_phase_uvdist.{1}'.format(names[ii], outtype))
 
+            # Remove existing file if it exists and is very small
+            # indicating a plotms failure
+            remove_minsize(phaseuvdist_filename, min_size=50)
+
             if not os.path.exists(phaseuvdist_filename):
+
 
                 plotms(vis=ms_name,
                     xaxis='uvdist',
@@ -616,6 +652,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
             # Plot amp vs phase
             ampphase_filename = os.path.join(output_folder,
                                          'field_{0}_amp_phase.{1}'.format(names[ii], outtype))
+
+            # Remove existing file if it exists and is very small
+            # indicating a plotms failure
+            remove_minsize(ampphase_filename, min_size=50)
 
             if not os.path.exists(ampphase_filename):
 
@@ -654,6 +694,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                                          'field_{0}_ampresid_uvwave.{1}'.format(names[ii],
                                                                                 outtype))
 
+            # Remove existing file if it exists and is very small
+            # indicating a plotms failure
+            remove_minsize(ampresid_filename, min_size=50)
+
             if not os.path.exists(ampresid_filename):
 
                 plotms(vis=ms_name,
@@ -690,6 +734,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
             ampant_filename = os.path.join(output_folder,
                                          'field_{0}_amp_ant1.{1}'.format(names[ii],
                                                                          outtype))
+
+            # Remove existing file if it exists and is very small
+            # indicating a plotms failure
+            remove_minsize(ampant_filename, min_size=50)
 
             if not os.path.exists(ampant_filename):
 
@@ -728,6 +776,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
             phaseant_filename = os.path.join(output_folder,
                                          'field_{0}_phase_ant1.{1}'.format(names[ii],
                                                                          outtype))
+
+            # Remove existing file if it exists and is very small
+            # indicating a plotms failure
+            remove_minsize(phaseant_filename, min_size=50)
 
             if not os.path.exists(phaseant_filename):
 
