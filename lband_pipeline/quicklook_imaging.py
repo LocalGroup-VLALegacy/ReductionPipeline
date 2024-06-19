@@ -45,7 +45,8 @@ def cleanup_misc_quicklook(filename, remove_residual=True,
 def quicklook_line_imaging(myvis, thisgal, linespw_dict,
                            nchan_vel=5,
                            # channel_width_kms=20.,
-                           niter=0, nsigma=5., imsize_max=800,
+                           niter=0, nsigma=5.,
+                           imsize_max=512,
                            overwrite_imaging=False,
                            export_fits=True,
                            target_vsys_kms=None,
@@ -275,7 +276,8 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
 
 
 def quicklook_continuum_imaging(myvis, contspw_dict,
-                                niter=0, nsigma=5., imsize_max=800,
+                                niter=0, nsigma=5.,
+                                imsize_max=512,
                                 overwrite_imaging=False,
                                 export_fits=True):
     '''
