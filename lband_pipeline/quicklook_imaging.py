@@ -328,6 +328,19 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
         for thisspw in continuum_spws:
 
+            # First check if its already imaged
+            target_field_label = target_field.replace('-', '_')
+
+            this_imagename = f"quicklook_imaging/quicklook-{target_field_label}-spw{thisspw}-continuum-{myvis}"
+
+            if export_fits:
+                check_exists = os.path.exists(f"{this_imagename}.image.fits")
+            else:
+                check_exists = os.path.exists(f"{this_imagename}.image")
+
+            if check_exists and not overwrite_imaging:
+                continue
+
             # Ask for cellsize
             this_im = imager()
             this_im.selectvis(vis=myvis, field=target_field, spw=str(thisspw))
