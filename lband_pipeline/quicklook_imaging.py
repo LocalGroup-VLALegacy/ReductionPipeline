@@ -140,6 +140,21 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
 
             thisspw, line_name = thisspw_info
 
+            target_field_label = target_field.replace('-', '_')
+
+            this_imagename = f"quicklook_imaging/quicklook-{target_field_label}-spw{thisspw}-{line_name}-{myvis}"
+
+            if export_fits:
+                check_exists = os.path.exists(f"{this_imagename}.image.fits")
+            else:
+                check_exists = os.path.exists(f"{this_imagename}.image")
+
+            check_exists = check_exists or os.path.exists(f"{this_imagename}.empty")
+
+            if check_exists and not overwrite_imaging:
+                continue
+
+
             # Ask for cellsize
             this_im = imager()
             this_im.selectvis(vis=myvis, field=target_field, spw=str(thisspw))
@@ -159,6 +174,9 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
 
             # No point in estimating image size for an empty SPW.
             if image_settings[2]['value'] == 0.:
+                casalog.post(f"All data flagged for {this_imagename}. Skipping")
+                # Write out an empty file so we skip this one from additional uv checks
+                os.system(f"touch {this_imagename}.empty")
                 continue
 
             # For the image size, we will do an approx scaling was
@@ -192,6 +210,8 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
                 check_exists = os.path.exists(f"{this_imagename}.image.fits")
             else:
                 check_exists = os.path.exists(f"{this_imagename}.image")
+
+            check_exists = check_exists or os.path.exists(f"{this_imagename}.empty")
 
             if check_exists:
                 if overwrite_imaging:
@@ -338,6 +358,8 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
             else:
                 check_exists = os.path.exists(f"{this_imagename}.image")
 
+            check_exists = check_exists or os.path.exists(f"{this_imagename}.empty")
+
             if check_exists and not overwrite_imaging:
                 continue
 
@@ -360,6 +382,9 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
             # No point in estimating image size for an empty SPW.
             if image_settings[2]['value'] == 0.:
+                casalog.post(f"All data flagged for {this_imagename}. Skipping")
+                # Write out an empty file so we skip this one from additional uv checks
+                os.system(f"touch {this_imagename}.empty")
                 continue
 
             # For the image size, we will do an approx scaling was
@@ -391,6 +416,8 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
                 check_exists = os.path.exists(f"{this_imagename}.image.fits")
             else:
                 check_exists = os.path.exists(f"{this_imagename}.image")
+
+            check_exists = check_exists or os.path.exists(f"{this_imagename}.empty")
 
             if check_exists:
                 if overwrite_imaging:
