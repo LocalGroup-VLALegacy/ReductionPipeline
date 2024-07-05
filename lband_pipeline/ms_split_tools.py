@@ -249,7 +249,8 @@ def split_ms_final(ms_name,
                    keep_flags=False,
                    keep_lines_only=True,
                    overwrite=False,
-                   output_suffix=""):
+                   output_suffix="",
+                   output_path="."):
     '''
     Split a calibrated MS into a final version with target or required
     calibrators (if continuum).
@@ -287,6 +288,9 @@ def split_ms_final(ms_name,
 
     overwrite : bool, optional
         Overwrite an existing MS with the same output name. Default is False.
+
+    output_path : str, optional
+        Output path. Default is "." (current working directory).
 
     '''
 
@@ -328,8 +332,8 @@ def split_ms_final(ms_name,
             spw_select_str = ""
 
         mstransform(vis=ms_name,
-                    outputvis="{0}/{1}".format(folder_base,
-                                                output_ms_name),
+                    outputvis="{0}/{1}".format(output_path,
+                                               output_ms_name),
                     spw=spw_select_str,
                     datacolumn=data_column,
                     intent=line_intents,
@@ -344,8 +348,8 @@ def split_ms_final(ms_name,
         # flagging is needed.
 
         mstransform(vis=ms_name,
-                    outputvis="{0}/{1}".format(folder_base,
-                                                output_ms_name),
+                    outputvis="{0}/{1}".format(output_path,
+                                               output_ms_name),
                     spw="",
                     datacolumn=data_column,
                     intent=continuum_intents,
@@ -364,7 +368,8 @@ def split_ms_final_all(ms_name,
                        target_name_prefix="",
                        time_bin='0s',
                        keep_flags=False,
-                       overwrite=False):
+                       overwrite=False,
+                       output_path="."):
     '''
     Wrapper to split out the target and calibrator data using `split_ms_final`.
     '''
@@ -380,7 +385,8 @@ def split_ms_final_all(ms_name,
                    keep_flags=keep_flags,
                    keep_lines_only=True,
                    overwrite=overwrite,
-                   output_suffix="")
+                   output_suffix="",
+                   output_path=output_path)
 
     # Calibrators
     split_ms_final(ms_name,
@@ -393,4 +399,5 @@ def split_ms_final_all(ms_name,
                    keep_flags=keep_flags,
                    keep_lines_only=False,
                    overwrite=overwrite,
-                   output_suffix="calibrators")
+                   output_suffix="calibrators",
+                   output_path=output_path)
