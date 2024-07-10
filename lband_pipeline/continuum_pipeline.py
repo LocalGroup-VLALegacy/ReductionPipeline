@@ -34,7 +34,7 @@ from lband_pipeline.flagging_tools import flag_quack_integrations
 
 from lband_pipeline.quicklook_imaging import quicklook_continuum_imaging
 
-# from lband_pipeline.ms_split_tools import split_ms_final_all
+from lband_pipeline.ms_split_tools import split_ms_final_all
 
 # Check that DISPLAY is set. Otherwise, force an error
 # We need DISPLAY set for plotms to export png or txt files.
@@ -347,13 +347,13 @@ if os.path.exists(spwdict_filename):
 # --------------------------------
 # Split the calibrated column out into target and calibrator parts.
 # --------------------------------
-# split_ms_final_all(myvis,
-#                    contspw_dict,
-#                    data_column='CORRECTED',
-#                    target_name_prefix="",
-#                    time_bin='0s',
-#                    keep_flags=True,
-#                    overwrite=False)
+split_ms_final_all(myvis,
+                   contspw_dict,
+                   data_column='CORRECTED',
+                   target_name_prefix="",
+                   time_bin='0s',
+                   keep_flags=True,
+                   overwrite=False)
 
 # --------------------------------
 # Make quicklook images of targets
