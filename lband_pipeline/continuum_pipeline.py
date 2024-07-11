@@ -415,18 +415,22 @@ else:
 
 uvresid_path = "uvresid_plots"
 
+# Not being used right now. The LGLBS gain cals are well-modeled as pt. sources
+do_uvstats = False
+
 # Skip re-run if the folder already exists:
-if not os.path.exists(uvresid_path):
+if do_uvstats:
+    if not os.path.exists(uvresid_path):
 
-    run_all_uvstats(myvis, uvresid_path,
-                    uv_threshold=3, uv_nsigma=3,
-                    try_phase_selfcal=True,
-                    cleanup_calsplit=True,
-                    cleanup_phaseselfcal=True)
+        run_all_uvstats(myvis, uvresid_path,
+                        uv_threshold=3, uv_nsigma=3,
+                        try_phase_selfcal=True,
+                        cleanup_calsplit=True,
+                        cleanup_phaseselfcal=True)
 
-    # We're cleaning up the other data products to make these plots.
-    # So just copy the whole folder over.
-    os.system("cp -r {0} {1}".format(uvresid_path, products_folder))
+        # We're cleaning up the other data products to make these plots.
+        # So just copy the whole folder over.
+        os.system("cp -r {0} {1}".format(uvresid_path, products_folder))
 
-else:
-    casalog.post("Found existing uvresidual checks. Skipping.")
+    else:
+        casalog.post("Found existing uvresidual checks. Skipping.")
