@@ -258,7 +258,8 @@ if not skip_pipeline:
                                       skip_existing=True)
 
         if restart_stage <= 4:
-            hifv_syspower(pipelinemode="automatic")
+            hifv_syspower(pipelinemode="automatic",
+                          apply=True)
 
         if restart_stage <= 5:
             hifv_testBPdcals(pipelinemode="automatic",
