@@ -57,7 +57,8 @@ CALTABLE_MAPPING = {'bandpass_amp': {'output_folder': 'final_caltable_txt',
                                     'colorby': 'spw'}}
 
 
-def make_caltable_txt(ms_active, caltable_type):
+def make_caltable_txt(ms_active, caltable_type,
+                      caltable_mapping=CALTABLE_MAPPING):
     '''
     Output txt files using plotms to make plots of various calibration tables.
     See definitions in `CALTABLE_MAPPING`.
@@ -65,7 +66,7 @@ def make_caltable_txt(ms_active, caltable_type):
 
     '''
 
-    caltable_values = CALTABLE_MAPPING[caltable_type]
+    caltable_values = caltable_mapping[caltable_type]
 
     # from taskinit import tb, casalog
     from casatools import table
@@ -131,10 +132,11 @@ def make_caltable_txt(ms_active, caltable_type):
             casalog.post("File {} already exists. Skipping".format(thisplotfile))
 
 
-def make_all_caltable_txt(msname):
+def make_all_caltable_txt(msname, caltable_mapping=CALTABLE_MAPPING):
 
-    for key in CALTABLE_MAPPING:
-        make_caltable_txt(msname, key)
+    for key in caltable_mapping:
+        make_caltable_txt(msname, key,
+                          caltable_mapping=caltable_mapping)
 
 
 # hifv_plotsummary amp vs freq coloured by ant1
