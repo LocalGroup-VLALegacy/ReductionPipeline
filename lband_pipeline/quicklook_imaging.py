@@ -303,7 +303,8 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
                                 imsize_max=512,
                                 overwrite_imaging=False,
                                 export_fits=True,
-                                calc_apparentsens=False):
+                                calc_apparentsens=False,
+                                only_continuum_spws=True):
     '''
     Per-SPW MFS, nterm=1, dirty images of the targets
     '''
@@ -315,7 +316,10 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
     # Select only the continuum SPWs (in case there are any line SPWs).
     continuum_spws = []
     for thisspw in contspw_dict:
-        if "continuum" in contspw_dict[thisspw]['label']:
+        if only_continuum_spws:
+            if "continuum" in contspw_dict[thisspw]['label']:
+                continuum_spws.append(str(thisspw))
+            else:
                 continuum_spws.append(str(thisspw))
 
     # Select our target fields. We will loop through
