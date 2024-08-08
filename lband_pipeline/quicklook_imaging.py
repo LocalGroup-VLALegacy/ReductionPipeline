@@ -50,7 +50,8 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
                            overwrite_imaging=False,
                            export_fits=True,
                            target_vsys_kms=None,
-                           target_line_range_kms=None):
+                           target_line_range_kms=None,
+                           calc_apparentsens=False):
 
     if target_vsys_kms is None:
         # Will read from config file defined in `config_files/master_config.cfg`
@@ -253,27 +254,28 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
                    pblimit=this_pblim)
 
             # Estimate the expected sensitivity
-            out = apparentsens(myvis,
-                               field=target_field,
-                               spw=str(thisspw),
-                               cell=this_cellsize,
-                               imsize=this_imsize,
-                               specmode='mfs',
-                               weighting='briggs',
-                               robust=0.0)
+            if calc_apparentsens:
+                out = apparentsens(myvis,
+                                field=target_field,
+                                spw=str(thisspw),
+                                cell=this_cellsize,
+                                imsize=this_imsize,
+                                specmode='mfs',
+                                weighting='briggs',
+                                robust=0.0)
 
-            # Can only do mfs mode here so approx scale to the channel
-            # width used.
-            bandwidth = linespw_dict[int(thisspw)]['bandwidth'] / 1.e9
-            # v / c in km/s
-            width_freq = (width_vel / 3.e5) * linerest_dict_GHz[line_name]
-            chan_to_bandwidth_ratio = width_freq / bandwidth
+                # Can only do mfs mode here so approx scale to the channel
+                # width used.
+                bandwidth = linespw_dict[int(thisspw)]['bandwidth'] / 1.e9
+                # v / c in km/s
+                width_freq = (width_vel / 3.e5) * linerest_dict_GHz[line_name]
+                chan_to_bandwidth_ratio = width_freq / bandwidth
 
-            exp_sens[f"{target_field_label}-spw{thisspw}"] = \
-                    out['effSens'] * np.sqrt(chan_to_bandwidth_ratio)
+                exp_sens[f"{target_field_label}-spw{thisspw}"] = \
+                        out['effSens'] * np.sqrt(chan_to_bandwidth_ratio)
 
-            # Remove any "apparentsens" image products
-            rmtables(f"{myvis}*.apparentsens.*")
+                # Remove any "apparentsens" image products
+                rmtables(f"{myvis}*.apparentsens.*")
 
             if export_fits:
                 exportfits(imagename=f"{this_imagename}.image",
@@ -287,8 +289,9 @@ def quicklook_line_imaging(myvis, thisgal, linespw_dict,
                                     remove_image=True if export_fits else False)
 
     # Save the dictionary of expected sensitivity
-    np.save(f"quicklook_imaging/expected_sensitivity_dict.npy", exp_sens,
-            allow_pickle=True)
+    if calc_apparentsens:
+        np.save(f"quicklook_imaging/expected_sensitivity_dict.npy", exp_sens,
+                allow_pickle=True)
 
     t1 = datetime.datetime.now()
 
@@ -299,7 +302,8 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
                                 niter=0, nsigma=5.,
                                 imsize_max=512,
                                 overwrite_imaging=False,
-                                export_fits=True):
+                                export_fits=True,
+                                calc_apparentsens=False):
     '''
     Per-SPW MFS, nterm=1, dirty images of the targets
     '''
@@ -457,18 +461,19 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
                    pblimit=this_pblim)
 
             # Estimate the expected sensitivity
-            out = apparentsens(myvis,
-                               field=target_field,
-                               spw=str(thisspw),
-                               cell=this_cellsize,
-                               imsize=this_imsize,
-                               specmode='mfs',
-                               weighting='briggs',
-                               robust=0.0)
-            exp_sens[f"{target_field_label}-spw{thisspw}"] = out['effSens']
+            if calc_apparentsens:
+                out = apparentsens(myvis,
+                                field=target_field,
+                                spw=str(thisspw),
+                                cell=this_cellsize,
+                                imsize=this_imsize,
+                                specmode='mfs',
+                                weighting='briggs',
+                                robust=0.0)
+                exp_sens[f"{target_field_label}-spw{thisspw}"] = out['effSens']
 
-            # Remove any "apparentsens" image products
-            rmtables(f"{myvis}*.apparentsens.*")
+                # Remove any "apparentsens" image products
+                rmtables(f"{myvis}*.apparentsens.*")
 
 
             if export_fits:
@@ -483,8 +488,9 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
                                     remove_image=True if export_fits else False)
 
     # Save the dictionary of expected sensitivity
-    np.save(f"quicklook_imaging/expected_sensitivity_dict.npy", exp_sens,
-            allow_pickle=True)
+    if calc_apparentsens:
+        np.save(f"quicklook_imaging/expected_sensitivity_dict.npy", exp_sens,
+                allow_pickle=True)
 
     t1 = datetime.datetime.now()
 
