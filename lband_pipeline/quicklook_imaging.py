@@ -319,8 +319,10 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
         if only_continuum_spws:
             if "continuum" in contspw_dict[thisspw]['label']:
                 continuum_spws.append(str(thisspw))
-            else:
-                continuum_spws.append(str(thisspw))
+        else:
+            continuum_spws.append(str(thisspw))
+
+    casalog.post(f"Quicklook imaging of {len(continuum_spws)} SPWs: {continuum_spws}")
 
     # Select our target fields. We will loop through
     # to avoid the time + memory needed for mosaics.
@@ -346,6 +348,8 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
     t0 = datetime.datetime.now()
 
+    casalog.post(f"Quicklook imaging of {len(target_fields)} fields: {target_fields}")
+
     # Loop through targets and line SPWs
     for target_field in target_fields:
 
@@ -355,6 +359,8 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
         imsizes = []
 
         for thisspw in continuum_spws:
+
+            casalog.post(f"Quick look imaging of field {target_field} SPW {thisspw}")
 
             # First check if its already imaged
             target_field_label = target_field.replace('-', '_')
