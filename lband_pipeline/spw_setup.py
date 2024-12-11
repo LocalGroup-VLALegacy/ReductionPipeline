@@ -68,7 +68,8 @@ linerest_dict_GHz = {"HI": 1.420405752,
 
 
 def create_spw_dict(myvis, target_vsys_kms=None, min_continuum_chanwidth_kHz=50,
-                    save_spwdict=False, spwdict_filename="spw_definitions.npy"):
+                    save_spwdict=False, spwdict_filename="spw_definitions.npy",
+                    allow_failed_line_identification=True):
     '''
     Create the SPW dict from MS metadata. Split based on continuum and
     use the line dictionary to match line identifications.
@@ -197,7 +198,11 @@ def create_spw_dict(myvis, target_vsys_kms=None, min_continuum_chanwidth_kHz=50,
                     line_match.append(line)
 
             if len(line_match) == 0:
-                raise ValueError("Unable to match spectral line.")
+                if allow_failed_line_identification:
+                    print("No spectral line found for SPW {}".format(spwid))
+                    continue
+                else:
+                    raise ValueError("Unable to match spectral line.")
 
             spw_label = "-".join(line_match)
 
