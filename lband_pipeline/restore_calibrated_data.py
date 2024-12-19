@@ -222,7 +222,16 @@ for this_type in restore_types:
 
     # Create SPW map and add to out string.
     if "spw='0~7'" in out or "spw='0~20'" in out:
-        spw_map = list(spw_mappings[this_type].values())
+
+        # Get total number of SPW in the MS table:
+        tb.open(f"{vis}/SPECTRAL_WINDOW")
+        num_spw = tb.nrows()
+        tb.close()
+
+        spw_map = [0] * num_spw
+
+        for spw, orig_spw in spw_mappings[this_type].items():
+            spw_map[orig_spw] = spw
 
         num_tables = len(list(Path(".").glob("*.tbl")))
 
@@ -249,14 +258,15 @@ for this_type in restore_types:
     ###
 
     # Rename products folder to a unique name
-    os.system(f"mv products {ms_name_base}_{this_type}_products")
+    products_foldername = f"{ms_name_base}_{this_type}_products"
+    os.system(f"mv products {products_foldername}")
 
     # Tar MS and flagversions.
     final_tarname = f'{parentdir}_{this_type}.tar'
     with tarfile.open(final_tarname, 'w') as tar:
         tar.add(vis)
         tar.add(flagname)  # add flagversions
-        tar.add("products")  # add caltables and the calapply call.
+        tar.add(products_foldername)  # add caltables and the calapply call.
 
     # Move to final directory
     os.system(f"mv {final_tarname} {output_data_path}")
