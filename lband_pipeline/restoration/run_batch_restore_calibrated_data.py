@@ -51,7 +51,7 @@ casa_call = "/py3opt/casa-6.6.1-17-pipeline-2024.1.0.8/bin/casa"
 
 track_tab = Table.read(csv_file, format='csv')
 
-matches = track_tab['IC10'] == target
+matches = track_tab['Target'] == target
 
 # If all, check all configs
 if config != "all":
