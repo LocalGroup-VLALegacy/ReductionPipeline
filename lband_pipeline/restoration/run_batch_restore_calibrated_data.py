@@ -100,7 +100,7 @@ for ii, row in enumerate(track_tab_matches):
 
     print(f"Running: {casa_call} -c {script_str}")
 
-    full_casa_call = f"{casa_call} -c {script_str}".split(" ")
+    full_casa_call = f"{casa_call} --nogui --log2term -c {script_str}".split(" ")
     result = subprocess.run(full_casa_call,
                                  capture_output=True,)
     print(result.stdout.decode("utf-8"))
