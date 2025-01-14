@@ -127,3 +127,6 @@ for ii, row in enumerate(track_tab_matches):
     os.system(f"rm -rf {track_folder}")
 
     os.chdir(origdir)
+
+# Now upload to gdrive
+os.system('~/rclone-v1.65.2-linux-amd64/rclone copy restored_data/ lglbs-gdrive:"Scratch/Restored_Continuum_for_Timea/" --include "*.tar" --progress')
