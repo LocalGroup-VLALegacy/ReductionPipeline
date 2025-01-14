@@ -17,6 +17,16 @@ ipython run_batch_restore_calibrated_data.py
     <data_path>
     <reductionpipeline_path>
 
+e.g.:
+ipython
+    ~/LGLBS/ReductionPipeline/lband_pipeline/restoration/run_batch_restore_calibrated_data.py
+    IC10
+    D
+    continuum
+    ~/lglbs_tracks.csv
+    .
+    /home/erickoch/LGLBS/ReductionPipeline/
+
 '''
 
 from pathlib import Path
@@ -34,7 +44,7 @@ data_type = sys.argv[3]
 # Read in csv file from 20A-346
 csv_file = Path(sys.argv[4])
 
-data_path = Path(sys.argv[5])
+data_path = Path(sys.argv[5]).resolve()
 data_archive_path = data_path / "archive_products"
 if not data_archive_path.exists():
     raise FileNotFoundError(f"Could not find archive_products in {data_path}")
@@ -76,13 +86,18 @@ for ii, row in enumerate(track_tab_matches):
     # Check for products.
     all_products = list(data_archive_path.glob(f"*{this_trackname}*{data_type}*.tar"))
     if len(all_products) == 0:
-        raise FileNotFoundError(f"Could not find any products for {vis}")
+        # raise FileNotFoundError(f"Could not find any products for {this_sdm}")
+        print(f"Could not find any products for {this_sdm}. Skipping.")
+        continue
 
     # Check for the SDM file.
-    this_sdm_tarfile = data_archive_path / f"{this_sdm}.tar"
+    this_sdm_tarfile = data_path / f"{this_sdm}.tar"
+    if not this_sdm_tarfile.exists():
+        print(f"Could not find {this_sdm_tarfile}. Skipping.")
+        continue
 
     # Make the processing directory
-    track_folder = data_archive_path / this_trackname
+    track_folder = data_path / this_trackname
 
     if not track_folder.exists():
         track_folder.mkdir()
@@ -96,15 +111,19 @@ for ii, row in enumerate(track_tab_matches):
     # Make casa call.
     # casa -c mySDM both|lines|cont True|False data_archive_path output_data_path
     script_str = f"{this_sdm} {data_type} True {data_archive_path} {output_data_path}"
-    restore_script = str(repo_path / "ReductionPipeline/lband_pipeline/restoration/restore_calibrated_data.py")
+    restore_script = str(repo_path / "lband_pipeline/restoration/restore_calibrated_data.py")
 
-    print(f"Running: {casa_call} -c {script_str}")
+    print(f"Running: {casa_call} -c {restore_script} {script_str}")
 
-    full_casa_call = f"{casa_call} --nogui --log2term -c {script_str}".split(" ")
+    full_casa_call = f"{casa_call} --nogui --log2term -c {restore_script} {script_str}".split(" ")
     result = subprocess.run(full_casa_call,
-                                 capture_output=True,)
+                            capture_output=True,)
     print(result.stdout.decode("utf-8"))
 
     print(f"Finished {this_trackname}.")
+
+    # Clean up products.
+    os.chdir("../")
+    os.system(f"rm -rf {track_folder}")
 
     os.chdir(origdir)

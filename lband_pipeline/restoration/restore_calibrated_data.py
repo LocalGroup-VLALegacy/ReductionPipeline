@@ -218,10 +218,10 @@ for this_type in restore_types:
 
     # NOTE: may need a custom SPW mapping here for before we turned off
     # re-indexing the SPW numbers.
-    # Check for 0~7 or 0~20.
+    # Check for 0~7 or 0~19.
 
     # Create SPW map and add to out string.
-    if "spw='0~7'" in out or "spw='0~20'" in out:
+    if "spw='0~7'" in out or "spw='0~19'" in out:
 
         # Get total number of SPW in the MS table:
         tb.open(f"{vis}/SPECTRAL_WINDOW")
@@ -261,12 +261,17 @@ for this_type in restore_types:
     products_foldername = f"{ms_name_base}_{this_type}_products"
     os.system(f"mv products {products_foldername}")
 
+    # Copy the log file to the current directory
+    logfile = Path(casalog.logfile())
+    os.system(f"cp {logfile} {logfile.name}")
+
     # Tar MS and flagversions.
     final_tarname = f'{parentdir}_{this_type}.tar'
     with tarfile.open(final_tarname, 'w') as tar:
         tar.add(vis)
         tar.add(flagname)  # add flagversions
         tar.add(products_foldername)  # add caltables and the calapply call.
+        tar.add(logfile.name)
 
     # Move to final directory
     os.system(f"mv {final_tarname} {output_data_path}")
