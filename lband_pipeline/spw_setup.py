@@ -67,15 +67,19 @@ linerest_dict_GHz = {"HI": 1.420405752,
                      }
 
 
-def create_spw_dict(myvis, target_vsys_kms=None, min_continuum_chanwidth_kHz=50,
-                    save_spwdict=False, spwdict_filename="spw_definitions.npy",
+def create_spw_dict(myvis,
+                    continuum_only=False,
+                    target_vsys_kms=None,
+                    min_continuum_chanwidth_kHz=50,
+                    save_spwdict=False,
+                    spwdict_filename="spw_definitions.npy",
                     allow_failed_line_identification=True):
     '''
     Create the SPW dict from MS metadata. Split based on continuum and
     use the line dictionary to match line identifications.
     '''
 
-    if target_vsys_kms is None:
+    if target_vsys_kms is None and not continuum_only:
         # Will read from config file defined in `config_files/master_config.cfg`
         target_vsys_kms = read_target_vsys_cfg(filename=None)
 
@@ -104,34 +108,35 @@ def create_spw_dict(myvis, target_vsys_kms=None, min_continuum_chanwidth_kHz=50,
     # Some of the archival data has a setup scan labeled as a target.
     # Because of this, we will loop through targets until we find one defined
     # in our target dictionary.
-    for targ_scan in science_scans:
-
-        targ_fieldname = metadata.fieldnames()[metadata.fieldsforscan(targ_scan)[0]]
-
-        gal_vsys = None
-        for gal in target_vsys_kms:
-
-            if gal in targ_fieldname:
-                gal_vsys = target_vsys_kms[gal]
-                break
-
-        if gal_vsys is not None:
-            break
-
-    if gal_vsys is None:
-        raise ValueError("Cannot identify which target galaxy is observed"
-                         " from field name {}".format(targ_fieldname))
-
-    # Below is a sketch of doing this for all target fields if there are
-    # multiple target galaxies.
-    # np.array(metadata.fieldnames())[metadata.fieldsforintent("*TARGET*")]
-
-    # Convert rest to observed based on the target
     lineobs_dict_GHz = {}
 
-    for line in linerest_dict_GHz:
+    if not continuum_only:
+        for targ_scan in science_scans:
 
-        lineobs_dict_GHz[line] = lines_rest2obs(linerest_dict_GHz[line], gal_vsys)
+            targ_fieldname = metadata.fieldnames()[metadata.fieldsforscan(targ_scan)[0]]
+
+            gal_vsys = None
+            for gal in target_vsys_kms:
+
+                if gal in targ_fieldname:
+                    gal_vsys = target_vsys_kms[gal]
+                    break
+
+            if gal_vsys is not None:
+                break
+
+        if gal_vsys is None:
+            raise ValueError("Cannot identify which target galaxy is observed"
+                            " from field name {}".format(targ_fieldname))
+
+        # Below is a sketch of doing this for all target fields if there are
+        # multiple target galaxies.
+        # np.array(metadata.fieldnames())[metadata.fieldsforintent("*TARGET*")]
+
+        # Convert rest to observed based on the target
+        for line in linerest_dict_GHz:
+
+            lineobs_dict_GHz[line] = lines_rest2obs(linerest_dict_GHz[line], gal_vsys)
 
     # Counters for continuum windows in basebands A0C0, B0D0.
     cont_A_count = 0
