@@ -19,9 +19,12 @@ casalog = logsink()
 
 # Function to identify the target from field names in the MS
 
-def identify_target(vis, fields=None, raise_missing_target=True):
+def identify_targets(vis, fields=None, raise_missing_target=True):
     '''
-    Identify the target in the MS that matches target_line_range_kms keys.
+    Identify every target in the MS that matches target_line_range_kms keys.
+
+    A track can hold more than one science galaxy, so this returns a list.
+    Use `identify_target` when a single name is needed.
     '''
 
     if fields is None:
@@ -46,26 +49,42 @@ def identify_target(vis, fields=None, raise_missing_target=True):
 
     if len(fields) < 1:
         casalog.post("ERROR: no fields given to identify.")
-        return
+        return []
 
-    # Match target with the galaxy. Names should be unique enough to do this
-    thisgal = None
+    # Match targets with the galaxies. Names should be unique enough to do this
+    thisgals = []
 
     target_vsys_kms = read_target_vsys_cfg()
 
-    # generate a dictonary containing continuum chunks for every spw of every field
     for field in fields:
 
         for gal in target_vsys_kms:
             if gal in field:
-                thisgal = gal
+                if gal not in thisgals:
+                    thisgals.append(gal)
                 break
 
     # Check for match after looping through all fields.
-    if thisgal is None:
+    if len(thisgals) == 0:
         if raise_missing_target:
             casalog.post("Unable to match fields to expected galaxy targets: {0}".format(fields))
             raise ValueError("Unable to match fields to expected galaxy targets: {0}".format(fields))
 
+    return thisgals
 
-    return thisgal
+
+def identify_target(vis, fields=None, raise_missing_target=True):
+    '''
+    Identify the target in the MS that matches target_line_range_kms keys.
+
+    Returns the first match. See `identify_targets` for tracks with more than
+    one science galaxy.
+    '''
+
+    thisgals = identify_targets(vis, fields=fields,
+                                raise_missing_target=raise_missing_target)
+
+    if len(thisgals) == 0:
+        return None
+
+    return thisgals[0]

@@ -250,7 +250,8 @@ def split_ms_final(ms_name,
                    keep_lines_only=True,
                    overwrite=False,
                    output_suffix="",
-                   output_path="."):
+                   output_path=".",
+                   split_type=None):
     '''
     Split a calibrated MS into a final version with target or required
     calibrators (if continuum).
@@ -292,6 +293,12 @@ def split_ms_final(ms_name,
     output_path : str, optional
         Output path. Default is "." (current working directory).
 
+    split_type : str, optional
+        One of "speclines" or "continuum". Required when the MS holds both
+        (i.e. the unified pipeline, where the MS is just <track>.ms). When
+        None, the type is taken from "speclines"/"continuum" appearing in the
+        MS name, as produced by the older split-first workflow.
+
     '''
 
     from casatasks import mstransform
@@ -299,15 +306,43 @@ def split_ms_final(ms_name,
 
     casalog = logsink()
 
+    valid_split_types = ['speclines', 'continuum']
+
     folder_base, ms_name_base = os.path.split(ms_name)
 
     if len(folder_base) == 0:
         folder_base = '.'
 
-    if len(output_suffix) == 0:
-        output_ms_name = f"{ms_name_base}.split"
+    if split_type is None:
+        # Fall back on the older workflow, where the line and continuum SPWs
+        # were already split into separate MSes with the type in the name.
+        for this_type in valid_split_types:
+            if this_type in ms_name_base:
+                split_type = this_type
+                break
+
+        if split_type is None:
+            raise ValueError(f"Cannot find 'continuum' or 'speclines' in name {ms_name_base}."
+                             " Pass split_type explicitly for a combined MS.")
+
+        output_name_base = ms_name_base
+
     else:
-        output_ms_name = f"{ms_name_base}.split_{output_suffix}"
+        if split_type not in valid_split_types:
+            raise ValueError(f"split_type must be one of {valid_split_types}. Given: {split_type}")
+
+        # The unified pipeline calibrates one <track>.ms holding both. Insert the
+        # product tag so the outputs keep the names the rest of the project expects
+        # (e.g. <track>.speclines.ms.split).
+        if ms_name_base.endswith(".ms"):
+            output_name_base = f"{ms_name_base[:-3]}.{split_type}.ms"
+        else:
+            output_name_base = f"{ms_name_base}.{split_type}"
+
+    if len(output_suffix) == 0:
+        output_ms_name = f"{output_name_base}.split"
+    else:
+        output_ms_name = f"{output_name_base}.split_{output_suffix}"
 
     if overwrite and os.path.exists(output_ms_name):
         os.system(f"rm -r {output_ms_name}")
@@ -316,20 +351,29 @@ def split_ms_final(ms_name,
         casalog.post(f"Found existing MS and overwrite=False. Skipping. Name: {output_ms_name}")
         return
 
-    # We're classifying based on "continuum" or "speclines" in the name.
-    if 'speclines' in ms_name_base:
+    # True when the name was sniffed, i.e. the MS was already split by type and
+    # every SPW in it belongs to this product.
+    already_split = ms_name_base == output_name_base
+
+    if split_type == 'speclines':
 
         # Remove the continuum SPWs that are backups for calibration
         if keep_lines_only:
-            line_spws = []
-            for thisspw in spw_dict:
-                if "continuum" not in spw_dict[thisspw]['label']:
-                    line_spws.append(str(thisspw))
+            spw_select_str = get_line_spws(spw_dict,
+                                           include_rrls=False,
+                                           return_string=True,
+                                           keep_backup_continuum=False)
 
-            spw_select_str =",".join(list(set(line_spws)))
+        elif already_split:
+            spw_select_str = ""
 
         else:
-            spw_select_str = ""
+            # Keep the backup continuum SPWs, matching what the old
+            # <track>.speclines.ms held.
+            spw_select_str = get_line_spws(spw_dict,
+                                           include_rrls=False,
+                                           return_string=True,
+                                           keep_backup_continuum=True)
 
         mstransform(vis=ms_name,
                     outputvis="{0}/{1}".format(output_path,
@@ -342,24 +386,29 @@ def split_ms_final(ms_name,
                     keepflags=keep_flags,
                     reindex=False)
 
-    elif 'continuum' in ms_name_base:
+    else:
         # do split
         # For now, we're keeping the whole MS intact in case data issues/additional
         # flagging is needed.
+        # On a combined MS we must select the continuum SPWs explicitly; on an
+        # already-split continuum MS everything is continuum already.
+        if already_split:
+            spw_select_str = ""
+        else:
+            spw_select_str = get_continuum_spws(spw_dict,
+                                                baseband='both',
+                                                return_string=True)
 
         mstransform(vis=ms_name,
                     outputvis="{0}/{1}".format(output_path,
                                                output_ms_name),
-                    spw="",
+                    spw=spw_select_str,
                     datacolumn=data_column,
                     intent=continuum_intents,
                     timebin=time_bin,
                     field=f"{target_name_prefix}*",
                     keepflags=keep_flags,
                     reindex=False)
-
-    else:
-        raise ValueError(f"Cannot find 'continuum' or 'speclines' in name {ms_name_base}")
 
 
 def split_ms_final_all(ms_name,
@@ -369,9 +418,13 @@ def split_ms_final_all(ms_name,
                        time_bin='0s',
                        keep_flags=False,
                        overwrite=False,
-                       output_path="."):
+                       output_path=".",
+                       split_type=None):
     '''
     Wrapper to split out the target and calibrator data using `split_ms_final`.
+
+    See `split_ms_final` for `split_type`. Call this twice (once per type) when
+    the MS holds both line and continuum SPWs.
     '''
 
     # Target
@@ -386,7 +439,8 @@ def split_ms_final_all(ms_name,
                    keep_lines_only=True,
                    overwrite=overwrite,
                    output_suffix="",
-                   output_path=output_path)
+                   output_path=output_path,
+                   split_type=split_type)
 
     # Calibrators
     split_ms_final(ms_name,
@@ -400,4 +454,5 @@ def split_ms_final_all(ms_name,
                    keep_lines_only=False,
                    overwrite=overwrite,
                    output_suffix="calibrators",
-                   output_path=output_path)
+                   output_path=output_path,
+                   split_type=split_type)

@@ -256,3 +256,28 @@ def continuum_spws_with_hi(spw_dict):
             contains_hi.append(name)
 
     return contains_hi
+
+
+def line_spw_ids(spw_dict):
+    '''
+    Return the sorted SPW #s of the spectral line SPWs.
+
+    This is what feeds `specline_spws` in `hifv_importdata`. Note that the
+    backup continuum window covering HI stays a *continuum* SPW here, which is
+    what we want: it should be Hanning smoothed with the rest of the continuum.
+    '''
+
+    return sorted([spwid for spwid in spw_dict
+                   if "continuum" not in spw_dict[spwid]['label']])
+
+
+def continuum_spw_ids(spw_dict):
+    '''
+    Return the sorted SPW #s of the continuum SPWs.
+
+    This is what feeds `spws_to_smooth` in `hifv_hanning`, which names the
+    windows *to* smooth (there is no exclusion parameter).
+    '''
+
+    return sorted([spwid for spwid in spw_dict
+                   if "continuum" in spw_dict[spwid]['label']])

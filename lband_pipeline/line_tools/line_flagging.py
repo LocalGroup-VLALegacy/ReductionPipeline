@@ -205,6 +205,7 @@ def partition_cont_range(line_freqs=[], spw_start=1, spw_end=2,
 
 def build_cont_dat(vis, target_line_range_kms,
                    line_freqs={},
+                   spw_dict=None,
                    fields=[],
                    outfile="cont.dat", overwrite=False, append=False,
                    test_print=False,
@@ -215,9 +216,26 @@ def build_cont_dat(vis, target_line_range_kms,
     but writes them down as LSRK. Should not matter much, edges should be flagged anyway.
     Example of cont.dat content from NRAO online documentation:
     https://science.nrao.edu/facilities/vla/data-processing/pipeline/#section-25
+
+    Every target field and every SPW gets an entry. This matters: the pipeline
+    only runs `hifv_checkflag(checkflagmode='target-vla')` and `hifv_statwt` on
+    the fields and SPWs that appear in cont.dat, so anything left out silently
+    keeps its RFI and its uncalibrated weights.
+
+    Three cases per SPW:
+
+    1. Continuum SPWs (identified from `spw_dict`) get the full range with
+       nothing excluded, even where a line falls inside them. Several do -- the
+       backup continuum window covers HI and the B0D0 windows cover the OH
+       lines -- but we never use those windows for line science, so protecting
+       the ranges would only cost RFI flagging and correct weights.
+    2. Target fields that match no known galaxy get the full range on every SPW.
+    3. Line SPWs on a matched galaxy get the protected velocity ranges cut out.
+
     :param vis: path to the measurement set
     :param line_freqs: line frequencies (obs frame, LSRK) in GHz
-    :param line_widths: widths of lines (obs frame, LSRK) in GHz to cut from the continuum
+    :param spw_dict: SPW dictionary from `create_spw_dict`. Used to identify the
+        continuum SPWs. If None, all SPWs are treated as line SPWs.
     :param fields: science target fields. If empty, TARGET intent fields are used.
     :param outfile: path to the output cont.dat file
     :param overwrite: if True and the outfile exists, it will be overriten
@@ -225,26 +243,18 @@ def build_cont_dat(vis, target_line_range_kms,
     :return: None
     """
 
-    # from taskinit import msmdtool, mstool
     from casatools import ms
 
-    # need for metadata
-    # msmd = msmdtool()
-    # mymsmd = msmd()
-
     # TOPO -> LSRK conversion
-    # ms = mstool()
     myms = ms()
 
     # if no fields are provided use observe_target intent
     # I saw once a calibrator also has this intent so check carefully
-    # mymsmd.open(vis)
     myms.open(vis)
 
     mymsmd = myms.metadata()
 
     if len(fields) < 1:
-        # fields = mymsmd.fieldsforintent("*OBSERVE_TARGET*", True)
         fields = mymsmd.fieldsforintent("*TARGET*", True)
 
     if len(fields) < 1:
@@ -254,6 +264,13 @@ def build_cont_dat(vis, target_line_range_kms,
     if os.path.exists(outfile) and not overwrite and not append:
         print("ERROR: file already exists!")
         return
+
+    # SPWs we will never protect a line range in.
+    if spw_dict is not None:
+        continuum_spws = [spwid for spwid in spw_dict
+                          if "continuum" in spw_dict[spwid]['label']]
+    else:
+        continuum_spws = []
 
     # generate a dictonary containing continuum chunks for every spw of every field
     cont_dat = {}
@@ -267,86 +284,92 @@ def build_cont_dat(vis, target_line_range_kms,
             if gal in field:
                 thisgal = gal
                 break
-        # Check for match
+
+        # Check for match. An unmatched field still gets full-range entries
+        # below so that it is not dropped from the RFI flagging and statwt.
         if thisgal is None:
             if raise_missing_target:
                 raise ValueError("Unable to match field {} to expected galaxy targets".format(field))
             else:
-                casalog.post("Unable to match field {} to expected galaxy targets. Skipping.".format(field))
-                continue
+                casalog.post("Unable to match field {} to expected galaxy targets."
+                             " Marking all SPWs as continuum.".format(field))
 
         for spw in spws:
             # Get freq range of the SPW
-            # chan_freqs = mymsmd.chanfreqs(spw)
             # SPW edges are reported in whichever frame was used for observing (usually TOPO)
-            # TODO: implement some transformations to LSRK for the edges?
 
             # Grab freqs in LSRK and TOPO
             freqs_lsrk = myms.cvelfreqs(spwids=[spw], outframe='LSRK')
             freqs_topo = myms.cvelfreqs(spwids=[spw], outframe='TOPO')
 
+            spw_start = np.min(freqs_topo) * 1e-9  # GHz
+            spw_end = np.max(freqs_topo) * 1e-9  # GHz
+
             line_freqs_topo = []
 
-            for line in line_freqs:
+            # Continuum SPWs and unmatched fields protect nothing.
+            if thisgal is not None and spw not in continuum_spws:
 
-                restfreq = line_freqs[line] * 1e9
+                for line in line_freqs:
 
-                # Only include if that line has a defined velocity range
-                key_match = None
-                for key in target_line_range_kms[thisgal]:
-                    if key in line:
-                        key_match = key
-                        break
+                    restfreq = line_freqs[line] * 1e9
 
-                if key_match is None:
-                    continue
+                    # Only include if that line has a defined velocity range
+                    key_match = None
+                    for key in target_line_range_kms[thisgal]:
+                        if key in line:
+                            key_match = key
+                            break
 
-                for vel_range in target_line_range_kms[thisgal][key_match]:
-
-                    vel_start, vel_stop = vel_range
-
-                    freq_to_match_start = lines_rest2obs(restfreq, vel_start)
-                    freq_to_match_stop = lines_rest2obs(restfreq, vel_stop)
-
-                    if test_print:
-                        print(spw, line, vel_start, vel_stop)
-                        print(spw, line, freq_to_match_start, freq_to_match_stop)
-                        print(freqs_lsrk.min(), freqs_lsrk.max())
-
-                    # Not within range. Skip.
-                    if freq_to_match_start > freqs_lsrk.max() or freq_to_match_stop < freqs_lsrk.min():
-                        skip_line = True
-                        break
+                    if key_match is None:
+                        continue
 
                     skip_line = False
 
-                    # Convert from Hz to GHz
-                    freq_topo_start = freq_match_lsrk_to_topo(freq_to_match_start,
-                                                              freqs_lsrk, freqs_topo) * 1e-9
+                    for vel_range in target_line_range_kms[thisgal][key_match]:
 
-                    freq_topo_stop = freq_match_lsrk_to_topo(freq_to_match_stop,
-                                                             freqs_lsrk, freqs_topo) * 1e-9
+                        vel_start, vel_stop = vel_range
 
-                    if test_print:
-                        print("Found range: {0}, {1}".format(freq_topo_start, freq_topo_stop))
+                        freq_to_match_start = lines_rest2obs(restfreq, vel_start)
+                        freq_to_match_stop = lines_rest2obs(restfreq, vel_stop)
 
-                    line_freqs_topo.append([freq_topo_start, freq_topo_stop])
+                        if test_print:
+                            print(spw, line, vel_start, vel_stop)
+                            print(spw, line, freq_to_match_start, freq_to_match_stop)
+                            print(freqs_lsrk.min(), freqs_lsrk.max())
 
-                if skip_line:
-                    continue
+                        # Not within range. Skip.
+                        if freq_to_match_start > freqs_lsrk.max() or freq_to_match_stop < freqs_lsrk.min():
+                            skip_line = True
+                            break
 
-                spw_start = np.min(freqs_topo) * 1e-9  # GHz
-                spw_end = np.max(freqs_topo) * 1e-9  # GHz
+                        # Convert from Hz to GHz
+                        freq_topo_start = freq_match_lsrk_to_topo(freq_to_match_start,
+                                                                  freqs_lsrk, freqs_topo) * 1e-9
 
-                if test_print:
-                    print("SPW {}: {}".format(spw, line_freqs_topo))
+                        freq_topo_stop = freq_match_lsrk_to_topo(freq_to_match_stop,
+                                                                 freqs_lsrk, freqs_topo) * 1e-9
 
+                        if test_print:
+                            print("Found range: {0}, {1}".format(freq_topo_start, freq_topo_stop))
+
+                        line_freqs_topo.append([freq_topo_start, freq_topo_stop])
+
+                    if skip_line:
+                        continue
+
+            if test_print:
+                print("SPW {}: {}".format(spw, line_freqs_topo))
+
+            # Nothing to protect: the whole SPW is continuum.
+            # NOTE: `partition_cont_range` cannot take an empty line list.
+            if len(line_freqs_topo) == 0:
+                cont_chunks = [dict(start=spw_start, end=spw_end)]
+            else:
                 cont_chunks = partition_cont_range(line_freqs_topo, spw_start, spw_end,
                                                    test_print=test_print)
-                cont_dat_field.update({spw: cont_chunks})
 
-            # print(spw, cont_chunks)
-            # print(spw_start, spw_end)
+            cont_dat_field.update({spw: cont_chunks})
 
         cont_dat.update({field: cont_dat_field})
 
