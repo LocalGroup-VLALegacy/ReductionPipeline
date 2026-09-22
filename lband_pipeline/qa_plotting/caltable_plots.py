@@ -202,21 +202,22 @@ def make_caltable_txt(ms_active, caltable_type,
         else:
             raise ValueError("Unrecognized y axis {}".format(caltable_values['y']))
 
-        # The x axis' broadcasting shape differs between the channelized
-        # (bandpass) and single-valued (delay/gain) cases.
-        if caltable_values['x'] == 'freq':
-            if nchan > 1:
-                # spw is fixed (== ii) for every row here since iter == 'spw'.
-                xval = np.broadcast_to(chan_freqs[ii][np.newaxis, :, np.newaxis], data.shape)
-            else:
-                # One representative (mean) frequency per row's spw --
-                # matches the old plotms behaviour of plotting a
-                # non-channelized solution against its spw's frequency.
-                row_freq = np.array([chan_freqs[s].mean() for s in spw])
-                xval = np.broadcast_to(row_freq[np.newaxis, np.newaxis, :], data.shape)
-        elif caltable_values['x'] == 'time':
-            xval = np.broadcast_to(time[np.newaxis, np.newaxis, :], data.shape)
+        # freq's broadcasting shape differs between the channelized
+        # (bandpass) and single-valued (delay/gain) cases. Computed
+        # unconditionally (like time) regardless of which axis this
+        # particular caltable_type actually plots on x, since QAPlotter
+        # shows both in hover text for every cal-table plot type.
+        if nchan > 1:
+            # spw is fixed (== ii) for every row here since iter == 'spw'.
+            freq_full = np.broadcast_to(chan_freqs[ii][np.newaxis, :, np.newaxis], data.shape)
         else:
+            # One representative (mean) frequency per row's spw -- matches
+            # the old plotms behaviour of plotting a non-channelized
+            # solution against its spw's frequency.
+            row_freq = np.array([chan_freqs[s].mean() for s in spw])
+            freq_full = np.broadcast_to(row_freq[np.newaxis, np.newaxis, :], data.shape)
+
+        if caltable_values['x'] not in ('freq', 'time'):
             raise ValueError("Unrecognized x axis {}".format(caltable_values['x']))
 
         valid = ~flag
@@ -240,7 +241,7 @@ def make_caltable_txt(ms_active, caltable_type,
             'spw': spw_full[valid],
             'scan': scan_full[valid],
             'time': time_full[valid],
-            caltable_values['x']: xval[valid],
+            'freq': freq_full[valid],
             caltable_values['y']: yval[valid],
         })
         out_table.meta.update(dict(vis=str(caltable_name), caltable_type=caltable_type))
