@@ -435,8 +435,10 @@ def _reduce_spw_scan_field(sub, nchan, corr_labels, ydatacolumn,
 
     - shape A: averaged over channel & baseline, resolved per timestamp
     - shape B: averaged over time & baseline, resolved per channel
-    - shape C: averaged over channel & time, resolved per baseline
-    - shape D: averaged over channel only, resolved per row (time x baseline)
+    - shape C: averaged over channel & time, resolved per baseline (this
+      also is amp_phase's data: it plots the same per-baseline complex
+      average as amp_uvdist/amp_ant1, just as amp-vs-phase instead of
+      against uvdist/antenna1)
 
     Complex visibilities are weight-averaged as complex numbers (never as
     separately-averaged amp/phase scalars) so that phase wrapping is
@@ -482,9 +484,6 @@ def _reduce_spw_scan_field(sub, nchan, corr_labels, ydatacolumn,
     shapeC_model_sum = np.zeros((ncorr, len(uniq_bl_key)), dtype=complex)
     shapeC_model_wsum = np.zeros((ncorr, len(uniq_bl_key)))
 
-    # Shape D: appended per chunk, then concatenated.
-    shapeD_chunks = []
-
     for start in range(0, n, chunk_nrows):
         nr = min(chunk_nrows, n - start)
 
@@ -528,15 +527,6 @@ def _reduce_spw_scan_field(sub, nchan, corr_labels, ydatacolumn,
                 np.add.at(shapeC_model_sum[ci], chunk_bl_idx, model_chan_avg[ci] * w_chan_sum[ci])
                 np.add.at(shapeC_model_wsum[ci], chunk_bl_idx, w_chan_sum[ci])
 
-        valid = w_chan_sum > 0
-        shapeD_chunks.append({
-            'ant1': np.broadcast_to(ant1_col[start:start + nr], (ncorr, nr))[valid],
-            'ant2': np.broadcast_to(ant2_col[start:start + nr], (ncorr, nr))[valid],
-            'time': np.broadcast_to(time_col[start:start + nr], (ncorr, nr))[valid],
-            'corr': np.broadcast_to(np.array(corr_labels)[:, np.newaxis], (ncorr, nr))[valid],
-            'data': data_chan_avg[valid],
-        })
-
     def _finalize(csum, wsum):
         with np.errstate(invalid='ignore', divide='ignore'):
             avg = np.divide(csum, wsum, out=np.full_like(csum, np.nan), where=wsum > 0)
@@ -555,21 +545,12 @@ def _reduce_spw_scan_field(sub, nchan, corr_labels, ydatacolumn,
                               where=shapeC_model_wsum > 0)
     residC = ampC - np.abs(model_avg)
 
-    shapeD = {}
-    if shapeD_chunks:
-        for key in ('ant1', 'ant2', 'time', 'corr'):
-            shapeD[key] = np.concatenate([chunk[key] for chunk in shapeD_chunks])
-        data_D = np.concatenate([chunk['data'] for chunk in shapeD_chunks])
-        shapeD['amp'] = np.abs(data_D)
-        shapeD['phase'] = np.degrees(np.angle(data_D))
-
     return dict(
         time=uniq_times, ampA=ampA, phaseA=phaseA, wsumA=shapeA_wsum,
         chan=np.arange(nchan), ampB=ampB, phaseB=phaseB, wsumB=shapeB_wsum,
         ant1=uniq_ant1, ant2=uniq_ant2, uvdist=bl_uvdist,
         ampC=ampC, phaseC=phaseC, wsumC=shapeC_wsum, residC=residC,
         wsum_residC=shapeC_model_wsum,
-        shapeD=shapeD,
     )
 
 
@@ -825,6 +806,15 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                             rows['phase_uvdist'].append(Table({**base_cols, 'phase': red['phaseC'][ci][validC]}))
                             rows['amp_ant1'].append(Table({**base_cols, 'amp': red['ampC'][ci][validC]}))
                             rows['phase_ant1'].append(Table({**base_cols, 'phase': red['phaseC'][ci][validC]}))
+                            # amp_phase is the exact same per-baseline
+                            # complex average as amp_uvdist/amp_ant1 --
+                            # the old plotms call used the same
+                            # avgchannel/avgtime='1e8'/avgbaseline=False
+                            # as those, just plotted as amp-vs-phase
+                            # instead of against uvdist/antenna1.
+                            rows['amp_phase'].append(Table({**base_cols,
+                                                            'amp': red['ampC'][ci][validC],
+                                                            'phase': red['phaseC'][ci][validC]}))
 
                     # Amp-model residual vs. uvwave (calibrators only)
                     if this_is_calib and want_resid:
@@ -840,18 +830,6 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                                 'uvwave': red['uvdist'][validR] * freq_mean / _C,
                                 'corr': [corr] * n_valid,
                                 'resid': red['residC'][ci][validR]}))
-
-                # Shape D: amp vs. phase (channel avg only, per row)
-                if this_is_calib and red['shapeD']:
-                    n_valid = len(red['shapeD']['amp'])
-                    if n_valid > 0:
-                        rows['amp_phase'].append(Table({
-                            'spw': np.full(n_valid, spw), 'scan': np.full(n_valid, this_scan),
-                            'ant1': red['shapeD']['ant1'], 'ant2': red['shapeD']['ant2'],
-                            'ant1name': ant_names[red['shapeD']['ant1']],
-                            'ant2name': ant_names[red['shapeD']['ant2']],
-                            'time': red['shapeD']['time'], 'corr': red['shapeD']['corr'],
-                            'amp': red['shapeD']['amp'], 'phase': red['shapeD']['phase']}))
 
             # Write out each requested table.
             for kind in kinds:
