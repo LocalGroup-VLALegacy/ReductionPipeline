@@ -361,6 +361,21 @@ def _spw_metadata(ms_name):
     return chan_freqs, spw_to_ddid, spw_to_corrlabels
 
 
+def _antenna_names(ms_name):
+    '''
+    Antenna index -> name (e.g. 'ea01'), for the ant1name/ant2name
+    columns QAPlotter's field_plots.py expects. QAPlotter itself has no
+    access to the MS, so these have to be resolved here.
+    '''
+
+    from casatools import table
+    tb = table()
+    tb.open(os.path.join(ms_name, "ANTENNA"))
+    names = tb.getcol('NAME')
+    tb.close()
+    return names
+
+
 def _adaptive_chunk_nrows(nchan, ncorr, target_bytes=150_000_000,
                           min_rows=50, max_rows=20000):
     '''
@@ -660,6 +675,7 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
     print("Calibrator fields are: {}".format(names[is_calibrator]))
 
     chan_freqs, spw_to_ddid, spw_to_corrlabels = _spw_metadata(ms_name)
+    ant_names = _antenna_names(ms_name)
     all_spws = sorted(spw_to_ddid.keys())
 
     tb.open(ms_name)
@@ -766,23 +782,27 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                     valid = red['wsumA'][ci] > 0
                     if valid.any():
                         rows['amp_time'].append(Table({
-                            'spw': np.full(valid.sum(), spw), 'time': red['time'][valid],
+                            'spw': np.full(valid.sum(), spw), 'scan': np.full(valid.sum(), this_scan),
+                            'time': red['time'][valid],
                             'corr': [corr] * valid.sum(), 'amp': red['ampA'][ci][valid]}))
                         if this_is_calib:
                             rows['phase_time'].append(Table({
-                                'spw': np.full(valid.sum(), spw), 'time': red['time'][valid],
+                                'spw': np.full(valid.sum(), spw), 'scan': np.full(valid.sum(), this_scan),
+                                'time': red['time'][valid],
                                 'corr': [corr] * valid.sum(), 'phase': red['phaseA'][ci][valid]}))
 
                     # Shape B: amp/phase vs. channel (time & baseline avg)
                     validB = red['wsumB'][ci] > 0
                     if validB.any():
                         rows['amp_chan'].append(Table({
-                            'spw': np.full(validB.sum(), spw), 'chan': red['chan'][validB],
+                            'spw': np.full(validB.sum(), spw), 'scan': np.full(validB.sum(), this_scan),
+                            'chan': red['chan'][validB],
                             'freq': chan_freqs[spw][validB],
                             'corr': [corr] * validB.sum(), 'amp': red['ampB'][ci][validB]}))
                         if this_is_calib:
                             rows['phase_chan'].append(Table({
-                                'spw': np.full(validB.sum(), spw), 'chan': red['chan'][validB],
+                                'spw': np.full(validB.sum(), spw), 'scan': np.full(validB.sum(), this_scan),
+                                'chan': red['chan'][validB],
                                 'freq': chan_freqs[spw][validB],
                                 'corr': [corr] * validB.sum(), 'phase': red['phaseB'][ci][validB]}))
 
@@ -791,8 +811,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                     if validC.any():
                         n_valid = int(validC.sum())
                         base_cols = {
-                            'spw': np.full(n_valid, spw),
+                            'spw': np.full(n_valid, spw), 'scan': np.full(n_valid, this_scan),
                             'ant1': red['ant1'][validC], 'ant2': red['ant2'][validC],
+                            'ant1name': ant_names[red['ant1'][validC]],
+                            'ant2name': ant_names[red['ant2'][validC]],
                             'uvdist': red['uvdist'][validC], 'corr': [corr] * n_valid,
                         }
                         rows['amp_uvdist'].append(Table({**base_cols, 'amp': red['ampC'][ci][validC]}))
@@ -807,8 +829,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                         if validR.any():
                             n_valid = int(validR.sum())
                             rows['ampresid_uvwave'].append(Table({
-                                'spw': np.full(n_valid, spw),
+                                'spw': np.full(n_valid, spw), 'scan': np.full(n_valid, this_scan),
                                 'ant1': red['ant1'][validR], 'ant2': red['ant2'][validR],
+                                'ant1name': ant_names[red['ant1'][validR]],
+                                'ant2name': ant_names[red['ant2'][validR]],
                                 'uvdist': red['uvdist'][validR],
                                 'uvwave': red['uvdist'][validR] * freq_mean / _C,
                                 'corr': [corr] * n_valid,
@@ -819,8 +843,10 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                     n_valid = len(red['shapeD']['amp'])
                     if n_valid > 0:
                         rows['amp_phase'].append(Table({
-                            'spw': np.full(n_valid, spw),
+                            'spw': np.full(n_valid, spw), 'scan': np.full(n_valid, this_scan),
                             'ant1': red['shapeD']['ant1'], 'ant2': red['shapeD']['ant2'],
+                            'ant1name': ant_names[red['shapeD']['ant1']],
+                            'ant2name': ant_names[red['shapeD']['ant2']],
                             'time': red['shapeD']['time'], 'corr': red['shapeD']['corr'],
                             'amp': red['shapeD']['amp'], 'phase': red['shapeD']['phase']}))
 
