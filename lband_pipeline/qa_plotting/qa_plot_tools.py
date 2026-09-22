@@ -794,16 +794,19 @@ def make_qa_tables(ms_name, output_folder='scan_plots_txt',
                     # Shape B: amp/phase vs. channel (time & baseline avg)
                     validB = red['wsumB'][ci] > 0
                     if validB.any():
+                        # GHz, matching the old plotms convention and the
+                        # weblog's "Frequency (GHz)" axis label.
+                        freq_ghz = chan_freqs[spw][validB] / 1e9
                         rows['amp_chan'].append(Table({
                             'spw': np.full(validB.sum(), spw), 'scan': np.full(validB.sum(), this_scan),
                             'chan': red['chan'][validB],
-                            'freq': chan_freqs[spw][validB],
+                            'freq': freq_ghz,
                             'corr': [corr] * validB.sum(), 'amp': red['ampB'][ci][validB]}))
                         if this_is_calib:
                             rows['phase_chan'].append(Table({
                                 'spw': np.full(validB.sum(), spw), 'scan': np.full(validB.sum(), this_scan),
                                 'chan': red['chan'][validB],
-                                'freq': chan_freqs[spw][validB],
+                                'freq': freq_ghz,
                                 'corr': [corr] * validB.sum(), 'phase': red['phaseB'][ci][validB]}))
 
                     # Shape C: amp/phase vs. uvdist / antenna1 (chan & time avg, per baseline)
