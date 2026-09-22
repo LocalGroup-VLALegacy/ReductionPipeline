@@ -25,7 +25,8 @@ export CASALD_LIBRARY_PATH=$LD_LIBRARY_PATH
 cd /home/ekoch/scratch/final_splits/
 
 cp -r ~/.casa .
-echo "sys.path.append('/home/ekoch/ReductionPipeline/')" >> .casa/config.py
+echo "sys.path.append('/home/ekoch/VLAXL/ReductionPipeline/')" >> .casa/config.py
+# echo "sys.path.append('ReductionPipeline/')" >> .casa/config.py
 
 for tar_name in *.tar; do
 
@@ -34,7 +35,7 @@ for tar_name in *.tar; do
     # Split out the MS name
     my_array=($(echo $tar_name | tr "_" "\n"))
     # Name and config
-    targ_config_str="${my_array[0]}"_"${my_array[1]}"_
+    targ_config_str="${my_array[0]}"_"${my_array[1]}"
 
     track_name="${my_array[2]::-4}"
 
@@ -45,7 +46,8 @@ for tar_name in *.tar; do
 
     echo "Finished tar on ${tar_name}"
 
-    xvfb-run -a ~/casa-6.2.1-7-pipeline-2021.2.0.128/bin/casa --nogui --log2term  --nocrashreport --pipeline -c ~/VLAXL/ReductionPipeline/other_scripts/run_final_split.py $track_name
+    xvfb-run -a ~/casa-6.2.1-7-pipeline-2021.2.0.128/bin/casa --nogui --log2term  --nocrashreport --pipeline --rcdir='.casa' -c ~/VLAXL/ReductionPipeline/other_scripts/run_final_split.py $track_name
+    # ~/work2/ekoch/casa-6.1.2-7-pipeline-2020.1.0.36/bin/casa --nogui --log2term  --nocrashreport --pipeline --rcdir='.casa' -c ReductionPipeline/other_scripts/run_final_split.py $track_name
 
     echo "Finished split on ${tar_name}"
 

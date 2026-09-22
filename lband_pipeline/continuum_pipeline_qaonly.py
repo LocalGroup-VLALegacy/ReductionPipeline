@@ -29,7 +29,9 @@ myvis = mySDM if mySDM.endswith("ms") else mySDM + ".ms"
 
 # Get the SPW mapping for the continuum MS.
 spwdict_filename = "spw_definitions.npy"
-contspw_dict = create_spw_dict(myvis, save_spwdict=True,
+contspw_dict = create_spw_dict(myvis,
+                               continuum_only=True,
+                               save_spwdict=True,
                                spwdict_filename=spwdict_filename)
 
 # Created by hifv_exportdata. Must exist to run!
