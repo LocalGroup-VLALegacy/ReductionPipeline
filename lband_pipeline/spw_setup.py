@@ -233,6 +233,86 @@ def create_spw_dict(myvis,
     return spw_dict
 
 
+def build_target_velocity_table(spw_dict, thisgals, target_line_range_kms,
+                                linerest_dict_GHz=linerest_dict_GHz):
+    '''
+    Build a per-(target, line, velocity range) table for QA plotting: the
+    protected velocity range(s) for each identified spectral line, and that
+    line's rest frequency, so QAPlotter can shade the corresponding
+    frequency range on the per-field line-SPW plots without needing MS or
+    casatools access itself.
+
+    One row per (target, line, velocity-range pair) -- a line can have more
+    than one disjoint protected velocity window (e.g. to dodge a
+    Galactic-foreground HI/OH gap, see `config_files/lglbs_targets_vrange.cfg`),
+    and a single SPW can contain more than one identified line (e.g. the
+    OH 1665/1667 satellite lines both landing in the same SPW), each of
+    which becomes its own row here and so its own shaded region.
+
+    Velocities are LSRK km/s, matching the `.cfg` file convention (see
+    `read_config_files.read_targets_vrange_cfg`); QAPlotter converts to an
+    (approximate, TOPO-vs-LSRK-agnostic) frequency range itself using the
+    plain radio-convention Doppler formula, the same approximation already
+    accepted elsewhere in this codebase (see `sdm_spw_setup.py`).
+
+    Parameters
+    ----------
+    spw_dict : dict
+        From `create_spw_dict`. Used only for its per-spw 'label' strings
+        to find which specific lines (e.g. "OH1665", not just "OH") were
+        actually identified for this track.
+    thisgals : list
+        Science target names identified in this track (`identify_targets`).
+    target_line_range_kms : dict
+        From `read_config_files.read_targets_vrange_cfg`:
+        {target: {line_key: [[vhigh, vlow], ...]}}, where `line_key` is a
+        generic species key (e.g. "OH") matched against identified line
+        names by substring, the same convention `build_cont_dat` uses.
+
+    Returns
+    -------
+    astropy.table.Table with columns: target, line, restfreq_GHz, vlow_kms,
+    vhigh_kms.
+    '''
+
+    from astropy.table import Table
+
+    # All line names actually identified in any line SPW. Labels are e.g.
+    # "HI" or "OH1665-OH1667"; continuum spws never carry a line label.
+    identified_lines = set()
+    for spwid in spw_dict:
+        label = spw_dict[spwid]['label']
+        if "continuum" in label:
+            continue
+        identified_lines.update(label.split("-"))
+
+    rows = {'target': [], 'line': [], 'restfreq_GHz': [], 'vlow_kms': [], 'vhigh_kms': []}
+
+    for target in thisgals:
+        if target not in target_line_range_kms:
+            continue
+
+        for line in sorted(identified_lines):
+
+            # Match the cfg's generic species key (e.g. "OH") against the
+            # specific identified line name (e.g. "OH1665") by substring --
+            # same convention as build_cont_dat.
+            key_match = next((key for key in target_line_range_kms[target] if key in line), None)
+            if key_match is None:
+                continue
+
+            restfreq = linerest_dict_GHz[line]
+
+            for vhigh, vlow in target_line_range_kms[target][key_match]:
+                rows['target'].append(target)
+                rows['line'].append(line)
+                rows['restfreq_GHz'].append(restfreq)
+                rows['vlow_kms'].append(vlow)
+                rows['vhigh_kms'].append(vhigh)
+
+    return Table(rows)
+
+
 def continuum_spws_with_hi(spw_dict):
     '''
     Return the SPW #s of continuum SPWs that contain the HI line.

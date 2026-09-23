@@ -56,7 +56,8 @@ from lband_pipeline.line_tools import (bandpass_with_gap_interpolation,
 # Info for SPW setup
 from lband_pipeline.spw_setup import (create_spw_dict, linerest_dict_GHz,
                                       continuum_spws_with_hi,
-                                      line_spw_ids, continuum_spw_ids)
+                                      line_spw_ids, continuum_spw_ids,
+                                      build_target_velocity_table)
 
 # SPW setup read from the SDM, before the MS exists.
 from lband_pipeline.sdm_spw_setup import (create_spw_dict_from_sdm,
@@ -461,6 +462,14 @@ if text_output:
                    chanavg=4096,)
 
     # make_all_flagsummary_data(myvis, output_folder='perfield_flagfraction_txt')
+
+    # Per-target line velocity ranges + rest frequencies, so QAPlotter can
+    # shade the protected velocity range on the per-field line-SPW plots.
+    velocity_table_filename = "target_velocity_ranges.ecsv"
+    velocity_table = build_target_velocity_table(spw_dict, thisgals, target_line_range_kms)
+    if len(velocity_table) > 0:
+        velocity_table.write(velocity_table_filename, format='ascii.ecsv', overwrite=True)
+        os.system(f"cp {velocity_table_filename} products/")
 
     # Move these folders to the products folder.
     os.system("cp -r {0} {1}".format('final_caltable_txt', products_folder))
