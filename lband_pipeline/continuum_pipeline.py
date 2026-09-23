@@ -385,7 +385,7 @@ if text_output:
 
     make_qa_tables(myvis,
                    output_folder='scan_plots_txt',
-                   outtype='txt',
+                   outtype='ecsv',
                    overwrite=False,
                    chanavg=4096,)
 
