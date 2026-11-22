@@ -7,10 +7,26 @@ import configparser
 from doctest import master
 import os
 
+# Per-project config files can live outside the repo: set VLA_PIPELINE_CONFIG_DIR to a
+# folder holding master_config.cfg and the source cfgs it names. Unset or empty, the
+# repo's config_files/ is used, as before.
+CONFIG_DIR_ENV = "VLA_PIPELINE_CONFIG_DIR"
+
+
+def get_config_dir():
+    """Folder holding master_config.cfg and the source config files."""
+    env_dir = os.environ.get(CONFIG_DIR_ENV, "").strip()
+    if env_dir:
+        if not os.path.isdir(env_dir):
+            raise OSError(f"{CONFIG_DIR_ENV}={env_dir} is not a directory")
+        return env_dir
+    return os.path.join(os.path.dirname(__file__), "..", "config_files")
+
+
 def get_master_config():
 
     # Try finding the filename defined in the master_config file.
-    filename = os.path.join(os.path.dirname(__file__), "..", "config_files", "master_config.cfg")
+    filename = os.path.join(get_config_dir(), "master_config.cfg")
 
     if not os.path.exists(filename):
         raise OSError(f"Unable to find filename: {filename}")
@@ -38,7 +54,7 @@ def read_calibrator_absorption_cfg(filename=None):
     master_config = get_master_config()
 
     if filename is None:
-        filename = os.path.join(os.path.dirname(__file__), "..", "config_files",
+        filename = os.path.join(get_config_dir(),
                                 master_config['source_configs']['calibrators_filename'])
 
     if not os.path.exists(filename):
@@ -85,7 +101,7 @@ def read_target_vsys_cfg(filename=None):
     master_config = get_master_config()
 
     if filename is None:
-        filename = os.path.join(os.path.dirname(__file__), "..", "config_files",
+        filename = os.path.join(get_config_dir(),
                                 master_config['source_configs']['targets_vsys_filename'])
 
     if not os.path.exists(filename):
@@ -122,7 +138,7 @@ def read_targets_vrange_cfg(filename=None):
     master_config = get_master_config()
 
     if filename is None:
-        filename = os.path.join(os.path.dirname(__file__), "..", "config_files",
+        filename = os.path.join(get_config_dir(),
                                 master_config['source_configs']['targets_vrange_filename'])
 
     if not os.path.exists(filename):
